@@ -195,7 +195,7 @@ export default function App() {
     marketTrades.forEach(trade => {
       // Protocol P&L: All fees collected
       const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
-      const feeAmount = trade.currentDV01 * feeAmountBps / 10000 * 100; // Convert to dollar amount
+      const feeAmount = trade.currentDV01 * feeAmountBps; // Convert to dollar amount
       protocolPL += feeAmount;
       
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
