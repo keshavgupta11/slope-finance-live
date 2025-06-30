@@ -32,51 +32,31 @@ export default function App() {
 
   // Update prices and P&L when day changes
   useEffect(() => {
-    if (currentDay > 0) {
-      // Update price history
-      setPriceHistoryByMarket(prev => {
-        const updated = { ...prev };
-        if (!updated[market]) updated[market] = {};
-        updated[market][currentDay] = lastPriceByMarket[market] || marketSettings[market].apy;
-        return updated;
+    // Recalculate P&L for all trades with simple formula
+    setTradesByMarket(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(mkt => {
+        if (updated[mkt]) {
+          updated[mkt] = updated[mkt].map(trade => {
+            const updatedTrade = { ...trade };
+            updatedTrade.currentDay = currentDay;
+            updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
+            updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
+            
+            // Simple P&L: (current_price - entry_price) * current_dv01 * direction
+            const directionFactor = trade.type === 'pay' ? -1 : 1; // Pay fixed profits when rates go up
+            const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01 * 100;
+            
+            updatedTrade.pl = plUSD.toFixed(2);
+            updatedTrade.pnl = plUSD;
+            
+            return updatedTrade;
+          });
+        }
       });
-
-      // Recalculate P&L for all trades
-      setTradesByMarket(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(mkt => {
-          if (updated[mkt]) {
-            updated[mkt] = updated[mkt].map(trade => {
-              const updatedTrade = { ...trade };
-              updatedTrade.currentDay = currentDay;
-              updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
-              
-              // Calculate cumulative P&L day by day
-              let cumulativePL = 0;
-              const priceHistory = priceHistoryByMarket[mkt] || {};
-              let previousPrice = trade.entryPrice;
-              
-              for (let day = 1; day <= currentDay; day++) {
-                const dayPrice = priceHistory[day] || previousPrice;
-                const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
-                const directionFactor = trade.type === 'pay' ? -1 : 1; // Pay fixed profits when rates go up (negative), receive fixed profits when rates go down (positive)
-                const dailyPL = (dayPrice - previousPrice) * directionFactor * dayDv01 * 100;
-                cumulativePL += dailyPL;
-                previousPrice = dayPrice;
-              }
-              
-              updatedTrade.pl = cumulativePL.toFixed(2);
-              updatedTrade.pnl = cumulativePL;
-              updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
-              
-              return updatedTrade;
-            });
-          }
-        });
-        return updated;
-      });
-    }
-  }, [currentDay, lastPriceByMarket, market, marketSettings]);
+      return updated;
+    });
+  }, [currentDay, lastPriceByMarket, marketSettings]);
 
   const generateChartData = () => {
     const data = [];
@@ -229,6 +209,7 @@ export default function App() {
       </header>
 
       {activeTab === "Swap" && (
+        <>
         <div className="main-container">
           <div className="left-panel">
             <div className="swap-header">
@@ -439,50 +420,7 @@ export default function App() {
             </div>
           </div>
         </div>
-      )}
 
-      {activeTab === "Settings" && (
-        <div className="settings-container">
-          <h2>Settings</h2>
-          <h3>Market Settings</h3>
-          {Object.keys(marketSettings).map((mkt) => (
-            <div key={mkt} className="market-setting">
-              <h4>{mkt}</h4>
-              <div className="setting-inputs">
-                <div>
-                  <label>Oracle APY:</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={marketSettings[mkt].apy}
-                    onChange={(e) => updateMarketSetting(mkt, "apy", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label>K:</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={marketSettings[mkt].k}
-                    onChange={(e) => updateMarketSetting(mkt, "k", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {["Learn", "Docs", "Leaderboard", "Stats"].map(tab => (
-        activeTab === tab && (
-          <div key={tab} className="tab-content">
-            <h2>{tab}</h2>
-            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : tab === "Leaderboard" ? "Leaderboard" : "Statistics"} coming soon...</p>
-          </div>
-        )
-      ))}
-
-      {activeTab === "Swap" && (
         <div className="positions-section">
           <h3>Positions</h3>
           <div className="positions-table">
@@ -528,7 +466,49 @@ export default function App() {
             </table>
           </div>
         </div>
+        </>
       )}
+
+      {activeTab === "Settings" && (
+        <div className="settings-container">
+          <h2>Settings</h2>
+          <h3>Market Settings</h3>
+          {Object.keys(marketSettings).map((mkt) => (
+            <div key={mkt} className="market-setting">
+              <h4>{mkt}</h4>
+              <div className="setting-inputs">
+                <div>
+                  <label>Oracle APY:</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={marketSettings[mkt].apy}
+                    onChange={(e) => updateMarketSetting(mkt, "apy", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label>K:</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={marketSettings[mkt].k}
+                    onChange={(e) => updateMarketSetting(mkt, "k", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {["Learn", "Docs", "Leaderboard", "Stats"].map(tab => (
+        activeTab === tab && (
+          <div key={tab} className="tab-content">
+            <h2>{tab}</h2>
+            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : tab === "Leaderboard" ? "Leaderboard" : "Statistics"} coming soon...</p>
+          </div>
+        )
+      ))}
 
       {pendingTrade && (
         <div className="modal-overlay">
