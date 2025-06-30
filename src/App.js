@@ -201,7 +201,7 @@ export default function App() {
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
       const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
       const feeAdjustment = (trade.type === 'pay' ? 5 : 2) / 10000; // Fee in decimal
-      const rawEntry = parseFloat(trade.entry) - feeAdjustment; // Remove fee to get raw price
+      const rawEntry = trade.rawPrice || parseFloat(trade.entry); // Use stored raw price // Remove fee to get raw price
       const vammTradeResult = (trade.currentPrice - rawEntry) * vammDirection * trade.currentDV01 * 100;
       vammPL += vammTradeResult;
     });
