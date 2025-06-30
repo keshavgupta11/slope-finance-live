@@ -319,6 +319,7 @@ export default function App() {
         collateral: margin,
         entryDay: currentDay,
         currentDay: currentDay,
+        feeAmountBps: pendingTrade.feeRate * 100,
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
 
