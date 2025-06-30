@@ -44,7 +44,7 @@ export default function App() {
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
             
             // Simple P&L: (current_price - entry_price) * current_dv01 * direction
-            const directionFactor = trade.type === 'pay' ? -1 : 1; // Pay fixed profits when rates go up
+            const directionFactor = trade.type === 'pay' ? 1 : -1; // Pay fixed profits when rates go up (positive when current > entry)
             const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01 * 100;
             
             updatedTrade.pl = plUSD.toFixed(2);
