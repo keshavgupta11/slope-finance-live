@@ -542,7 +542,7 @@ export default function App() {
               </div>
               <div className="detail-row">
                 <span>Fee:</span>
-                <span className="fee">{pendingTrade.feeRate}bp</span>
+                <span className="fee">{pendingTrade.feeRate*100}bp</span>
               </div>
             </div>
             <div className="modal-buttons">
