@@ -320,6 +320,7 @@ export default function App() {
         entryDay: currentDay,
         currentDay: currentDay,
         feeAmountBps: pendingTrade.feeRate * 100,
+        rawPrice: parseFloat(pendingTrade.rawPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
 
