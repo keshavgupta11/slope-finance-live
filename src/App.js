@@ -244,7 +244,7 @@ export default function App() {
     const directionFactor = type === 'pay' ? 1 : -1;
 
     const rawPrice = baseAPY + k * midpointOI;
-    const protocolRiskIncreases = Math.abs(postOI) > Math.abs(preOI);
+    const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeRate = protocolRiskIncreases ? 0.05 : 0.02;
     const fee = feeRate * directionFactor;
     const finalPrice = rawPrice + fee;
