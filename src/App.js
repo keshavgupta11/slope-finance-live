@@ -315,7 +315,7 @@ export default function App() {
       }));
 
       // Update simulated USDC balance
-      setUsdcBalance(prev => prev - (margin / 1000000)); // Simulate using margin
+      setUsdcBalance(prev => prev - (margin )); // Simulate using margin
 
       setPendingTrade(null);
       
