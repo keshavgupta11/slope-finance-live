@@ -187,11 +187,34 @@ export default function App() {
     return data;
   };
 
-  const chartData = generateChartData();
+  // Calculate vAMM P&L and Protocol P&L
+  const calculateProtocolMetrics = () => {
+    let vammPL = 0;
+    let protocolPL = 0;
+    
+    marketTrades.forEach(trade => {
+      // Protocol P&L: All fees collected
+      const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
+      const feeAmount = trade.currentDV01 * feeAmountBps / 10000 * 100; // Convert to dollar amount
+      protocolPL += feeAmount;
+      
+      // vAMM P&L: Opposite side of user trade, using raw price (before fees)
+      const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
+      const feeAdjustment = (trade.type === 'pay' ? 5 : 2) / 10000; // Fee in decimal
+      const rawEntry = parseFloat(trade.entry) - feeAdjustment; // Remove fee to get raw price
+      const vammTradeResult = (trade.currentPrice - rawEntry) * vammDirection * trade.currentDV01 * 100;
+      vammPL += vammTradeResult;
+    });
+    
+    return { vammPL, protocolPL };
+  };
+
+  const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
   const netOI = oiByMarket[market] || 0;
   const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
   const { apy: baseAPY, k } = marketSettings[market];
+  const { vammPL, protocolPL } = calculateProtocolMetrics();
 
   const handleMarketChange = (newMarket) => {
     setMarket(newMarket);
@@ -573,6 +596,31 @@ export default function App() {
                   <div className="stat-label">Fee Revenue</div>
                   <div className="stat-value">$3,241</div>
                   <div className="stat-change positive">+15.7%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* vAMM and Protocol P&L */}
+            <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+              <h4>Protocol Metrics</h4>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                <div className="stat-card">
+                  <div className="stat-label">vAMM P&L</div>
+                  <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
+                    {vammPL >= 0 ? '+' : ''}${vammPL.toFixed(0)}
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Opposite side of user trades
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Protocol P&L (Fees)</div>
+                  <div className="stat-value" style={{ color: '#10b981' }}>
+                    +${protocolPL.toFixed(0)}
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Fee revenue collected
+                  </div>
                 </div>
               </div>
             </div>
