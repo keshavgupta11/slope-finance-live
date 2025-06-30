@@ -232,7 +232,7 @@ export default function App() {
     }
 
     // Check simulated USDC balance (for demo)
-    const simulatedUSDC = usdcBalance + 50000; // Add simulated USDC for demo
+    const simulatedUSDC = usdcBalance + 500000; // Add simulated USDC for demo
     if (simulatedUSDC < margin) {
       alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
       return;
@@ -376,7 +376,7 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
-              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 50000).toLocaleString()}</div>
+              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 500000).toLocaleString()}</div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
               {formatAddress(wallet)}
