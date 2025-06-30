@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
-import React, { useState, useEffect, useMemo } from 'react';
 
 // Solana imports
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
@@ -188,7 +187,7 @@ export default function App() {
     return data;
   };
 
-  const chartData = useMemo(() => generateChartData(), [market]);
+  const chartData = generateChartData();
   const marketTrades = tradesByMarket[market] || [];
   const netOI = oiByMarket[market] || 0;
   const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
