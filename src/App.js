@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -11,14 +11,72 @@ export default function App() {
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
   const [market, setMarket] = useState("JitoSol");
-  const [dv01, setDv01] = useState(10000);
+  const [baseDv01, setBaseDv01] = useState(10000); // This is the base DV01 at day 0
   const [margin, setMargin] = useState(200000);
+  const [currentDay, setCurrentDay] = useState(0); // Days since position entry
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
+  const [priceHistoryByMarket, setPriceHistoryByMarket] = useState({}); // Track daily prices for P&L calc
   const [pendingTrade, setPendingTrade] = useState(null);
   const [tradeType, setTradeType] = useState('pay');
   const [activeTab, setActiveTab] = useState("Swap");
+
+  // Calculate current DV01 based on time to maturity
+  const calculateCurrentDv01 = (baseDv01, daysPassed, totalDays = 365) => {
+    const timeToMaturity = Math.max(0, totalDays - daysPassed);
+    return baseDv01 * (timeToMaturity / totalDays);
+  };
+
+  const currentDv01 = calculateCurrentDv01(baseDv01, currentDay);
+
+  // Update prices and P&L when day changes
+  useEffect(() => {
+    if (currentDay > 0) {
+      // Update price history
+      setPriceHistoryByMarket(prev => {
+        const updated = { ...prev };
+        if (!updated[market]) updated[market] = {};
+        updated[market][currentDay] = lastPriceByMarket[market] || marketSettings[market].apy;
+        return updated;
+      });
+
+      // Recalculate P&L for all trades
+      setTradesByMarket(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(mkt => {
+          if (updated[mkt]) {
+            updated[mkt] = updated[mkt].map(trade => {
+              const updatedTrade = { ...trade };
+              updatedTrade.currentDay = currentDay;
+              updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
+              
+              // Calculate cumulative P&L day by day
+              let cumulativePL = 0;
+              const priceHistory = priceHistoryByMarket[mkt] || {};
+              let previousPrice = trade.entryPrice;
+              
+              for (let day = 1; day <= currentDay; day++) {
+                const dayPrice = priceHistory[day] || previousPrice;
+                const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
+                const directionFactor = trade.type === 'pay' ? -1 : 1; // Pay fixed profits when rates go up (negative), receive fixed profits when rates go down (positive)
+                const dailyPL = (dayPrice - previousPrice) * directionFactor * dayDv01 * 100;
+                cumulativePL += dailyPL;
+                previousPrice = dayPrice;
+              }
+              
+              updatedTrade.pl = cumulativePL.toFixed(2);
+              updatedTrade.pnl = cumulativePL;
+              updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
+              
+              return updatedTrade;
+            });
+          }
+        });
+        return updated;
+      });
+    }
+  }, [currentDay, lastPriceByMarket, market, marketSettings]);
 
   const generateChartData = () => {
     const data = [];
@@ -57,9 +115,13 @@ export default function App() {
     setMarket(newMarket);
   };
 
+  const handleDayChange = (newDay) => {
+    setCurrentDay(Math.max(0, Math.min(365, newDay))); // Limit to 0-365 days
+  };
+
   const requestTrade = (type) => {
     const preOI = netOI;
-    const postOI = type === 'pay' ? netOI + dv01 : netOI - dv01;
+    const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
     const midpointOI = (preOI + postOI) / 2;
     const directionFactor = type === 'pay' ? 1 : -1;
 
@@ -92,35 +154,35 @@ export default function App() {
   const confirmTrade = () => {
     const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
 
-    const minMargin = dv01 * 20;
+    const minMargin = currentDv01 * 20;
     if (margin < minMargin) {
       alert('Margin too low!');
       setPendingTrade(null);
       return;
     }
 
-    const marginBuffer = (margin / dv01) / 100;
+    const marginBuffer = (margin / currentDv01) / 100;
     const liq = type === 'pay' 
       ? parseFloat(finalPrice) - marginBuffer
       : parseFloat(finalPrice) + marginBuffer;
-    
-    const plUSD = ((rawPrice - finalPrice) * directionFactor * dv01 * 100).toFixed(2);
 
     const trade = {
       market,
       type,
-      dv01,
+      baseDV01: baseDv01, // Store the original base DV01
+      currentDV01: currentDv01, // Store current DV01 at entry
       margin,
       entry: finalPrice,
-      liq: liq.toFixed(2),
-      timestamp: new Date().toLocaleTimeString(),
-      pl: plUSD,
-      pnl: parseFloat(plUSD),
       entryPrice: parseFloat(finalPrice),
       currentPrice: parseFloat(rawPrice),
+      liq: liq.toFixed(2),
       liquidationPrice: liq.toFixed(2),
+      timestamp: new Date().toLocaleTimeString(),
+      pl: "0.00", // Initial P&L is 0
+      pnl: 0,
       collateral: margin,
-      currentDV01: dv01
+      entryDay: currentDay, // Track when the position was entered
+      currentDay: currentDay
     };
 
     setTradesByMarket(prev => ({
@@ -137,6 +199,14 @@ export default function App() {
       ...prev,
       [market]: parseFloat(rawPrice)
     }));
+
+    // Initialize price history for this day if not exists
+    setPriceHistoryByMarket(prev => {
+      const updated = { ...prev };
+      if (!updated[market]) updated[market] = {};
+      updated[market][currentDay] = parseFloat(rawPrice);
+      return updated;
+    });
 
     setPendingTrade(null);
   };
@@ -191,14 +261,47 @@ export default function App() {
               </div>
             </div>
 
+            {/* Time to Maturity Control */}
+            <div className="input-group">
+              <label>
+                <span>Days from Entry: {currentDay}</span>
+                <span>Time to Maturity: {365 - currentDay} days</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="365"
+                value={currentDay}
+                onChange={(e) => handleDayChange(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  margin: '0.5rem 0',
+                  accentColor: '#10b981'
+                }}
+              />
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                fontSize: '0.75rem', 
+                color: '#6b7280' 
+              }}>
+                <span>Day 0</span>
+                <span>DV01 Multiplier: {(currentDv01 / baseDv01).toFixed(3)}</span>
+                <span>Day 365</span>
+              </div>
+            </div>
+
             <div className="inputs">
               <div className="input-group">
-                <label>DV01 ($)</label>
+                <label>
+                  <span>Base DV01 ($) - Day 0</span>
+                  <span>Current DV01: ${currentDv01.toLocaleString()}</span>
+                </label>
                 <input
                   type="number"
-                  value={dv01 || ''}
-                  onChange={(e) => setDv01(e.target.value === '' ? 0 : Number(e.target.value))}
-                  placeholder="Enter DV01 amount"
+                  value={baseDv01 || ''}
+                  onChange={(e) => setBaseDv01(e.target.value === '' ? 0 : Number(e.target.value))}
+                  placeholder="Enter base DV01 amount"
                 />
               </div>
 
@@ -214,7 +317,7 @@ export default function App() {
 
               <div className="min-margin">
                 <div>Min margin required:</div>
-                <div className="min-margin-value">${(dv01 * 20).toLocaleString()}</div>
+                <div className="min-margin-value">${(currentDv01 * 20).toLocaleString()}</div>
               </div>
 
               <div className="trade-buttons">
@@ -234,10 +337,10 @@ export default function App() {
 
               <button 
                 onClick={() => requestTrade(tradeType)}
-                disabled={margin < dv01 * 20}
-                className={`enter-btn ${margin < dv01 * 20 ? 'disabled' : ''}`}
+                disabled={margin < currentDv01 * 20}
+                className={`enter-btn ${margin < currentDv01 * 20 ? 'disabled' : ''}`}
               >
-                {margin < dv01 * 20 ? 'Margin too low' : 'Enter Position'}
+                {margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
@@ -260,80 +363,80 @@ export default function App() {
             <div className="chart-container">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-  <XAxis 
-    dataKey="year" 
-    axisLine={false}
-    tickLine={false}
-    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-    type="number"
-    scale="linear"
-    domain={[2023, 2025]}
-    ticks={[2023, 2024, 2025]}
-  />
-  <YAxis 
-    axisLine={false}
-    tickLine={false}
-    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-    domain={[0, 10]}
-    tickFormatter={(value) => `${value.toFixed(1)}%`}
-    scale="linear"
-  />
-  <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.2)" strokeWidth="1"/>
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#grid)" />
-  <Line 
-    type="monotone" 
-    dataKey="apy" 
-    stroke="#10B981" 
-    strokeWidth={3}
-    dot={false}
-    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 3, fill: '#000' }}
-  />
-</LineChart>
+                  <XAxis 
+                    dataKey="year" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    type="number"
+                    scale="linear"
+                    domain={[2023, 2025]}
+                    ticks={[2023, 2024, 2025]}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    domain={[0, 10]}
+                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    scale="linear"
+                  />
+                  <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.2)" strokeWidth="1"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="apy" 
+                    stroke="#10B981" 
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 3, fill: '#000' }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
             <div className="chart-info">
-  This chart shows realized APY over last 365 days
-</div>
+              This chart shows realized APY over last 365 days
+            </div>
 
-<div className="market-stats">
-  <h4>Market Statistics</h4>
-  <div className="stats-grid">
-    <div className="stat-card">
-      <div className="stat-label">Total Volume (24h)</div>
-      <div className="stat-value">$2.4M</div>
-      <div className="stat-change positive">+12.3%</div>
-    </div>
-    <div className="stat-card">
-      <div className="stat-label">Active Positions</div>
-      <div className="stat-value">147</div>
-      <div className="stat-change positive">+8</div>
-    </div>
-    <div className="stat-card">
-      <div className="stat-label">Total PnL (24h)</div>
-      <div className="stat-value">+$12,847</div>
-      <div className="stat-change positive">+5.2%</div>
-    </div>
-    <div className="stat-card">
-      <div className="stat-label">Markets Online</div>
-      <div className="stat-value">3/3</div>
-      <div className="stat-status online">●</div>
-    </div>
-    <div className="stat-card">
-      <div className="stat-label">Open Interest</div>
-      <div className="stat-value">$8.9M</div>
-      <div className="stat-change positive">+2.1%</div>
-    </div>
-    <div className="stat-card">
-      <div className="stat-label">Fee Revenue</div>
-      <div className="stat-value">$3,241</div>
-      <div className="stat-change positive">+15.7%</div>
-    </div>
-  </div>
-</div>
+            <div className="market-stats">
+              <h4>Market Statistics</h4>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-label">Total Volume (24h)</div>
+                  <div className="stat-value">$2.4M</div>
+                  <div className="stat-change positive">+12.3%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Active Positions</div>
+                  <div className="stat-value">147</div>
+                  <div className="stat-change positive">+8</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Total PnL (24h)</div>
+                  <div className="stat-value">+$12,847</div>
+                  <div className="stat-change positive">+5.2%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Markets Online</div>
+                  <div className="stat-value">3/3</div>
+                  <div className="stat-status online">●</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Open Interest</div>
+                  <div className="stat-value">$8.9M</div>
+                  <div className="stat-change positive">+2.1%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Fee Revenue</div>
+                  <div className="stat-value">$3,241</div>
+                  <div className="stat-change positive">+15.7%</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -392,7 +495,9 @@ export default function App() {
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
+                  <th>Base DV01</th>
                   <th>Current DV01</th>
+                  <th>Days Held</th>
                   <th>Collateral</th>
                 </tr>
               </thead>
@@ -409,12 +514,14 @@ export default function App() {
                     <td>{trade.entryPrice}%</td>
                     <td>{trade.currentPrice}%</td>
                     <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
-                    <td>${trade.currentDV01.toLocaleString()}</td>
+                    <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                    <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                    <td>{currentDay - (trade.entryDay || 0)}</td>
                     <td>${trade.collateral.toLocaleString()}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="8" className="no-positions">No positions yet</td>
+                    <td colSpan="10" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -437,11 +544,19 @@ export default function App() {
                 <span className="execution-price">{pendingTrade.finalPrice}%</span>
               </div>
               <div className="detail-row">
+                <span>Current DV01:</span>
+                <span>${currentDv01.toLocaleString()}</span>
+              </div>
+              <div className="detail-row">
+                <span>Days from Entry:</span>
+                <span>{currentDay}</span>
+              </div>
+              <div className="detail-row">
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / dv01) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) + ((margin / dv01) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
                   ).toFixed(2)}%
                 </span>
               </div>
