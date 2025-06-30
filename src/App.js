@@ -605,7 +605,7 @@ export default function App() {
             {/* vAMM and Protocol P&L */}
             <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
               <h4>Protocol Metrics</h4>
-              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                 <div className="stat-card">
                   <div className="stat-label">vAMM P&L</div>
                   <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
@@ -624,6 +624,15 @@ export default function App() {
                     Fee revenue collected
                   </div>
                 </div>
+                <div className="stat-card">
+  <div className="stat-label">Protocol Risk</div>
+  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
+    {netOI >= 0 ? 'Pay' : 'Receive'} ${Math.abs(netOI).toLocaleString()}
+  </div>
+  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+    Net open interest exposure
+  </div>
+</div>
               </div>
             </div>
           </div>
