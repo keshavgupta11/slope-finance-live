@@ -1,762 +1,560 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #030712;
-  color: white;
-  min-height: 100vh;
-}
-
-.app {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #030712 0%, #111827 100%);
-}
-
-/* Header */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #374151;
-  background: rgba(17, 24, 39, 0.5);
-  backdrop-filter: blur(8px);
-  position: relative;
-  z-index: 10;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.logo-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(45deg, #10b981, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
-}
-
-.tagline {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: 400;
-  margin: 0;
-  letter-spacing: 0.025em;
-}
-
-.nav {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-item {
-  color: #9ca3af;
-  cursor: pointer;
-  transition: color 0.2s;
-  font-weight: 500;
-}
-
-.nav-item:hover {
-  color: #d1d5db;
-}
-
-.nav-item.active {
-  color: #10b981;
-}
-
-.wallet-btn {
-  padding: 0.75rem 1.25rem;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 0.75rem;
-  background: transparent;
-  color: #10b981;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.wallet-btn:hover {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.5);
-}
-
-/* Main Container */
-.main-container {
-  display: flex;
-  min-height: calc(100vh - 80px);
-  position: relative;
-}
-
-/* Left Panel */
-.left-panel {
-  width: 384px;
-  padding: 1.5rem;
-  border-right: 1px solid rgba(55, 65, 81, 0.5);
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.4) 0%, rgba(17, 24, 39, 0.2) 100%);
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 80px);
-}
-
-.swap-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  background: linear-gradient(45deg, white, #d1d5db);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.price-info {
-  margin-bottom: 1.5rem;
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-  font-size: 0.875rem;
-}
-
-.price-row span:first-child {
-  color: #9ca3af;
-}
-
-.live-price {
-  color: #10b981;
-  font-weight: 600;
-}
-
-.realized-apy {
-  color: #06b6d4;
-  font-weight: 600;
-}
-
-.indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 0.5rem;
-}
-
-.indicator-icon {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background: #10b981;
-  color: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.625rem;
-}
-
-/* Market Selector */
-.market-selector {
-  margin-bottom: 1.5rem;
-}
-
-.market-select {
-  width: 100%;
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  color: white;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-}
-
-.market-select:hover {
-  border-color: #4b5563;
-}
-
-.market-select:focus {
-  border-color: #6b7280;
-  outline: none;
-}
-
-.market-info {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.market-info div:first-child {
-  margin-top: 0.5rem;
-  color: #9ca3af;
-}
-
-.market-info div:last-child {
-  margin-top: 0.25rem;
-}
-
-/* Inputs */
-.inputs {
-  margin-bottom: 1.5rem;
-}
-
-.input-group {
-  margin-bottom: 1rem;
-}
-
-.input-group label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.input-group input {
-  width: 100%;
-  background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(75, 85, 99, 0.5);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: white;
-  backdrop-filter: blur(4px);
-  transition: all 0.2s;
-}
-
-.input-group input:focus {
-  border-color: rgba(16, 185, 129, 0.5);
-  background: rgba(31, 41, 55, 0.7);
-  outline: none;
-}
-
-.input-group input::placeholder {
-  color: #6b7280;
-}
-
-/* Remove number input arrows */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-.min-margin {
-  background: rgba(31, 41, 55, 0.3);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  border: 1px solid rgba(55, 65, 81, 0.5);
-  margin-bottom: 1rem;
-}
-
-.min-margin div:first-child {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-bottom: 0.25rem;
-}
-
-.min-margin-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #f59e0b;
-}
-
-/* Trade Buttons */
-.trade-buttons {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.trade-btn {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid rgba(75, 85, 99, 0.5);
-  background: rgba(31, 41, 55, 0.5);
-  color: #d1d5db;
-}
-
-.trade-btn:hover {
-  background: rgba(55, 65, 81, 0.5);
-}
-
-.trade-btn.active.pay-fixed {
-  background: linear-gradient(45deg, #059669, #10b981);
-  color: white;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-  border-color: transparent;
-}
-
-.trade-btn.active.receive-fixed {
-  background: linear-gradient(45deg, #0891b2, #06b6d4);
-  color: white;
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);
-  border-color: transparent;
-}
-
-/* Enter Button */
-.enter-btn {
-  width: 100%;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  margin-bottom: 1rem;
-}
-
-.enter-btn:not(.disabled) {
-  background: linear-gradient(45deg, #059669, #06b6d4);
-  color: white;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
-.enter-btn:not(.disabled):hover {
-  background: linear-gradient(45deg, #10b981, #0891b2);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-  transform: scale(1.02);
-}
-
-.enter-btn:not(.disabled):active {
-  transform: scale(0.98);
-}
-
-.enter-btn.disabled {
-  background: rgba(55, 65, 81, 0.5);
-  color: #6b7280;
-  cursor: not-allowed;
-  border: 1px solid rgba(75, 85, 99, 0.3);
-}
-
-/* Profit Info */
-.profit-info {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.profit-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.profit-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-}
-
-.profit-dot.pay {
-  background: #10b981;
-}
-
-.profit-dot.receive {
-  background: #06b6d4;
-}
-
-/* Right Panel */
-.right-panel {
-  flex: 1;
-  padding: 1.5rem;
-  min-height: calc(100vh - 80px);
-}
-
-.chart-header {
-  margin-bottom: 1rem;
-}
-
-.chart-header span {
-  font-size: 1.125rem;
-  font-weight: 500;
-}
-
-.chart-container {
-  height: 280px;
-  width: 100%;
-  background: rgba(17, 24, 39, 0.3);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  border: 1px solid rgba(55, 65, 81, 0.3);
-}
-
-.chart-info {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-}
-
-/* Positions Section - FIXED POSITIONING */
-.positions-section {
-  width: 100%;
-  padding: 2rem 1.5rem;
-  background: rgba(17, 24, 39, 0.4);
-  border-top: 2px solid #374151;
-  margin-top: 2rem;
-  clear: both;
-}
-
-.positions-section h3 {
-  font-size: 1.125rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-.positions-table {
-  overflow-x: auto;
-  width: 100%;
-}
-
-.positions-table table {
-  width: 100%;
-  font-size: 0.875rem;
-  border-collapse: collapse;
-}
-
-.positions-table th {
-  text-align: left;
-  padding: 0.5rem;
-  color: #9ca3af;
-  font-weight: 500;
-  border-bottom: 1px solid #374151;
-}
-
-.positions-table td {
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid #1f2937;
-}
-
-.positions-table .pay-fixed {
-  color: #10b981;
-}
-
-.positions-table .receive-fixed {
-  color: #06b6d4;
-}
-
-.positions-table .profit {
-  color: #22c55e;
-  font-weight: 500;
-}
-
-.positions-table .loss {
-  color: #ef4444;
-  font-weight: 500;
-}
-
-.no-positions {
-  text-align: center;
-  color: #6b7280;
-  padding: 2rem 0.5rem;
-}
-
-/* Settings */
-.settings-container, .tab-content {
-  padding: 1.5rem;
-  max-width: 64rem;
-  margin: 0 auto;
-}
-
-.settings-container h2, .tab-content h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-}
-
-.settings-container h3 {
-  font-size: 1.125rem;
-  font-weight: 500;
-  color: #d1d5db;
-  margin-bottom: 1.5rem;
-}
-
-.market-setting {
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.market-setting h4 {
-  font-size: 1.125rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.setting-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.setting-inputs label {
-  display: block;
-  font-size: 0.875rem;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-}
-
-.setting-inputs input {
-  width: 100%;
-  background: #1f2937;
-  border: 1px solid #4b5563;
-  border-radius: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  color: white;
-}
-
-.setting-inputs input:focus {
-  border-color: #6b7280;
-  outline: none;
-}
-
-.tab-content p {
-  color: #9ca3af;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal {
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  max-width: 28rem;
-  width: 100%;
-  margin: 0 1rem;
-}
-
-.modal h3 {
-  font-size: 1.125rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.trade-details {
-  margin-bottom: 1.5rem;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.detail-row span:first-child {
-  color: #9ca3af;
-}
-
-.trade-type {
-  color: #10b981;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.execution-price {
-  color: #06b6d4;
-  font-weight: 600;
-}
-
-.liq-price {
-  color: #f59e0b;
-  font-weight: 600;
-}
-
-.fee {
-  color: #ef4444;
-  font-weight: 600;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.confirm-btn {
-  flex: 1;
-  background: linear-gradient(45deg, #059669, #10b981);
-  color: white;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-}
-
-.confirm-btn:hover {
-  background: linear-gradient(45deg, #10b981, #34d399);
-  transform: scale(1.05);
-}
-
-.confirm-btn:active {
-  transform: scale(0.95);
-}
-
-.cancel-btn {
-  flex: 1;
-  background: rgba(55, 65, 81, 0.5);
-  color: white;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid rgba(75, 85, 99, 0.5);
-  transition: all 0.2s;
-}
-
-.cancel-btn:hover {
-  background: rgba(75, 85, 99, 0.5);
-}
-
-/* Market Stats Dashboard */
-.market-stats {
-  margin-top: 0.5rem;
-  margin-bottom: 3rem;
-  padding: 1.5rem;
-  background: rgba(17, 24, 39, 0.3);
-  border-radius: 0.75rem;
-  border: 1px solid rgba(55, 65, 81, 0.3);
-}
-
-.market-stats h4 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #f3f4f6;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
-}
-
-.stat-card {
-  background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(75, 85, 99, 0.3);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  transition: all 0.2s;
-}
-
-.stat-card:hover {
-  background: rgba(31, 41, 55, 0.7);
-  border-color: rgba(75, 85, 99, 0.5);
-  transform: translateY(-2px);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #f3f4f6;
-  margin-bottom: 0.25rem;
-}
-
-.stat-change {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.stat-change.positive {
-  color: #22c55e;
-}
-
-.stat-change.negative {
-  color: #ef4444;
-}
-
-.stat-status {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.stat-status.online {
-  color: #22c55e;
-}
-
-.stat-status.offline {
-  color: #ef4444;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  
-  .nav {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  
-  .main-container {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .left-panel {
-    width: 100%;
-  }
-  
-  .setting-inputs {
-    grid-template-columns: 1fr;
-  }
-  
-  .positions-table {
-    font-size: 0.75rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .stat-value {
-    font-size: 1.25rem;
-  }
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import './App.css';
+
+export default function App() {
+  const initialMarketSettings = {
+    "JitoSol": { apy: 8.45, k: 0.00001, symbol: "JitoSOL" },
+    "Lido stETH": { apy: 5.0, k: 0.00001, symbol: "stETH" },
+    "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
+  };
+
+  const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
+  const [market, setMarket] = useState("JitoSol");
+  const [baseDv01, setBaseDv01] = useState(10000); // This is the base DV01 at day 0
+  const [margin, setMargin] = useState(200000);
+  const [currentDay, setCurrentDay] = useState(0); // Days since position entry
+  const [tradesByMarket, setTradesByMarket] = useState({});
+  const [oiByMarket, setOiByMarket] = useState({});
+  const [lastPriceByMarket, setLastPriceByMarket] = useState({});
+  const [priceHistoryByMarket, setPriceHistoryByMarket] = useState({}); // Track daily prices for P&L calc
+  const [pendingTrade, setPendingTrade] = useState(null);
+  const [tradeType, setTradeType] = useState('pay');
+  const [activeTab, setActiveTab] = useState("Swap");
+
+  // Calculate current DV01 based on time to maturity
+  const calculateCurrentDv01 = (baseDv01, daysPassed, totalDays = 365) => {
+    const timeToMaturity = Math.max(0, totalDays - daysPassed);
+    return baseDv01 * (timeToMaturity / totalDays);
+  };
+
+  const currentDv01 = calculateCurrentDv01(baseDv01, currentDay);
+
+  // Update prices and P&L when day changes
+  useEffect(() => {
+    // Recalculate P&L for all trades with simple formula
+    setTradesByMarket(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(mkt => {
+        if (updated[mkt]) {
+          updated[mkt] = updated[mkt].map(trade => {
+            const updatedTrade = { ...trade };
+            updatedTrade.currentDay = currentDay;
+            updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
+            updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
+            
+            // Simple P&L: (current_price - entry_price) * current_dv01 * direction
+            const directionFactor = trade.type === 'pay' ? 1 : -1; // Pay fixed profits when rates go up (positive when current > entry)
+            const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01 * 100;
+            
+            updatedTrade.pl = plUSD.toFixed(2);
+            updatedTrade.pnl = plUSD;
+            
+            return updatedTrade;
+          });
+        }
+      });
+      return updated;
+    });
+  }, [currentDay, lastPriceByMarket, marketSettings]);
+
+  const generateChartData = () => {
+    const data = [];
+    const marketTargets = {
+      'JitoSol': 7.5,
+      'Lido stETH': 4.5,
+      'Ethena sUSDe': 3.0
+    };
+    
+    const targetAPY = marketTargets[market] || 5.0;
+    
+    for (let year = 2023; year <= 2025; year++) {
+      for (let quarter = 1; quarter <= (year === 2025 ? 2 : 4); quarter++) {
+        const timeIndex = (year - 2023) * 4 + quarter - 1;
+        const smoothVariation = Math.sin(timeIndex / 12) * 0.8;
+        const gradualTrend = (timeIndex / 20) * 0.5;
+        const apy = Math.max(1, Math.min(9, targetAPY + smoothVariation + gradualTrend));
+        
+        data.push({
+          date: `${year}-Q${quarter}`,
+          apy: parseFloat(apy.toFixed(3)),
+          year: year + (quarter - 1) * 0.25
+        });
+      }
+    }
+    return data;
+  };
+
+  const chartData = generateChartData();
+  const marketTrades = tradesByMarket[market] || [];
+  const netOI = oiByMarket[market] || 0;
+  const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
+  const { apy: baseAPY, k } = marketSettings[market];
+
+  const handleMarketChange = (newMarket) => {
+    setMarket(newMarket);
+  };
+
+  const handleDayChange = (newDay) => {
+    setCurrentDay(Math.max(0, Math.min(365, newDay))); // Limit to 0-365 days
+  };
+
+  const requestTrade = (type) => {
+    const preOI = netOI;
+    const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
+    const midpointOI = (preOI + postOI) / 2;
+    const directionFactor = type === 'pay' ? 1 : -1;
+
+    const rawPrice = baseAPY + k * midpointOI;
+    const protocolRiskIncreases = Math.abs(postOI) > Math.abs(preOI);
+    const feeRate = protocolRiskIncreases ? 0.05 : 0.02;
+    const fee = feeRate * directionFactor;
+    const finalPrice = rawPrice + fee;
+
+    setPendingTrade({
+      type,
+      finalPrice: finalPrice.toFixed(4),
+      feeRate,
+      rawPrice: rawPrice.toFixed(4),
+      directionFactor,
+      preOI,
+      postOI,
+    });
+  };
+
+  const updateMarketSetting = (mkt, field, value) => {
+    const updated = { ...marketSettings };
+    updated[mkt][field] = parseFloat(value);
+    setMarketSettings(updated);
+    if (mkt === market) {
+      setLastPriceByMarket(prev => ({ ...prev, [mkt]: updated[mkt].apy }));
+    }
+  };
+
+  const confirmTrade = () => {
+    const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
+
+    const minMargin = currentDv01 * 20;
+    if (margin < minMargin) {
+      alert('Margin too low!');
+      setPendingTrade(null);
+      return;
+    }
+
+    const marginBuffer = (margin / currentDv01) / 100;
+    const liq = type === 'pay' 
+      ? parseFloat(finalPrice) - marginBuffer
+      : parseFloat(finalPrice) + marginBuffer;
+
+    const trade = {
+      market,
+      type,
+      baseDV01: baseDv01, // Store the original base DV01
+      currentDV01: currentDv01, // Store current DV01 at entry
+      margin,
+      entry: finalPrice,
+      entryPrice: parseFloat(finalPrice),
+      currentPrice: parseFloat(rawPrice),
+      liq: liq.toFixed(2),
+      liquidationPrice: liq.toFixed(2),
+      timestamp: new Date().toLocaleTimeString(),
+      pl: "0.00", // Initial P&L is 0
+      pnl: 0,
+      collateral: margin,
+      entryDay: currentDay, // Track when the position was entered
+      currentDay: currentDay
+    };
+
+    setTradesByMarket(prev => ({
+      ...prev,
+      [market]: [...(prev[market] || []), trade]
+    }));
+
+    setOiByMarket(prev => ({
+      ...prev,
+      [market]: postOI
+    }));
+
+    setLastPriceByMarket(prev => ({
+      ...prev,
+      [market]: parseFloat(rawPrice)
+    }));
+
+    // Initialize price history for this day if not exists
+    setPriceHistoryByMarket(prev => {
+      const updated = { ...prev };
+      if (!updated[market]) updated[market] = {};
+      updated[market][currentDay] = parseFloat(rawPrice);
+      return updated;
+    });
+
+    setPendingTrade(null);
+  };
+
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="header-left">
+          <div className="logo-section">
+            <h1 className="logo">Slope</h1>
+            <p className="tagline">A decentralized DeFi interest rates exchange</p>
+          </div>
+          <nav className="nav">
+            <span className={`nav-item ${activeTab === "Swap" ? "active" : ""}`} onClick={() => setActiveTab("Swap")}>Swap</span>
+            <span className={`nav-item ${activeTab === "Learn" ? "active" : ""}`} onClick={() => setActiveTab("Learn")}>Learn</span>
+            <span className={`nav-item ${activeTab === "Docs" ? "active" : ""}`} onClick={() => setActiveTab("Docs")}>Docs</span>
+            <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
+            <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
+            <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
+          </nav>
+        </div>
+        <button className="wallet-btn">Connect Wallet</button>
+      </header>
+
+      {activeTab === "Swap" && (
+        <>
+        <div className="main-container">
+          <div className="left-panel">
+            <div className="swap-header">
+              <h2>Swap</h2>
+              <div className="price-info">
+                <div className="price-row">
+                  <span>Live Price:</span>
+                  <span className="live-price">{lastPrice.toFixed(2)}%</span>
+                </div>
+                <div className="price-row">
+                  <span>2025 realized APY:</span>
+                  <span className="realized-apy">{(marketSettings[market].apy * 0.98).toFixed(2)}%</span>
+                </div>
+                <div className="indicator">
+                  <span className="indicator-icon">⚡</span>
+                  <span>{marketSettings[market].apy.toFixed(2)}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="market-selector">
+              <select value={market} onChange={(e) => handleMarketChange(e.target.value)} className="market-select">
+                {Object.keys(marketSettings).map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <div className="market-info">
+                <div>Notional / DV01</div>
+                <div>$1k dv01 means you gain/lose $1,000 per 1bp move</div>
+              </div>
+            </div>
+
+            {/* Time to Maturity Control */}
+            <div className="input-group">
+              <label>
+                <span>Days from Entry: {currentDay}</span>
+                <span>Time to Maturity: {365 - currentDay} days</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="365"
+                value={currentDay}
+                onChange={(e) => handleDayChange(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  margin: '0.5rem 0',
+                  accentColor: '#10b981'
+                }}
+              />
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                fontSize: '0.75rem', 
+                color: '#6b7280' 
+              }}>
+                <span>Day 0</span>
+                <span>DV01 Multiplier: {(currentDv01 / baseDv01).toFixed(3)}</span>
+                <span>Day 365</span>
+              </div>
+            </div>
+
+            <div className="inputs">
+              <div className="input-group">
+                <label>
+                  <span>Base DV01 ($) - Day 0</span>
+                  <span>Current DV01: ${currentDv01.toLocaleString()}</span>
+                </label>
+                <input
+                  type="number"
+                  value={baseDv01 || ''}
+                  onChange={(e) => setBaseDv01(e.target.value === '' ? 0 : Number(e.target.value))}
+                  placeholder="Enter base DV01 amount"
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Margin (USDC)</label>
+                <input
+                  type="number"
+                  value={margin || ''}
+                  onChange={(e) => setMargin(e.target.value === '' ? 0 : Number(e.target.value))}
+                  placeholder="Enter margin amount"
+                />
+              </div>
+
+              <div className="min-margin">
+                <div>Min margin required:</div>
+                <div className="min-margin-value">${(currentDv01 * 20).toLocaleString()}</div>
+              </div>
+
+              <div className="trade-buttons">
+                <button
+                  onClick={() => setTradeType('pay')}
+                  className={`trade-btn ${tradeType === 'pay' ? 'active pay-fixed' : ''}`}
+                >
+                  ● Pay Fixed
+                </button>
+                <button
+                  onClick={() => setTradeType('receive')}
+                  className={`trade-btn ${tradeType === 'receive' ? 'active receive-fixed' : ''}`}
+                >
+                  ● Receive Fixed
+                </button>
+              </div>
+
+              <button 
+                onClick={() => requestTrade(tradeType)}
+                disabled={margin < currentDv01 * 20}
+                className={`enter-btn ${margin < currentDv01 * 20 ? 'disabled' : ''}`}
+              >
+                {margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
+              </button>
+
+              <div className="profit-info">
+                <div className="profit-row">
+                  <span className="profit-dot pay"></span>
+                  <span>Pay Fixed: Profit if rates go higher</span>
+                </div>
+                <div className="profit-row">
+                  <span className="profit-dot receive"></span>
+                  <span>Receive Fixed: Profit if rates go lower</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="right-panel">
+            <div className="chart-header">
+              <span>Running 365d APY</span>
+            </div>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <XAxis 
+                    dataKey="year" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    type="number"
+                    scale="linear"
+                    domain={[2023, 2025]}
+                    ticks={[2023, 2024, 2025]}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    domain={[0, 10]}
+                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    scale="linear"
+                  />
+                  <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.2)" strokeWidth="1"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="apy" 
+                    stroke="#10B981" 
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 3, fill: '#000' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="chart-info">
+              This chart shows realized APY over last 365 days
+            </div>
+
+            <div className="market-stats">
+              <h4>Market Statistics</h4>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-label">Total Volume (24h)</div>
+                  <div className="stat-value">$2.4M</div>
+                  <div className="stat-change positive">+12.3%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Active Positions</div>
+                  <div className="stat-value">147</div>
+                  <div className="stat-change positive">+8</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Total PnL (24h)</div>
+                  <div className="stat-value">+$12,847</div>
+                  <div className="stat-change positive">+5.2%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Markets Online</div>
+                  <div className="stat-value">3/3</div>
+                  <div className="stat-status online">●</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Open Interest</div>
+                  <div className="stat-value">$8.9M</div>
+                  <div className="stat-change positive">+2.1%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Fee Revenue</div>
+                  <div className="stat-value">$3,241</div>
+                  <div className="stat-change positive">+15.7%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
+          <h3>Positions</h3>
+          <div className="positions-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Market</th>
+                  <th>Direction</th>
+                  <th>P&L</th>
+                  <th>Entry Price</th>
+                  <th>Current Price</th>
+                  <th>Liquidation Price</th>
+                  <th>Base DV01</th>
+                  <th>Current DV01</th>
+                  <th>Days Held</th>
+                  <th>Collateral</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marketTrades.length > 0 ? marketTrades.map((trade, i) => (
+                  <tr key={i}>
+                    <td>{trade.market}</td>
+                    <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
+                      {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                    </td>
+                    <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
+                      {trade.pnl >= 0 ? '+' : ''}${trade.pl}
+                    </td>
+                    <td>{trade.entryPrice}%</td>
+                    <td>{trade.currentPrice}%</td>
+                    <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
+                    <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                    <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                    <td>{currentDay - (trade.entryDay || 0)}</td>
+                    <td>${trade.collateral.toLocaleString()}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="10" className="no-positions">No positions yet</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </>
+      )}
+
+      {activeTab === "Settings" && (
+        <div className="settings-container">
+          <h2>Settings</h2>
+          <h3>Market Settings</h3>
+          {Object.keys(marketSettings).map((mkt) => (
+            <div key={mkt} className="market-setting">
+              <h4>{mkt}</h4>
+              <div className="setting-inputs">
+                <div>
+                  <label>Oracle APY:</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={marketSettings[mkt].apy}
+                    onChange={(e) => updateMarketSetting(mkt, "apy", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label>K:</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={marketSettings[mkt].k}
+                    onChange={(e) => updateMarketSetting(mkt, "k", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {["Learn", "Docs", "Leaderboard", "Stats"].map(tab => (
+        activeTab === tab && (
+          <div key={tab} className="tab-content">
+            <h2>{tab}</h2>
+            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : tab === "Leaderboard" ? "Leaderboard" : "Statistics"} coming soon...</p>
+          </div>
+        )
+      ))}
+
+      {pendingTrade && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Confirm Trade</h3>
+            <div className="trade-details">
+              <div className="detail-row">
+                <span>Type:</span>
+                <span className="trade-type">{pendingTrade.type} Fixed</span>
+              </div>
+              <div className="detail-row">
+                <span>Execution Price:</span>
+                <span className="execution-price">{pendingTrade.finalPrice}%</span>
+              </div>
+              <div className="detail-row">
+                <span>Current DV01:</span>
+                <span>${currentDv01.toLocaleString()}</span>
+              </div>
+              <div className="detail-row">
+                <span>Days from Entry:</span>
+                <span>{currentDay}</span>
+              </div>
+              <div className="detail-row">
+                <span>Liquidation Price:</span>
+                <span className="liq-price">
+                  {(pendingTrade.type === 'pay' 
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
+                  ).toFixed(2)}%
+                </span>
+              </div>
+              <div className="detail-row">
+                <span>Fee:</span>
+                <span className="fee">{pendingTrade.feeRate}bp</span>
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={confirmTrade} className="confirm-btn">Confirm Trade</button>
+              <button onClick={() => setPendingTrade(null)} className="cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
