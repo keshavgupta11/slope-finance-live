@@ -1,6 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
+
+// Solana imports
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
+// Phantom wallet detection
+const getProvider = () => {
+  if ('phantom' in window) {
+    return window.phantom?.solana;
+  }
+  return null;
+};
 
 export default function App() {
   const initialMarketSettings = {
@@ -11,16 +23,26 @@ export default function App() {
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
   const [market, setMarket] = useState("JitoSol");
-  const [baseDv01, setBaseDv01] = useState(10000); // This is the base DV01 at day 0
+  const [baseDv01, setBaseDv01] = useState(10000);
   const [margin, setMargin] = useState(200000);
-  const [currentDay, setCurrentDay] = useState(0); // Days since position entry
+  const [currentDay, setCurrentDay] = useState(0);
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
-  const [priceHistoryByMarket, setPriceHistoryByMarket] = useState({}); // Track daily prices for P&L calc
   const [pendingTrade, setPendingTrade] = useState(null);
   const [tradeType, setTradeType] = useState('pay');
   const [activeTab, setActiveTab] = useState("Swap");
+
+  // Solana wallet state
+  const [wallet, setWallet] = useState(null);
+  const [connecting, setConnecting] = useState(false);
+  const [usdcBalance, setUsdcBalance] = useState(0);
+
+  // Solana connection
+  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  
+  // USDC token mint on devnet
+  const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // Devnet USDC
 
   // Calculate current DV01 based on time to maturity
   const calculateCurrentDv01 = (baseDv01, daysPassed, totalDays = 365) => {
@@ -30,9 +52,90 @@ export default function App() {
 
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay);
 
-  // Update prices and P&L when day changes
+  // Phantom wallet functions
+  const connectWallet = async () => {
+    setConnecting(true);
+    try {
+      const provider = getProvider();
+      if (!provider) {
+        alert('Phantom wallet not found! Please install Phantom wallet.');
+        setConnecting(false);
+        return;
+      }
+
+      const response = await provider.connect();
+      setWallet(response.publicKey);
+      console.log('Connected to wallet:', response.publicKey.toString());
+      
+      // Fetch USDC balance after connecting
+      await fetchUSDCBalance(response.publicKey);
+    } catch (error) {
+      console.error('Error connecting to wallet:', error);
+      alert('Failed to connect wallet');
+    }
+    setConnecting(false);
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      const provider = getProvider();
+      if (provider) {
+        await provider.disconnect();
+      }
+      setWallet(null);
+      setUsdcBalance(0);
+    } catch (error) {
+      console.error('Error disconnecting wallet:', error);
+    }
+  };
+
+  // Fetch USDC balance
+  const fetchUSDCBalance = async (walletPublicKey) => {
+    try {
+      const tokenAccount = await getAssociatedTokenAddress(
+        USDC_MINT,
+        walletPublicKey
+      );
+
+      const account = await getAccount(connection, tokenAccount);
+      const balance = Number(account.amount) / 1e6; // USDC has 6 decimals
+      setUsdcBalance(balance);
+    } catch (error) {
+      console.log('No USDC account found or balance is 0');
+      setUsdcBalance(0);
+    }
+  };
+
+  // Check if wallet is connected on component mount
   useEffect(() => {
-    // Recalculate P&L for all trades with simple formula
+    const provider = getProvider();
+    if (provider) {
+      provider.on('connect', (publicKey) => {
+        setWallet(publicKey);
+        fetchUSDCBalance(publicKey);
+      });
+      
+      provider.on('disconnect', () => {
+        setWallet(null);
+        setUsdcBalance(0);
+      });
+
+      // Check if already connected
+      if (provider.isConnected) {
+        setWallet(provider.publicKey);
+        fetchUSDCBalance(provider.publicKey);
+      }
+    }
+
+    return () => {
+      if (provider) {
+        provider.removeAllListeners();
+      }
+    };
+  }, []);
+
+  // Update P&L calculations
+  useEffect(() => {
     setTradesByMarket(prev => {
       const updated = { ...prev };
       Object.keys(updated).forEach(mkt => {
@@ -43,8 +146,7 @@ export default function App() {
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
             
-            // Simple P&L: (current_price - entry_price) * current_dv01 * direction
-            const directionFactor = trade.type === 'pay' ? 1 : -1; // Pay fixed profits when rates go up (positive when current > entry)
+            const directionFactor = trade.type === 'pay' ? 1 : -1;
             const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01 * 100;
             
             updatedTrade.pl = plUSD.toFixed(2);
@@ -96,10 +198,23 @@ export default function App() {
   };
 
   const handleDayChange = (newDay) => {
-    setCurrentDay(Math.max(0, Math.min(365, newDay))); // Limit to 0-365 days
+    setCurrentDay(Math.max(0, Math.min(365, newDay)));
   };
 
   const requestTrade = (type) => {
+    // Check if wallet is connected
+    if (!wallet) {
+      alert('Please connect your Phantom wallet first!');
+      return;
+    }
+
+    // Check simulated USDC balance (for demo)
+    const simulatedUSDC = usdcBalance + 50000; // Add simulated USDC for demo
+    if (simulatedUSDC < margin) {
+      alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+      return;
+    }
+
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
     const midpointOI = (preOI + postOI) / 2;
@@ -131,7 +246,7 @@ export default function App() {
     }
   };
 
-  const confirmTrade = () => {
+  const confirmTrade = async () => {
     const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
 
     const minMargin = currentDv01 * 20;
@@ -141,54 +256,81 @@ export default function App() {
       return;
     }
 
-    const marginBuffer = (margin / currentDv01) / 100;
-    const liq = type === 'pay' 
-      ? parseFloat(finalPrice) - marginBuffer
-      : parseFloat(finalPrice) + marginBuffer;
+    // Simulate transaction signing
+    try {
+      const provider = getProvider();
+      if (provider && wallet) {
+        // In a real implementation, you'd create and send a transaction here
+        console.log('Simulating transaction for wallet:', wallet.toString());
+        
+        // Show loading state
+        const confirmBtn = document.querySelector('.confirm-btn');
+        if (confirmBtn) {
+          confirmBtn.textContent = 'Processing...';
+          confirmBtn.disabled = true;
+        }
 
-    const trade = {
-      market,
-      type,
-      baseDV01: baseDv01, // Store the original base DV01
-      currentDV01: currentDv01, // Store current DV01 at entry
-      margin,
-      entry: finalPrice,
-      entryPrice: parseFloat(finalPrice),
-      currentPrice: parseFloat(rawPrice),
-      liq: liq.toFixed(2),
-      liquidationPrice: liq.toFixed(2),
-      timestamp: new Date().toLocaleTimeString(),
-      pl: "0.00", // Initial P&L is 0
-      pnl: 0,
-      collateral: margin,
-      entryDay: currentDay, // Track when the position was entered
-      currentDay: currentDay
-    };
+        // Simulate transaction delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
-    setTradesByMarket(prev => ({
-      ...prev,
-      [market]: [...(prev[market] || []), trade]
-    }));
+      const marginBuffer = (margin / currentDv01) / 100;
+      const liq = type === 'pay' 
+        ? parseFloat(finalPrice) - marginBuffer
+        : parseFloat(finalPrice) + marginBuffer;
 
-    setOiByMarket(prev => ({
-      ...prev,
-      [market]: postOI
-    }));
+      const trade = {
+        market,
+        type,
+        baseDV01: baseDv01,
+        currentDV01: currentDv01,
+        margin,
+        entry: finalPrice,
+        entryPrice: parseFloat(finalPrice),
+        currentPrice: parseFloat(rawPrice),
+        liq: liq.toFixed(2),
+        liquidationPrice: liq.toFixed(2),
+        timestamp: new Date().toLocaleTimeString(),
+        pl: "0.00",
+        pnl: 0,
+        collateral: margin,
+        entryDay: currentDay,
+        currentDay: currentDay,
+        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
+      };
 
-    setLastPriceByMarket(prev => ({
-      ...prev,
-      [market]: parseFloat(rawPrice)
-    }));
+      setTradesByMarket(prev => ({
+        ...prev,
+        [market]: [...(prev[market] || []), trade]
+      }));
 
-    // Initialize price history for this day if not exists
-    setPriceHistoryByMarket(prev => {
-      const updated = { ...prev };
-      if (!updated[market]) updated[market] = {};
-      updated[market][currentDay] = parseFloat(rawPrice);
-      return updated;
-    });
+      setOiByMarket(prev => ({
+        ...prev,
+        [market]: postOI
+      }));
 
-    setPendingTrade(null);
+      setLastPriceByMarket(prev => ({
+        ...prev,
+        [market]: parseFloat(rawPrice)
+      }));
+
+      // Update simulated USDC balance
+      setUsdcBalance(prev => prev - (margin / 1000000)); // Simulate using margin
+
+      setPendingTrade(null);
+      
+      alert(`Trade executed successfully! ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      alert('Transaction failed. Please try again.');
+      setPendingTrade(null);
+    }
+  };
+
+  const formatAddress = (address) => {
+    if (!address) return '';
+    const str = address.toString();
+    return `${str.slice(0, 4)}...${str.slice(-4)}`;
   };
 
   return (
@@ -205,7 +347,23 @@ export default function App() {
             <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
           </nav>
         </div>
-        <button className="wallet-btn">Connect Wallet</button>
+        
+        {/* Wallet Connection */}
+        {wallet ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
+              <div style={{ color: '#9ca3af' }}>USDC Balance</div>
+              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 50000).toLocaleString()}</div>
+            </div>
+            <button className="wallet-btn" onClick={disconnectWallet}>
+              {formatAddress(wallet)}
+            </button>
+          </div>
+        ) : (
+          <button className="wallet-btn" onClick={connectWallet} disabled={connecting}>
+            {connecting ? 'Connecting...' : 'Connect Phantom'}
+          </button>
+        )}
       </header>
 
       {activeTab === "Swap" && (
@@ -318,10 +476,10 @@ export default function App() {
 
               <button 
                 onClick={() => requestTrade(tradeType)}
-                disabled={margin < currentDv01 * 20}
-                className={`enter-btn ${margin < currentDv01 * 20 ? 'disabled' : ''}`}
+                disabled={!wallet || margin < currentDv01 * 20}
+                className={`enter-btn ${!wallet || margin < currentDv01 * 20 ? 'disabled' : ''}`}
               >
-                {margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
@@ -421,7 +579,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="positions-section">
+        <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
           <h3>Positions</h3>
           <div className="positions-table">
             <table>
@@ -436,6 +594,7 @@ export default function App() {
                   <th>Base DV01</th>
                   <th>Current DV01</th>
                   <th>Days Held</th>
+                  <th>Tx Hash</th>
                   <th>Collateral</th>
                 </tr>
               </thead>
@@ -455,11 +614,14 @@ export default function App() {
                     <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                     <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                     <td>{currentDay - (trade.entryDay || 0)}</td>
+                    <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                      {trade.txSignature || 'Simulated'}
+                    </td>
                     <td>${trade.collateral.toLocaleString()}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="10" className="no-positions">No positions yet</td>
+                    <td colSpan="11" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -542,8 +704,14 @@ export default function App() {
               </div>
               <div className="detail-row">
                 <span>Fee:</span>
-                <span className="fee">{pendingTrade.feeRate*100}bp</span>
+                <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
               </div>
+              {wallet && (
+                <div className="detail-row">
+                  <span>Wallet:</span>
+                  <span style={{ fontSize: '0.875rem', color: '#10b981' }}>{formatAddress(wallet)}</span>
+                </div>
+              )}
             </div>
             <div className="modal-buttons">
               <button onClick={confirmTrade} className="confirm-btn">Confirm Trade</button>
