@@ -37,6 +37,12 @@ body {
   gap: 2rem;
 }
 
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
@@ -44,6 +50,15 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: 0.025em;
 }
 
 .nav {
