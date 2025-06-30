@@ -27,6 +27,8 @@ body {
   border-bottom: 1px solid #374151;
   background: rgba(17, 24, 39, 0.5);
   backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 10;
 }
 
 .header-left {
@@ -83,7 +85,8 @@ body {
 /* Main Container */
 .main-container {
   display: flex;
-  height: calc(100vh - 80px);
+  min-height: calc(100vh - 80px);
+  position: relative;
 }
 
 /* Left Panel */
@@ -94,6 +97,7 @@ body {
   background: linear-gradient(180deg, rgba(17, 24, 39, 0.4) 0%, rgba(17, 24, 39, 0.2) 100%);
   display: flex;
   flex-direction: column;
+  min-height: calc(100vh - 80px);
 }
 
 .swap-header h2 {
@@ -365,6 +369,7 @@ input[type="number"] {
 .right-panel {
   flex: 1;
   padding: 1.5rem;
+  min-height: calc(100vh - 80px);
 }
 
 .chart-header {
@@ -391,20 +396,26 @@ input[type="number"] {
   margin-top: 0.5rem;
 }
 
-/* Positions Section */
+/* Positions Section - FIXED POSITIONING */
 .positions-section {
-  border-top: 1px solid #374151;
-  padding: 1.5rem;
+  width: 100%;
+  padding: 2rem 1.5rem;
+  background: rgba(17, 24, 39, 0.4);
+  border-top: 2px solid #374151;
+  margin-top: 2rem;
+  clear: both;
 }
 
 .positions-section h3 {
   font-size: 1.125rem;
   font-weight: 500;
   margin-bottom: 1rem;
+  text-align: left;
 }
 
 .positions-table {
   overflow-x: auto;
+  width: 100%;
 }
 
 .positions-table table {
@@ -619,40 +630,6 @@ input[type="number"] {
   background: rgba(75, 85, 99, 0.5);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  
-  .nav {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  
-  .main-container {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .left-panel {
-    width: 100%;
-  }
-  
-  .setting-inputs {
-    grid-template-columns: 1fr;
-  }
-  
-  .positions-table {
-    font-size: 0.75rem;
-  }
-}
-/* Market Stats Dashboard */
-/* Market Stats Dashboard */
-/* Market Stats Dashboard */
-/* Market Stats Dashboard */
 /* Market Stats Dashboard */
 .market-stats {
   margin-top: 0.5rem;
@@ -730,8 +707,36 @@ input[type="number"] {
   color: #ef4444;
 }
 
-/* Mobile responsiveness for stats */
+/* Responsive */
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .main-container {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .left-panel {
+    width: 100%;
+  }
+  
+  .setting-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .positions-table {
+    font-size: 0.75rem;
+  }
+  
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
