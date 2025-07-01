@@ -144,12 +144,14 @@ export default function App() {
     const liquidationPrice = parseFloat(trade.liquidationPrice);
     
     if (trade.type === 'pay') {
-      // Pay fixed: liquidation when price goes above liquidation price
-      const bpsFromLiquidation = (liquidationPrice - currentPrice) * 100;
+      // Pay fixed: liquidation when price goes DOWN below liquidation price
+      const bpsFromLiquidation = (currentPrice - liquidationPrice) * 100;
+      console.log('Pay Fixed - Current:', currentPrice, 'Liq:', liquidationPrice, 'BPS from liq:', bpsFromLiquidation);
       return bpsFromLiquidation;
     } else {
-      // Receive fixed: liquidation when price goes below liquidation price
-      const bpsFromLiquidation = (currentPrice - liquidationPrice) * 100;
+      // Receive fixed: liquidation when price goes UP above liquidation price
+      const bpsFromLiquidation = (liquidationPrice - currentPrice) * 100;
+      console.log('Receive Fixed - Current:', currentPrice, 'Liq:', liquidationPrice, 'BPS from liq:', bpsFromLiquidation);
       return bpsFromLiquidation;
     }
   };
