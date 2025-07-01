@@ -418,8 +418,9 @@ export default function App() {
 
     const rawPrice = baseAPY + k * midpointOI;
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeRate = protocolRiskIncreases ? 0.0005 : 0.0002; // 5bp or 2bp in decimal
-    const fee = feeRate * directionFactor;
+    const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
+    const feeInPercentage = feeBps / 100; // Convert bp to percentage points (5bp = 0.05%)
+    const fee = feeInPercentage * directionFactor;
     const finalPrice = rawPrice + fee;
 
     setPendingTrade({
