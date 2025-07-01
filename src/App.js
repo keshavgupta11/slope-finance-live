@@ -167,8 +167,9 @@ export default function App() {
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
             
             const directionFactor = trade.type === 'pay' ? 1 : -1;
-            // Fixed P&L calculation - removed * 100 multiplier
-            const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01;
+            // Fixed P&L calculation: (live_price - entry_price) * current_dv01 * direction
+            const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
+            const plUSD = priceDiff * updatedTrade.currentDV01 * directionFactor;
             
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
@@ -265,13 +266,14 @@ export default function App() {
     allTrades.forEach(trade => {
       // Protocol P&L: All fees collected
       const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
-      const feeAmount = trade.currentDV01 * feeAmountBps; // Convert to dollar amount
+      const feeAmount = trade.currentDV01 * feeAmountBps; // DV01 * basis points
       protocolPL += feeAmount;
       
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
       const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
       const rawEntry = trade.rawPrice || parseFloat(trade.entry); // Use stored raw price
-      const vammTradeResult = (trade.currentPrice - rawEntry) * vammDirection * trade.currentDV01;
+      const priceDiff = trade.currentPrice - rawEntry;
+      const vammTradeResult = priceDiff * trade.currentDV01 * vammDirection;
       vammPL += vammTradeResult;
     });
     
@@ -302,14 +304,15 @@ export default function App() {
     
     // Calculate fees
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeRate = protocolRiskIncreases ? 0.0005 : 0.0002; // 5bp or 2bp
+    const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
+    const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
+    const feeInPrice = feeBps / 10000; // Convert bp to price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
-    const fee = feeRate * directionFactor;
-    const executionPrice = unwindPrice + fee;
+    const executionPrice = unwindPrice + (feeInPrice * directionFactor);
     
     // Calculate P&L
-    const plUSD = (executionPrice - trade.entryPrice) * (trade.type === 'pay' ? 1 : -1) * trade.currentDV01;
-    const feeAmount = Math.abs(fee * trade.currentDV01);
+    const priceDiff = executionPrice - trade.entryPrice;
+    const plUSD = priceDiff * trade.currentDV01 * (trade.type === 'pay' ? 1 : -1);
     const netReturn = trade.collateral + plUSD - feeAmount;
     
     setPendingUnwind({
@@ -320,7 +323,7 @@ export default function App() {
       pl: plUSD.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
-      feeRate: (feeRate * 10000).toFixed(0)
+      feeRate: feeBps.toString() // Show actual basis points
     });
   };
 
@@ -415,14 +418,14 @@ export default function App() {
 
     const rawPrice = baseAPY + k * midpointOI;
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeRate = protocolRiskIncreases ? 0.05 : 0.02;
+    const feeRate = protocolRiskIncreases ? 0.0005 : 0.0002; // 5bp or 2bp in decimal
     const fee = feeRate * directionFactor;
     const finalPrice = rawPrice + fee;
 
     setPendingTrade({
       type,
       finalPrice: finalPrice.toFixed(4),
-      feeRate,
+      feeRate: protocolRiskIncreases ? 0.05 : 0.02, // Keep for display
       rawPrice: rawPrice.toFixed(4),
       directionFactor,
       preOI,
@@ -852,18 +855,12 @@ export default function App() {
                         {trade.txSignature || 'Simulated'}
                       </td>
                       <td>
-                        <div style={{ textAlign: 'center' }}>
-                          <span style={{ 
-                            color: isRisky ? '#ef4444' : '#22c55e', 
-                            fontWeight: 'bold',
-                            display: 'block'
-                          }}>
-                            {isRisky ? 'RISKY' : 'Safe'}
-                          </span>
-                          <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                            {bpsFromLiquidation > 0 ? `${bpsFromLiquidation.toFixed(0)}bp away` : 'N/A'}
-                          </span>
-                        </div>
+                        <span style={{ 
+                          color: isRisky ? '#ef4444' : '#22c55e', 
+                          fontWeight: 'bold'
+                        }}>
+                          {isRisky ? 'RISKY' : 'Safe'}
+                        </span>
                       </td>
                       <td>
                         <button 
