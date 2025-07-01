@@ -34,7 +34,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("Swap");
   const [tradeHistory, setTradeHistory] = useState([]);
   const [pendingUnwind, setPendingUnwind] = useState(null);
-  const [totalFeesCollected, setTotalFeesCollected] = useState(0); // ADD THIS LINE
+  const [totalFeesCollected, setTotalFeesCollected] = useState(0);
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -153,7 +153,7 @@ export default function App() {
     }
   };
 
-  // Update P&L calculations and check for liquidations
+  // Update P&L calculations and check for liquidations - FIXED
   useEffect(() => {
     setTradesByMarket(prev => {
       const updated = { ...prev };
@@ -161,7 +161,8 @@ export default function App() {
       
       Object.keys(updated).forEach(mkt => {
         if (updated[mkt]) {
-          updated[mkt] = updated[mkt].filter(trade => {
+          // First update all trades with current P&L
+          updated[mkt] = updated[mkt].map(trade => {
             const updatedTrade = { ...trade };
             updatedTrade.currentDay = currentDay;
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
@@ -178,21 +179,25 @@ export default function App() {
             updatedTrade.pnl = plUSD;
             console.log('Stored P&L:', updatedTrade.pl);
 
+            return updatedTrade;
+          });
+
+          // Then filter out liquidated positions
+          updated[mkt] = updated[mkt].filter(trade => {
             // Check for liquidation: only if P&L is negative and exceeds margin
-            if (plUSD < 0 && Math.abs(plUSD) > trade.collateral) {
+            if (trade.pnl < 0 && Math.abs(trade.pnl) > trade.collateral) {
               // Position is liquidated
               liquidatedPositions.push({
                 market: mkt,
-                trade: updatedTrade,
-                liquidationPrice: updatedTrade.currentPrice
+                trade: trade,
+                liquidationPrice: trade.currentPrice
               });
               
               // Don't include this trade in the updated array (it's liquidated)
               return false;
             }
-            
-            return updatedTrade;
-          }).filter(Boolean); // Remove any undefined entries
+            return true;
+          });
         }
       });
       
@@ -262,23 +267,23 @@ export default function App() {
 
   // Calculate vAMM P&L and Protocol P&L
   const calculateProtocolMetrics = () => {
-  let vammPL = 0;
-  
-  // Get all trades from all markets (for vAMM P&L only)
-  const allTrades = Object.values(tradesByMarket).flat();
-  allTrades.forEach(trade => {
-    // vAMM P&L calculation only
-    const vammDirection = trade.type === 'pay' ? -1 : 1;
-    const rawEntry = trade.rawPrice;
-    const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-    const priceDiff = currentLivePrice - rawEntry;
-    const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
-    vammPL += vammTradeResult;
-  });
+    let vammPL = 0;
+    
+    // Get all trades from all markets (for vAMM P&L only)
+    const allTrades = Object.values(tradesByMarket).flat();
+    allTrades.forEach(trade => {
+      // vAMM P&L calculation only
+      const vammDirection = trade.type === 'pay' ? -1 : 1;
+      const rawEntry = trade.rawPrice;
+      const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+      const priceDiff = currentLivePrice - rawEntry;
+      const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
+      vammPL += vammTradeResult;
+    });
     console.log('Total fees collected:', totalFeesCollected);
-  // Use cumulative fees instead of calculating from open trades
-  return { vammPL, protocolPL: totalFeesCollected };
-};
+    // Use cumulative fees instead of calculating from open trades
+    return { vammPL, protocolPL: totalFeesCollected };
+  };
 
   // Unwind function
   const requestUnwind = (tradeIndex) => {
@@ -305,9 +310,7 @@ export default function App() {
     // Calculate fees
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
-    const feeAmount = currentDV01 * feeBps; // DV01 * basis points
-    console.log('Adding fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
-    setTotalFeesCollected(prev => prev + feeAmount);
+    const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
     const feeInPrice = feeBps / 100; // Convert bp to decimal for price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
     const executionPrice = unwindPrice + (feeInPrice * directionFactor);
@@ -331,6 +334,12 @@ export default function App() {
 
   const confirmUnwind = () => {
     const { tradeIndex, trade, executionPrice, pl, netReturn } = pendingUnwind;
+    
+    // Add unwind fee to total
+    const feeBps = trade.type === 'pay' ? 2 : 5; // Opposite fees for unwind
+    const feeAmount = trade.currentDV01 * feeBps;
+    console.log('Adding unwind fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
+    setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
     setTradeHistory(prev => [...prev, {
@@ -502,6 +511,12 @@ export default function App() {
         rawPrice: parseFloat(pendingTrade.rawPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
+
+      // Add trade fee to total
+      const feeAmountBps = type === 'pay' ? 5 : 2;
+      const feeAmount = currentDv01 * feeAmountBps;
+      console.log('Adding trade fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
+      setTotalFeesCollected(prev => prev + feeAmount);
 
       setTradesByMarket(prev => ({
         ...prev,
