@@ -36,7 +36,6 @@ export default function App() {
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
   const [totalVammPL, setTotalVammPL] = useState(0);
-  const [liquidatedPositions, setLiquidatedPositions] = useState([]); // Track positions taken over from liquidations
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -181,9 +180,6 @@ export default function App() {
 
             return updatedTrade;
           });
-          
-          console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
-          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
 
           // Then filter out liquidated positions
           updated[mkt] = updated[mkt].filter(trade => {
@@ -238,15 +234,8 @@ export default function App() {
             };
           });
           
-          // Add the liquidated position as a new vAMM position starting from liquidation price
-          setLiquidatedPositions(prev => [...prev, {
-            market: mkt,
-            type: trade.type, // vAMM takes over the SAME position as the user had
-            dv01: trade.currentDV01,
-            entryPrice: liquidationPrice, // vAMM enters at liquidation price
-            entryDay: currentDay,
-            id: `liquidated_${Date.now()}_${Math.random()}` // unique ID
-          }]);
+          console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
+          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
         });
       }
       
@@ -296,17 +285,7 @@ export default function App() {
       openVammPL += vammTradeResult;
     });
     
-    // Calculate P&L from liquidated positions that vAMM took over
-    liquidatedPositions.forEach(liqPos => {
-      const vammDirection = liqPos.type === 'pay' ? 1 : -1; // vAMM took over SAME direction as user
-      const currentLivePrice = lastPriceByMarket[liqPos.market] || marketSettings[liqPos.market].apy;
-      const priceDiff = currentLivePrice - liqPos.entryPrice;
-      const currentDV01 = calculateCurrentDv01(liqPos.dv01, currentDay - liqPos.entryDay);
-      const liqVammResult = priceDiff * 100 * currentDV01 * vammDirection;
-      openVammPL += liqVammResult;
-    });
-    
-    // Total vAMM P&L = closed trades P&L + open trades P&L + liquidated positions P&L
+    // Total vAMM P&L = closed trades P&L + open trades P&L
     const totalVammPLCombined = totalVammPL + openVammPL;
     
     // Use cumulative fees and vAMM P&L
