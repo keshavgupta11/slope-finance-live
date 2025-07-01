@@ -156,7 +156,7 @@ export default function App() {
     }
   };
 
-  // Update P&L calculations and check for liquidations - FIXED
+  // Update P&L calculations and check for liquidations
   useEffect(() => {
     setTradesByMarket(prev => {
       const updated = { ...prev };
@@ -170,17 +170,13 @@ export default function App() {
             updatedTrade.currentDay = currentDay;
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
-            console.log('Current price for', mkt, ':', updatedTrade.currentPrice);
 
             const directionFactor = trade.type === 'pay' ? 1 : -1;
-            // Fixed P&L calculation: (live_price - entry_price) * 100 * current_dv01 * direction
             const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
             const plUSD = priceDiff * 100 * updatedTrade.currentDV01 * directionFactor;
-            console.log('Price diff:', priceDiff, 'P&L:', plUSD);
 
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
-            console.log('Stored P&L:', updatedTrade.pl);
 
             return updatedTrade;
           });
@@ -207,6 +203,14 @@ export default function App() {
       // Process liquidations
       if (liquidatedPositions.length > 0) {
         liquidatedPositions.forEach(({ market: mkt, trade, liquidationPrice }) => {
+          // Calculate vAMM P&L from CLOSING its original hedge position at liquidation price
+          const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position
+          const rawEntry = trade.rawPrice;
+          const priceDiff = liquidationPrice - rawEntry;
+          const liquidatedVammPL = priceDiff * 100 * trade.currentDV01 * vammDirection;
+          console.log('Adding liquidated vAMM P&L (closing hedge) to total:', liquidatedVammPL);
+          setTotalVammPL(prev => prev + liquidatedVammPL);
+          
           // Add to trade history
           setTradeHistory(prevHistory => [...prevHistory, {
             date: new Date().toLocaleDateString(),
@@ -215,31 +219,29 @@ export default function App() {
             entryPrice: trade.entryPrice.toFixed(2),
             exitPrice: liquidationPrice.toFixed(2),
             dv01: trade.currentDV01,
-            finalPL: (-trade.collateral).toFixed(2), // User loses entire margin
+            finalPL: (-trade.collateral).toFixed(2),
             status: 'LIQUIDATED'
           }]);
           
-          // Update protocol risk - protocol takes opposite position
+          // Update protocol risk - vAMM closes its hedge and takes over user's position
           setOiByMarket(prevOI => {
             const currentOI = prevOI[mkt] || 0;
-            const protocolTakesPosition = trade.type === 'pay' ? trade.currentDV01 : -trade.currentDV01;
+            // Remove the original hedge position effect
+            const removeHedgeEffect = trade.type === 'pay' ? -trade.currentDV01 : +trade.currentDV01;
             return {
               ...prevOI,
-              [mkt]: currentOI + protocolTakesPosition
+              [mkt]: currentOI + removeHedgeEffect
             };
           });
           
-          // User loses entire margin - no balance return
           console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
-          
-          // Show liquidation alert
           alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
         });
       }
       
       return updated;
     });
-  }, [currentDay, lastPriceByMarket, marketSettings]);
+  }, [currentDay, lastPriceByMarket, marketSettings, totalVammPL]);
 
   const generateChartData = () => {
     const data = [];
@@ -286,9 +288,6 @@ export default function App() {
     // Total vAMM P&L = closed trades P&L + open trades P&L
     const totalVammPLCombined = totalVammPL + openVammPL;
     
-    console.log('Total fees collected:', totalFeesCollected);
-    console.log('Closed vAMM P&L:', totalVammPL, 'Open vAMM P&L:', openVammPL, 'Total:', totalVammPLCombined);
-    
     // Use cumulative fees and vAMM P&L
     return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
   };
@@ -298,7 +297,6 @@ export default function App() {
     const trade = marketTrades[tradeIndex];
     if (!trade) return;
 
-    const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
     const currentOI = oiByMarket[trade.market] || 0;
     
     // Calculate unwind execution price
@@ -356,8 +354,8 @@ export default function App() {
       pl: plUSD.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
-      feeRate: feeBps.toString(), // Show actual basis points
-      feeBps: feeBps // Store the actual fee basis points for later use
+      feeRate: feeBps.toString(),
+      feeBps: feeBps
     });
   };
 
@@ -370,12 +368,10 @@ export default function App() {
     const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
     const priceDiff = currentLivePrice - rawEntry;
     const finalVammPL = priceDiff * 100 * trade.currentDV01 * vammDirection;
-    console.log('Adding final vAMM P&L to total:', finalVammPL, 'Previous total:', totalVammPL);
     setTotalVammPL(prev => prev + finalVammPL);
     
-    // Add unwind fee to total - use the actual fee basis points calculated for this unwind
-    const feeAmount = trade.currentDV01 * pendingUnwind.feeBps; // Use the feeBps from the unwind calculation
-    console.log('Adding unwind fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
+    // Add unwind fee to total
+    const feeAmount = trade.currentDV01 * pendingUnwind.feeBps;
     setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
@@ -397,10 +393,9 @@ export default function App() {
       return updated;
     });
     
-    // Update protocol OI - when unwinding, reverse the original trade's effect
+    // Update protocol OI
     setOiByMarket(prev => {
       const currentOI = prev[trade.market] || 0;
-      // Reverse the original trade: pay fixed added +DV01, so unwinding subtracts -DV01
       const oiChange = trade.type === 'pay' ? -trade.currentDV01 : +trade.currentDV01;
       return {
         ...prev,
@@ -408,7 +403,7 @@ export default function App() {
       };
     });
     
-    // Update market price to raw price (excluding fees)
+    // Update market price
     const { apy: baseAPY, k } = marketSettings[trade.market];
     const newRawPrice = baseAPY + k * (oiByMarket[trade.market] || 0);
     setLastPriceByMarket(prev => ({
@@ -445,8 +440,8 @@ export default function App() {
       return;
     }
 
-    // Check simulated USDC balance (for demo)
-    const simulatedUSDC = usdcBalance + 5000000; // Add simulated USDC for demo
+    // Check simulated USDC balance
+    const simulatedUSDC = usdcBalance + 5000000;
     if (simulatedUSDC < margin) {
       alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
       return;
@@ -481,7 +476,7 @@ export default function App() {
       const fee = feeInPercentage * directionFactor;
       finalPrice = rawPrice + fee;
     } else {
-      // Risk staying same (absolute value): use midpoint with 5bp fees
+      // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
       rawPrice = baseAPY + k * midpointOI;
       feeBps = 5;
@@ -494,7 +489,7 @@ export default function App() {
     setPendingTrade({
       type,
       finalPrice: finalPrice.toFixed(4),
-      feeRate: feeBps / 100, // Keep for display
+      feeRate: feeBps / 100,
       rawPrice: rawPrice.toFixed(4),
       directionFactor: type === 'pay' ? 1 : -1,
       preOI,
@@ -512,38 +507,33 @@ export default function App() {
   };
 
   const confirmTrade = async () => {
-    const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
+    const { type, finalPrice, rawPrice, preOI, postOI } = pendingTrade;
 
-    const minMargin = currentDv01 * 50; // Changed from 20x to 50x
+    const minMargin = currentDv01 * 50;
     if (margin < minMargin) {
       alert('Margin too low!');
       setPendingTrade(null);
       return;
     }
 
-    // Simulate transaction signing
     try {
       const provider = getProvider();
       if (provider && wallet) {
-        // In a real implementation, you'd create and send a transaction here
         console.log('Simulating transaction for wallet:', wallet.toString());
         
-        // Show loading state
         const confirmBtn = document.querySelector('.confirm-btn');
         if (confirmBtn) {
           confirmBtn.textContent = 'Processing...';
           confirmBtn.disabled = true;
         }
 
-        // Simulate transaction delay
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      // Fixed liquidation price calculation
       const marginBuffer = (margin / currentDv01) / 100;
       const liq = type === 'pay' 
-        ? parseFloat(finalPrice) - marginBuffer  // Fixed: Pay fixed liquidates when price goes DOWN
-        : parseFloat(finalPrice) + marginBuffer; // Fixed: Receive fixed liquidates when price goes UP
+        ? parseFloat(finalPrice) - marginBuffer
+        : parseFloat(finalPrice) + marginBuffer;
 
       const trade = {
         market,
@@ -564,13 +554,12 @@ export default function App() {
         currentDay: currentDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
-        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
+        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
 
       // Add trade fee to total
       const feeAmountBps = type === 'pay' ? 5 : 2;
       const feeAmount = currentDv01 * feeAmountBps;
-      console.log('Adding trade fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
       setTotalFeesCollected(prev => prev + feeAmount);
 
       setTradesByMarket(prev => ({
@@ -585,11 +574,10 @@ export default function App() {
 
       setLastPriceByMarket(prev => ({
         ...prev,
-        [market]: parseFloat(rawPrice)  // Live price excludes fees
+        [market]: parseFloat(rawPrice)
       }));
 
-      // Update simulated USDC balance
-      setUsdcBalance(prev => prev - (margin )); // Simulate using margin
+      setUsdcBalance(prev => prev - margin);
 
       setPendingTrade(null);
       
@@ -622,7 +610,6 @@ export default function App() {
           </nav>
         </div>
         
-        {/* Wallet Connection */}
         {wallet ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
@@ -674,7 +661,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Time to Maturity Control */}
             <div className="input-group">
               <label>
                 <span>Days from Entry: {currentDay}</span>
@@ -851,7 +837,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* vAMM and Protocol P&L */}
             <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
               <h4>Protocol Metrics</h4>
               <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -969,7 +954,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Trade History Section */}
         <div className="positions-section" style={{ marginTop: '2rem' }}>
           <h3>Trade History</h3>
           <div className="positions-table">
