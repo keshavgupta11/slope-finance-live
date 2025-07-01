@@ -35,6 +35,7 @@ export default function App() {
   const [tradeHistory, setTradeHistory] = useState([]);
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
+  const [totalVammPL, setTotalVammPL] = useState(0);
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -267,22 +268,27 @@ export default function App() {
 
   // Calculate vAMM P&L and Protocol P&L
   const calculateProtocolMetrics = () => {
-    let vammPL = 0;
+    let openVammPL = 0;
     
-    // Get all trades from all markets (for vAMM P&L only)
+    // Calculate P&L from currently open trades
     const allTrades = Object.values(tradesByMarket).flat();
     allTrades.forEach(trade => {
-      // vAMM P&L calculation only
       const vammDirection = trade.type === 'pay' ? -1 : 1;
       const rawEntry = trade.rawPrice;
       const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
       const priceDiff = currentLivePrice - rawEntry;
       const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
-      vammPL += vammTradeResult;
+      openVammPL += vammTradeResult;
     });
+    
+    // Total vAMM P&L = closed trades P&L + open trades P&L
+    const totalVammPLCombined = totalVammPL + openVammPL;
+    
     console.log('Total fees collected:', totalFeesCollected);
-    // Use cumulative fees instead of calculating from open trades
-    return { vammPL, protocolPL: totalFeesCollected };
+    console.log('Closed vAMM P&L:', totalVammPL, 'Open vAMM P&L:', openVammPL, 'Total:', totalVammPLCombined);
+    
+    // Use cumulative fees and vAMM P&L
+    return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
   };
 
   // Unwind function
@@ -334,6 +340,15 @@ export default function App() {
 
   const confirmUnwind = () => {
     const { tradeIndex, trade, executionPrice, pl, netReturn } = pendingUnwind;
+    
+    // Calculate final vAMM P&L for this trade and add to total
+    const vammDirection = trade.type === 'pay' ? -1 : 1;
+    const rawEntry = trade.rawPrice;
+    const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+    const priceDiff = currentLivePrice - rawEntry;
+    const finalVammPL = priceDiff * 100 * trade.currentDV01 * vammDirection;
+    console.log('Adding final vAMM P&L to total:', finalVammPL, 'Previous total:', totalVammPL);
+    setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
     const feeBps = trade.type === 'pay' ? 2 : 5; // Opposite fees for unwind
@@ -790,7 +805,7 @@ export default function App() {
                 </div>
                 <div className="stat-card">
                   <div className="stat-label">Fee Revenue</div>
-                  <div className="stat-value">$470,000</div>
+                  <div className="stat-value">$3,241</div>
                   <div className="stat-change positive">+15.7%</div>
                 </div>
               </div>
