@@ -181,10 +181,6 @@ export default function App() {
 
             return updatedTrade;
           });
-          
-          console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
-          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
-
           // Then filter out liquidated positions
           updated[mkt] = updated[mkt].filter(trade => {
             // Check for liquidation: only if P&L is negative and exceeds margin
@@ -236,6 +232,15 @@ export default function App() {
               ...prevOI,
               [mkt]: currentOI + removeHedgeEffect
             };
+          });
+          
+          // Store liquidated position info for ongoing P&L calculation
+          if (!window.liquidatedPositions) window.liquidatedPositions = [];
+          window.liquidatedPositions.push({
+            market: mkt,
+            type: trade.type, // vAMM takes over SAME position as user
+            dv01: trade.currentDV01,
+            entryPrice: liquidationPrice
           });
           
           // Add ongoing P&L from the liquidated position that vAMM took over
