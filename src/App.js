@@ -378,6 +378,9 @@ export default function App() {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
+      // Calculate fees for this trade
+      const feeAmount = currentDv01 * pendingTrade.feeRate * 100;
+
       const marginBuffer = (marginRequired / currentDv01) / 100;
       const liq = type === 'pay' 
         ? parseFloat(finalPrice) - marginBuffer
@@ -421,11 +424,30 @@ export default function App() {
         [market]: parseFloat(rawPrice)
       }));
 
-      setUsdcBalance(prev => prev - marginRequired);
+      // Handle margin and balance updates based on netting
+      if (isNettingTrade) {
+        const currentNetPos = netPositions[market];
+        const newNetSize = Math.abs(currentNetPos.netDV01 - (type === 'pay' ? currentDv01 : -currentDv01));
+        
+        if (newNetSize === 0) {
+          // Complete netting - return all margin except fees and current P&L
+          const currentNetPL = currentNetPos.netPL;
+          const marginToReturn = currentNetPos.allocatedMargin - feeAmount + currentNetPL;
+          setUsdcBalance(prev => prev + marginToReturn - feeAmount); // Only deduct new fees
+        } else {
+          // Partial netting - return excess margin
+          const newMarginRequired = newNetSize * 20;
+          const excessMargin = currentNetPos.allocatedMargin - newMarginRequired;
+          setUsdcBalance(prev => prev + excessMargin - feeAmount);
+        }
+      } else {
+        // New position - deduct full margin requirement
+        setUsdcBalance(prev => prev - marginRequired);
+      }
 
       setPendingTrade(null);
       
-      const nettingMessage = isNettingTrade ? " (Position netting applied - reduced margin required)" : "";
+      const nettingMessage = isNettingTrade ? " (Position netting applied - margin adjusted)" : "";
       alert(`Trade executed successfully!${nettingMessage} ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
     } catch (error) {
       console.error('Transaction failed:', error);
