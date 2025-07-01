@@ -271,8 +271,10 @@ export default function App() {
       
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
       const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
-      const rawEntry = trade.rawPrice || parseFloat(trade.entry); // Use stored raw price
-      const priceDiff = trade.currentPrice - rawEntry;
+      // Fixed:
+      const rawEntry = trade.rawPrice; // vAMM entered at raw price (no fees)
+      const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy; // Live price (no fees)
+      const priceDiff = currentLivePrice - rawEntry;
       const vammTradeResult = priceDiff * trade.currentDV01 * vammDirection;
       vammPL += vammTradeResult;
     });
@@ -495,6 +497,7 @@ export default function App() {
         currentDay: currentDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
+        entryPrice: parseFloat(finalPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
 
@@ -509,9 +512,9 @@ export default function App() {
       }));
 
       setLastPriceByMarket(prev => ({
-        ...prev,
-        [market]: parseFloat(finalPrice)  // ✅ Using execution price (including fees)
-}       ));
+      ...prev,
+      [market]: parseFloat(rawPrice)  // ✅ excludes fees
+      }));
 
       // Update simulated USDC balance
       setUsdcBalance(prev => prev - (margin )); // Simulate using margin
