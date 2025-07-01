@@ -790,7 +790,7 @@ export default function App() {
                 </div>
                 <div className="stat-card">
                   <div className="stat-label">Fee Revenue</div>
-                  <div className="stat-value">$3,241</div>
+                  <div className="stat-value">$470,000</div>
                   <div className="stat-change positive">+15.7%</div>
                 </div>
               </div>
