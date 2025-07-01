@@ -397,10 +397,11 @@ export default function App() {
       return updated;
     });
     
-    // Update protocol OI
+    // Update protocol OI - when unwinding, reverse the original trade's effect
     setOiByMarket(prev => {
       const currentOI = prev[trade.market] || 0;
-      const oiChange = trade.type === 'pay' ? -trade.currentDV01 : trade.currentDV01;
+      // Reverse the original trade: pay fixed added +DV01, so unwinding subtracts -DV01
+      const oiChange = trade.type === 'pay' ? -trade.currentDV01 : +trade.currentDV01;
       return {
         ...prev,
         [trade.market]: currentOI + oiChange
