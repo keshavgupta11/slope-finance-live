@@ -409,10 +409,42 @@ export default function App() {
         isNettingTrade
       };
 
-      setTradesByMarket(prev => ({
-        ...prev,
-        [market]: [...(prev[market] || []), trade]
-      }));
+      // First add the trade to calculate the new net position
+      const newTradesByMarket = {
+        ...tradesByMarket,
+        [market]: [...(tradesByMarket[market] || []), trade]
+      };
+
+      // Calculate what the net position will be after this trade
+      const newNetPositions = {};
+      Object.keys(newTradesByMarket).forEach(mkt => {
+        const trades = newTradesByMarket[mkt] || [];
+        let netPayDV01 = 0;
+        let netReceiveDV01 = 0;
+        let totalMarginAllocated = 0;
+        
+        trades.forEach(t => {
+          totalMarginAllocated += t.collateral;
+          if (t.type === 'pay') {
+            netPayDV01 += t.currentDV01;
+          } else {
+            netReceiveDV01 += t.currentDV01;
+          }
+        });
+
+        const netDV01 = netPayDV01 - netReceiveDV01;
+        const netSize = Math.abs(netDV01);
+        const requiredMargin = netSize * 20;
+        
+        newNetPositions[mkt] = {
+          netSize,
+          requiredMargin,
+          allocatedMargin: totalMarginAllocated,
+          excessMargin: Math.max(0, totalMarginAllocated - requiredMargin)
+        };
+      });
+
+      setTradesByMarket(newTradesByMarket);
 
       setOiByMarket(prev => ({
         ...prev,
@@ -424,30 +456,29 @@ export default function App() {
         [market]: parseFloat(rawPrice)
       }));
 
-      // Handle margin and balance updates based on netting
+      // Handle margin and balance updates
       if (isNettingTrade) {
         const currentNetPos = netPositions[market];
-        const newNetSize = Math.abs(currentNetPos.netDV01 - (type === 'pay' ? currentDv01 : -currentDv01));
+        const newNetPos = newNetPositions[market];
         
-        if (newNetSize === 0) {
-          // Complete netting - return all margin except fees and current P&L
-          const currentNetPL = currentNetPos.netPL;
-          const marginToReturn = currentNetPos.allocatedMargin - feeAmount + currentNetPL;
-          setUsdcBalance(prev => prev + marginToReturn - feeAmount); // Only deduct new fees
+        if (newNetPos.netSize === 0) {
+          // Complete netting - return ALL allocated margin except fees
+          // User gets back all their margin minus just the fees they paid
+          const totalMarginToReturn = currentNetPos.allocatedMargin;
+          setUsdcBalance(prev => prev + totalMarginToReturn - feeAmount);
         } else {
-          // Partial netting - return excess margin
-          const newMarginRequired = newNetSize * 20;
-          const excessMargin = currentNetPos.allocatedMargin - newMarginRequired;
-          setUsdcBalance(prev => prev + excessMargin - feeAmount);
+          // Partial netting - return the excess margin
+          const marginToReturn = newNetPos.excessMargin;
+          setUsdcBalance(prev => prev + marginToReturn - feeAmount);
         }
       } else {
-        // New position - deduct full margin requirement
-        setUsdcBalance(prev => prev - marginRequired);
+        // New position - deduct margin requirement and fees
+        setUsdcBalance(prev => prev - marginRequired - feeAmount);
       }
 
       setPendingTrade(null);
       
-      const nettingMessage = isNettingTrade ? " (Position netting applied - margin adjusted)" : "";
+      const nettingMessage = isNettingTrade ? " (Position netting applied - margin returned)" : "";
       alert(`Trade executed successfully!${nettingMessage} ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
     } catch (error) {
       console.error('Transaction failed:', error);
