@@ -312,8 +312,8 @@ export default function App() {
       const vammDirection = liqPos.type === 'pay' ? 1 : -1; // vAMM took over SAME direction as user
       const currentLivePrice = lastPriceByMarket[liqPos.market] || marketSettings[liqPos.market].apy;
       const priceDiff = currentLivePrice - liqPos.entryPrice;
-      const currentDV01 = calculateCurrentDv01(liqPos.dv01, currentDay - liqPos.entryDay);
-      const liqVammResult = priceDiff * 100 * currentDV01 * vammDirection;
+      // Use the original DV01 without time decay for simplicity
+      const liqVammResult = priceDiff * 100 * liqPos.dv01 * vammDirection;
       openVammPL += liqVammResult;
     });
     
