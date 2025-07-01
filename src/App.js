@@ -313,26 +313,30 @@ export default function App() {
     const { apy: baseAPY, k } = marketSettings[trade.market];
     
     if (postRisk > preRisk) {
-      // Risk increasing: use post OI directly
+      // Risk increasing: use post OI directly - this IS the final price (includes fees)
       unwindPrice = baseAPY + k * postOI;
-      feeBps = 5;
+      feeBps = 5; // For display only
+      executionPrice = unwindPrice; // No additional fees applied
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
       unwindPrice = baseAPY + k * midpointOI;
       feeBps = 2;
+      const feeInPrice = feeBps / 100;
+      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
+      executionPrice = unwindPrice + (feeInPrice * directionFactor);
     } else {
       // Risk staying same (absolute value): use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
       unwindPrice = baseAPY + k * midpointOI;
       feeBps = 5;
+      const feeInPrice = feeBps / 100;
+      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
+      executionPrice = unwindPrice + (feeInPrice * directionFactor);
     }
     
     // Calculate fees
     const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
-    const feeInPrice = feeBps / 100; // Convert bp to decimal for price adjustment
-    const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
-    const executionPrice = unwindPrice + (feeInPrice * directionFactor);
     
     // Calculate P&L
     const priceDiff = executionPrice - trade.entryPrice;
@@ -453,32 +457,36 @@ export default function App() {
     let feeBps;
     
     if (postRisk > preRisk) {
-      // Risk increasing: use post OI directly
+      // Risk increasing: use post OI directly - this IS the final price (includes fees)
       rawPrice = baseAPY + k * postOI;
-      feeBps = 5;
+      feeBps = 5; // For display only
+      finalPrice = rawPrice; // No additional fees applied
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
       rawPrice = baseAPY + k * midpointOI;
       feeBps = 2;
+      const directionFactor = type === 'pay' ? 1 : -1;
+      const feeInPercentage = feeBps / 100;
+      const fee = feeInPercentage * directionFactor;
+      finalPrice = rawPrice + fee;
     } else {
       // Risk staying same (absolute value): use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
       rawPrice = baseAPY + k * midpointOI;
       feeBps = 5;
+      const directionFactor = type === 'pay' ? 1 : -1;
+      const feeInPercentage = feeBps / 100;
+      const fee = feeInPercentage * directionFactor;
+      finalPrice = rawPrice + fee;
     }
-    
-    const directionFactor = type === 'pay' ? 1 : -1;
-    const feeInPercentage = feeBps / 100; // Convert bp to percentage points
-    const fee = feeInPercentage * directionFactor;
-    const finalPrice = rawPrice + fee;
 
     setPendingTrade({
       type,
       finalPrice: finalPrice.toFixed(4),
       feeRate: feeBps / 100, // Keep for display
       rawPrice: rawPrice.toFixed(4),
-      directionFactor,
+      directionFactor: type === 'pay' ? 1 : -1,
       preOI,
       postOI,
     });
