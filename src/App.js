@@ -34,6 +34,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("Swap");
   const [tradeHistory, setTradeHistory] = useState([]);
   const [pendingUnwind, setPendingUnwind] = useState(null);
+  const [totalFeesCollected, setTotalFeesCollected] = useState(0); // ADD THIS LINE
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -261,28 +262,23 @@ export default function App() {
 
   // Calculate vAMM P&L and Protocol P&L
   const calculateProtocolMetrics = () => {
-    let vammPL = 0;
-    let protocolPL = 0;
-    
-    // Get all trades from all markets
-    const allTrades = Object.values(tradesByMarket).flat();
-    allTrades.forEach(trade => {
-      // Protocol P&L: All fees collected
-      const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
-      const feeAmount = trade.currentDV01 * feeAmountBps; // DV01 * basis points
-      protocolPL += feeAmount;
-      
-      // vAMM P&L: Opposite side of user trade, using raw price (before fees)
-      const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
-      const rawEntry = trade.rawPrice; // vAMM entered at raw price (no fees)
-      const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy; // Live price (no fees)
-      const priceDiff = currentLivePrice - rawEntry;
-      const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
-      vammPL += vammTradeResult;
-    });
-    
-    return { vammPL, protocolPL };
-  };
+  let vammPL = 0;
+  
+  // Get all trades from all markets (for vAMM P&L only)
+  const allTrades = Object.values(tradesByMarket).flat();
+  allTrades.forEach(trade => {
+    // vAMM P&L calculation only
+    const vammDirection = trade.type === 'pay' ? -1 : 1;
+    const rawEntry = trade.rawPrice;
+    const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+    const priceDiff = currentLivePrice - rawEntry;
+    const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
+    vammPL += vammTradeResult;
+  });
+  
+  // Use cumulative fees instead of calculating from open trades
+  return { vammPL, protocolPL: totalFeesCollected };
+};
 
   // Unwind function
   const requestUnwind = (tradeIndex) => {
@@ -310,7 +306,8 @@ export default function App() {
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
     const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
-    const feeInPrice = feeBps / 10000; // Convert bp to decimal for price adjustment
+    setTotalFeesCollected(prev => prev + feeAmount);
+    const feeInPrice = feeBps / 100; // Convert bp to decimal for price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
     const executionPrice = unwindPrice + (feeInPrice * directionFactor);
     
