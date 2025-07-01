@@ -32,6 +32,8 @@ export default function App() {
   const [pendingTrade, setPendingTrade] = useState(null);
   const [tradeType, setTradeType] = useState('pay');
   const [activeTab, setActiveTab] = useState("Swap");
+  const [tradeHistory, setTradeHistory] = useState([]);
+  const [pendingUnwind, setPendingUnwind] = useState(null);
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -134,6 +136,22 @@ export default function App() {
     };
   }, []);
 
+  // Calculate liquidation risk
+  const calculateLiquidationRisk = (trade) => {
+    const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+    const liquidationPrice = parseFloat(trade.liquidationPrice);
+    
+    if (trade.type === 'pay') {
+      // Pay fixed: liquidation when price goes above liquidation price
+      const bpsFromLiquidation = (liquidationPrice - currentPrice) * 100;
+      return bpsFromLiquidation;
+    } else {
+      // Receive fixed: liquidation when price goes below liquidation price
+      const bpsFromLiquidation = (currentPrice - liquidationPrice) * 100;
+      return bpsFromLiquidation;
+    }
+  };
+
   // Update P&L calculations and check for liquidations
   useEffect(() => {
     setTradesByMarket(prev => {
@@ -149,7 +167,8 @@ export default function App() {
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
             
             const directionFactor = trade.type === 'pay' ? 1 : -1;
-            const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01 * 100;
+            // Fixed P&L calculation - removed * 100 multiplier
+            const plUSD = (updatedTrade.currentPrice - trade.entryPrice) * directionFactor * updatedTrade.currentDV01;
             
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
@@ -175,6 +194,18 @@ export default function App() {
       // Process liquidations
       if (liquidatedPositions.length > 0) {
         liquidatedPositions.forEach(({ market: mkt, trade, liquidationPrice }) => {
+          // Add to trade history
+          setTradeHistory(prevHistory => [...prevHistory, {
+            date: new Date().toLocaleDateString(),
+            market: mkt,
+            direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
+            entryPrice: trade.entryPrice.toFixed(2),
+            exitPrice: liquidationPrice.toFixed(2),
+            dv01: trade.currentDV01,
+            finalPL: (-trade.collateral).toFixed(2), // User loses entire margin
+            status: 'LIQUIDATED'
+          }]);
+          
           // Update protocol risk - protocol takes opposite position
           setOiByMarket(prevOI => {
             const currentOI = prevOI[mkt] || 0;
@@ -230,8 +261,8 @@ export default function App() {
     let protocolPL = 0;
     
     // Get all trades from all markets
-      const allTrades = Object.values(tradesByMarket).flat();
-      allTrades.forEach(trade => {
+    const allTrades = Object.values(tradesByMarket).flat();
+    allTrades.forEach(trade => {
       // Protocol P&L: All fees collected
       const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
       const feeAmount = trade.currentDV01 * feeAmountBps; // Convert to dollar amount
@@ -239,13 +270,103 @@ export default function App() {
       
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
       const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
-      const feeAdjustment = (trade.type === 'pay' ? 5 : 2) / 10000; // Fee in decimal
-      const rawEntry = trade.rawPrice || parseFloat(trade.entry); // Use stored raw price // Remove fee to get raw price
-      const vammTradeResult = (trade.currentPrice - rawEntry) * vammDirection * trade.currentDV01 * 100;
+      const rawEntry = trade.rawPrice || parseFloat(trade.entry); // Use stored raw price
+      const vammTradeResult = (trade.currentPrice - rawEntry) * vammDirection * trade.currentDV01;
       vammPL += vammTradeResult;
     });
     
     return { vammPL, protocolPL };
+  };
+
+  // Unwind function
+  const requestUnwind = (tradeIndex) => {
+    const trade = marketTrades[tradeIndex];
+    if (!trade) return;
+
+    const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+    const currentOI = oiByMarket[trade.market] || 0;
+    
+    // Calculate unwind execution price
+    const preOI = currentOI;
+    const postOI = trade.type === 'pay' ? currentOI - trade.currentDV01 : currentOI + trade.currentDV01;
+    
+    let midpointOI;
+    if (Math.abs(postOI) > Math.abs(preOI)) {
+      midpointOI = preOI + postOI;
+    } else {
+      midpointOI = (preOI + postOI) / 2;
+    }
+    
+    const { apy: baseAPY, k } = marketSettings[trade.market];
+    const unwindPrice = baseAPY + k * midpointOI;
+    
+    // Calculate fees
+    const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
+    const feeRate = protocolRiskIncreases ? 0.0005 : 0.0002; // 5bp or 2bp
+    const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
+    const fee = feeRate * directionFactor;
+    const executionPrice = unwindPrice + fee;
+    
+    // Calculate P&L
+    const plUSD = (executionPrice - trade.entryPrice) * (trade.type === 'pay' ? 1 : -1) * trade.currentDV01;
+    const feeAmount = Math.abs(fee * trade.currentDV01);
+    const netReturn = trade.collateral + plUSD - feeAmount;
+    
+    setPendingUnwind({
+      tradeIndex,
+      trade,
+      executionPrice: executionPrice.toFixed(4),
+      entryPrice: trade.entryPrice.toFixed(4),
+      pl: plUSD.toFixed(2),
+      feeAmount: feeAmount.toFixed(2),
+      netReturn: netReturn.toFixed(2),
+      feeRate: (feeRate * 10000).toFixed(0)
+    });
+  };
+
+  const confirmUnwind = () => {
+    const { tradeIndex, trade, executionPrice, pl, netReturn } = pendingUnwind;
+    
+    // Add to trade history
+    setTradeHistory(prev => [...prev, {
+      date: new Date().toLocaleDateString(),
+      market: trade.market,
+      direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
+      entryPrice: trade.entryPrice.toFixed(2),
+      exitPrice: parseFloat(executionPrice).toFixed(2),
+      dv01: trade.currentDV01,
+      finalPL: pl,
+      status: 'CLOSED'
+    }]);
+    
+    // Remove position from trades
+    setTradesByMarket(prev => {
+      const updated = { ...prev };
+      updated[trade.market] = updated[trade.market].filter((_, i) => i !== tradeIndex);
+      return updated;
+    });
+    
+    // Update protocol OI
+    setOiByMarket(prev => {
+      const currentOI = prev[trade.market] || 0;
+      const oiChange = trade.type === 'pay' ? -trade.currentDV01 : trade.currentDV01;
+      return {
+        ...prev,
+        [trade.market]: currentOI + oiChange
+      };
+    });
+    
+    // Update market price
+    setLastPriceByMarket(prev => ({
+      ...prev,
+      [trade.market]: parseFloat(executionPrice)
+    }));
+    
+    // Return funds to user
+    setUsdcBalance(prev => prev + parseFloat(netReturn));
+    
+    setPendingUnwind(null);
+    alert(`Position unwound successfully! Received: $${netReturn}`);
   };
 
   const chartData = useMemo(() => generateChartData(), [market]);
@@ -348,8 +469,8 @@ export default function App() {
 
       const marginBuffer = (margin / currentDv01) / 100;
       const liq = type === 'pay' 
-        ? parseFloat(finalPrice) - marginBuffer
-        : parseFloat(finalPrice) + marginBuffer;
+        ? parseFloat(finalPrice) + marginBuffer
+        : parseFloat(finalPrice) - marginBuffer;
 
       const trade = {
         market,
@@ -695,7 +816,7 @@ export default function App() {
                 <tr>
                   <th>Market</th>
                   <th>Direction</th>
-                  <th>P&L</th>
+                  <th>Live P&L</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
@@ -704,45 +825,118 @@ export default function App() {
                   <th>Days Held</th>
                   <th>Tx Hash</th>
                   <th>Liquidation Risk</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {marketTrades.length > 0 ? marketTrades.map((trade, i) => (
+                {marketTrades.length > 0 ? marketTrades.map((trade, i) => {
+                  const bpsFromLiquidation = calculateLiquidationRisk(trade);
+                  const isRisky = bpsFromLiquidation <= 5 && bpsFromLiquidation > 0;
+                  
+                  return (
+                    <tr key={i}>
+                      <td>{trade.market}</td>
+                      <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
+                        {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                      </td>
+                      <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
+                        {trade.pnl >= 0 ? '+' : ''}${trade.pl}
+                      </td>
+                      <td>{trade.entryPrice.toFixed(2)}%</td>
+                      <td>{trade.currentPrice.toFixed(2)}%</td>
+                      <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
+                      <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                      <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                      <td>{currentDay - (trade.entryDay || 0)}</td>
+                      <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                        {trade.txSignature || 'Simulated'}
+                      </td>
+                      <td>
+                        <div style={{ textAlign: 'center' }}>
+                          <span style={{ 
+                            color: isRisky ? '#ef4444' : '#22c55e', 
+                            fontWeight: 'bold',
+                            display: 'block'
+                          }}>
+                            {isRisky ? 'RISKY' : 'Safe'}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                            {bpsFromLiquidation > 0 ? `${bpsFromLiquidation.toFixed(0)}bp away` : 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <button 
+                          onClick={() => requestUnwind(i)}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.875rem',
+                            cursor: 'pointer',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Unwind
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan="12" className="no-positions">No positions yet</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Trade History Section */}
+        <div className="positions-section" style={{ marginTop: '2rem' }}>
+          <h3>Trade History</h3>
+          <div className="positions-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Market</th>
+                  <th>Direction</th>
+                  <th>Entry Price</th>
+                  <th>Exit Price</th>
+                  <th>DV01</th>
+                  <th>Final P&L</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tradeHistory.length > 0 ? tradeHistory.map((trade, i) => (
                   <tr key={i}>
+                    <td>{trade.date}</td>
                     <td>{trade.market}</td>
-                    <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                      {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                    </td>
-                    <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
-                      {trade.pnl >= 0 ? '+' : ''}${trade.pl}
+                    <td className={trade.direction === 'Pay Fixed' ? 'pay-fixed' : 'receive-fixed'}>
+                      {trade.direction}
                     </td>
                     <td>{trade.entryPrice}%</td>
-                    <td>{trade.currentPrice}%</td>
-                    <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
-                    <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
-                    <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
-                    <td>{currentDay - (trade.entryDay || 0)}</td>
-                    <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                      {trade.txSignature || 'Simulated'}
+                    <td>{trade.exitPrice}%</td>
+                    <td>${trade.dv01?.toLocaleString()}</td>
+                    <td className={parseFloat(trade.finalPL) >= 0 ? 'profit' : 'loss'}>
+                      {parseFloat(trade.finalPL) >= 0 ? '+' : ''}${trade.finalPL}
                     </td>
                     <td>
-                      {(() => {
-                        const lossRatio = trade.pnl < 0 ? Math.abs(trade.pnl) / trade.collateral : 0;
-                        if (lossRatio > 0.9) {
-                          return <span style={{ color: '#ef4444', fontWeight: 'bold' }}>HIGH RISK</span>;
-                        } else if (lossRatio > 0.7) {
-                          return <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>MEDIUM RISK</span>;
-                        } else if (lossRatio > 0.5) {
-                          return <span style={{ color: '#eab308' }}>Low Risk</span>;
-                        } else {
-                          return <span style={{ color: '#22c55e' }}>Safe</span>;
-                        }
-                      })()}
+                      <span style={{ 
+                        color: trade.status === 'LIQUIDATED' ? '#ef4444' : '#22c55e',
+                        fontWeight: 'bold'
+                      }}>
+                        {trade.status}
+                      </span>
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="11" className="no-positions">No positions yet</td>
+                    <td colSpan="8" className="no-positions">No trade history yet</td>
                   </tr>
                 )}
               </tbody>
@@ -818,8 +1012,8 @@ export default function App() {
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
                   ).toFixed(2)}%
                 </span>
               </div>
@@ -837,6 +1031,48 @@ export default function App() {
             <div className="modal-buttons">
               <button onClick={confirmTrade} className="confirm-btn">Confirm Trade</button>
               <button onClick={() => setPendingTrade(null)} className="cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingUnwind && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Confirm Unwind</h3>
+            <div className="trade-details">
+              <div className="detail-row">
+                <span>Position:</span>
+                <span className="trade-type">{pendingUnwind.trade.type} Fixed</span>
+              </div>
+              <div className="detail-row">
+                <span>Entry Price:</span>
+                <span>{pendingUnwind.entryPrice}%</span>
+              </div>
+              <div className="detail-row">
+                <span>Unwind Price:</span>
+                <span className="execution-price">{pendingUnwind.executionPrice}%</span>
+              </div>
+              <div className="detail-row">
+                <span>P&L:</span>
+                <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
+                  {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${pendingUnwind.pl}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span>Unwind Fee:</span>
+                <span className="fee">{pendingUnwind.feeRate}bp (${pendingUnwind.feeAmount})</span>
+              </div>
+              <div className="detail-row">
+                <span>Net Return:</span>
+                <span className={parseFloat(pendingUnwind.netReturn) >= 0 ? 'profit' : 'loss'}>
+                  ${pendingUnwind.netReturn}
+                </span>
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={confirmUnwind} className="confirm-btn">Confirm Unwind</button>
+              <button onClick={() => setPendingUnwind(null)} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>
