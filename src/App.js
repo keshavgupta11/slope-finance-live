@@ -309,6 +309,7 @@ export default function App() {
     
     let unwindPrice;
     let feeBps;
+    let executionPrice;
     
     const { apy: baseAPY, k } = marketSettings[trade.market];
     
@@ -455,6 +456,7 @@ export default function App() {
     
     let rawPrice;
     let feeBps;
+    let finalPrice;
     
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly - this IS the final price (includes fees)
