@@ -134,13 +134,15 @@ export default function App() {
     };
   }, []);
 
-  // Update P&L calculations
+  // Update P&L calculations and check for liquidations
   useEffect(() => {
     setTradesByMarket(prev => {
       const updated = { ...prev };
+      const liquidatedPositions = [];
+      
       Object.keys(updated).forEach(mkt => {
         if (updated[mkt]) {
-          updated[mkt] = updated[mkt].map(trade => {
+          updated[mkt] = updated[mkt].filter(trade => {
             const updatedTrade = { ...trade };
             updatedTrade.currentDay = currentDay;
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
@@ -152,10 +154,45 @@ export default function App() {
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
             
+            // Check for liquidation: only if P&L is negative and exceeds margin
+            if (plUSD < 0 && Math.abs(plUSD) > trade.collateral) {
+              // Position is liquidated
+              liquidatedPositions.push({
+                market: mkt,
+                trade: updatedTrade,
+                liquidationPrice: updatedTrade.currentPrice
+              });
+              
+              // Don't include this trade in the updated array (it's liquidated)
+              return false;
+            }
+            
             return updatedTrade;
-          });
+          }).filter(Boolean); // Remove any undefined entries
         }
       });
+      
+      // Process liquidations
+      if (liquidatedPositions.length > 0) {
+        liquidatedPositions.forEach(({ market: mkt, trade, liquidationPrice }) => {
+          // Update protocol risk - protocol takes opposite position
+          setOiByMarket(prevOI => {
+            const currentOI = prevOI[mkt] || 0;
+            const protocolTakesPosition = trade.type === 'pay' ? trade.currentDV01 : -trade.currentDV01;
+            return {
+              ...prevOI,
+              [mkt]: currentOI + protocolTakesPosition
+            };
+          });
+          
+          // User loses entire margin - no balance return
+          console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
+          
+          // Show liquidation alert
+          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
+        });
+      }
+      
       return updated;
     });
   }, [currentDay, lastPriceByMarket, marketSettings]);
@@ -666,7 +703,7 @@ export default function App() {
                   <th>Current DV01</th>
                   <th>Days Held</th>
                   <th>Tx Hash</th>
-                  <th>Collateral</th>
+                  <th>Liquidation Risk</th>
                 </tr>
               </thead>
               <tbody>
@@ -688,7 +725,20 @@ export default function App() {
                     <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
                       {trade.txSignature || 'Simulated'}
                     </td>
-                    <td>${trade.collateral.toLocaleString()}</td>
+                    <td>
+                      {(() => {
+                        const lossRatio = trade.pnl < 0 ? Math.abs(trade.pnl) / trade.collateral : 0;
+                        if (lossRatio > 0.9) {
+                          return <span style={{ color: '#ef4444', fontWeight: 'bold' }}>HIGH RISK</span>;
+                        } else if (lossRatio > 0.7) {
+                          return <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>MEDIUM RISK</span>;
+                        } else if (lossRatio > 0.5) {
+                          return <span style={{ color: '#eab308' }}>Low Risk</span>;
+                        } else {
+                          return <span style={{ color: '#22c55e' }}>Safe</span>;
+                        }
+                      })()}
+                    </td>
                   </tr>
                 )) : (
                   <tr>
