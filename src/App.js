@@ -306,7 +306,7 @@ export default function App() {
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
     const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
-    const feeInPrice = feeBps / 10000; // Convert bp to price adjustment
+    const feeInPrice = feeBps / 100; // Convert bp to price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
     const executionPrice = unwindPrice + (feeInPrice * directionFactor);
     
@@ -510,8 +510,8 @@ export default function App() {
 
       setLastPriceByMarket(prev => ({
         ...prev,
-        [market]: parseFloat(rawPrice)
-      }));
+        [market]: parseFloat(finalPrice)  // ✅ Using execution price (including fees)
+}       ));
 
       // Update simulated USDC balance
       setUsdcBalance(prev => prev - (margin )); // Simulate using margin
