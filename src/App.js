@@ -165,15 +165,18 @@ export default function App() {
             updatedTrade.currentDay = currentDay;
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
-            
+            console.log('Current price for', mkt, ':', updatedTrade.currentPrice);
+
             const directionFactor = trade.type === 'pay' ? 1 : -1;
             // Fixed P&L calculation: (live_price - entry_price) * current_dv01 * direction
             const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
             const plUSD = priceDiff * 100 * updatedTrade.currentDV01 * directionFactor;
-            
+            console.log('Price diff:', priceDiff, 'P&L:', plUSD);
+
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
-            
+            console.log('Stored P&L:', updatedTrade.pl);
+
             // Check for liquidation: only if P&L is negative and exceeds margin
             if (plUSD < 0 && Math.abs(plUSD) > trade.collateral) {
               // Position is liquidated
