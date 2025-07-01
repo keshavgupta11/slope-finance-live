@@ -275,7 +275,7 @@ export default function App() {
     const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
     vammPL += vammTradeResult;
   });
-  
+    console.log('Total fees collected:', totalFeesCollected);
   // Use cumulative fees instead of calculating from open trades
   return { vammPL, protocolPL: totalFeesCollected };
 };
@@ -305,7 +305,8 @@ export default function App() {
     // Calculate fees
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
-    const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
+    const feeAmount = currentDV01 * feeBps; // DV01 * basis points
+    console.log('Adding fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
     setTotalFeesCollected(prev => prev + feeAmount);
     const feeInPrice = feeBps / 100; // Convert bp to decimal for price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -314,7 +315,7 @@ export default function App() {
     // Calculate P&L
     const priceDiff = executionPrice - trade.entryPrice;
     const plUSD = priceDiff * 100 * trade.currentDV01 * (trade.type === 'pay' ? 1 : -1);
-    const netReturn = trade.collateral + plUSD - feeAmount;
+    const netReturn = trade.collateral + plUSD;
     
     setPendingUnwind({
       tradeIndex,
