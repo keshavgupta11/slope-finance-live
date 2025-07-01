@@ -168,7 +168,7 @@ export default function App() {
             console.log('Current price for', mkt, ':', updatedTrade.currentPrice);
 
             const directionFactor = trade.type === 'pay' ? 1 : -1;
-            // Fixed P&L calculation: (live_price - entry_price) * current_dv01 * direction
+            // Fixed P&L calculation: (live_price - entry_price) * 100 * current_dv01 * direction
             const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
             const plUSD = priceDiff * 100 * updatedTrade.currentDV01 * directionFactor;
             console.log('Price diff:', priceDiff, 'P&L:', plUSD);
@@ -274,7 +274,6 @@ export default function App() {
       
       // vAMM P&L: Opposite side of user trade, using raw price (before fees)
       const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM takes opposite direction
-      // Fixed:
       const rawEntry = trade.rawPrice; // vAMM entered at raw price (no fees)
       const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy; // Live price (no fees)
       const priceDiff = currentLivePrice - rawEntry;
@@ -311,7 +310,7 @@ export default function App() {
     const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
     const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
     const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
-    const feeInPrice = feeBps / 100; // Convert bp to price adjustment
+    const feeInPrice = feeBps / 10000; // Convert bp to decimal for price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
     const executionPrice = unwindPrice + (feeInPrice * directionFactor);
     
@@ -364,10 +363,12 @@ export default function App() {
       };
     });
     
-    // Update market price
+    // Update market price to raw price (excluding fees)
+    const { apy: baseAPY, k } = marketSettings[trade.market];
+    const newRawPrice = baseAPY + k * (oiByMarket[trade.market] || 0);
     setLastPriceByMarket(prev => ({
       ...prev,
-      [trade.market]: parseFloat(executionPrice)
+      [trade.market]: newRawPrice
     }));
     
     // Return funds to user
@@ -451,7 +452,7 @@ export default function App() {
   const confirmTrade = async () => {
     const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
 
-    const minMargin = currentDv01 * 20;
+    const minMargin = currentDv01 * 50; // Changed from 20x to 50x
     if (margin < minMargin) {
       alert('Margin too low!');
       setPendingTrade(null);
@@ -476,10 +477,11 @@ export default function App() {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
+      // Fixed liquidation price calculation
       const marginBuffer = (margin / currentDv01) / 100;
       const liq = type === 'pay' 
-        ? parseFloat(finalPrice) + marginBuffer
-        : parseFloat(finalPrice) - marginBuffer;
+        ? parseFloat(finalPrice) - marginBuffer  // Fixed: Pay fixed liquidates when price goes DOWN
+        : parseFloat(finalPrice) + marginBuffer; // Fixed: Receive fixed liquidates when price goes UP
 
       const trade = {
         market,
@@ -500,7 +502,6 @@ export default function App() {
         currentDay: currentDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
-        entryPrice: parseFloat(finalPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
 
@@ -515,8 +516,8 @@ export default function App() {
       }));
 
       setLastPriceByMarket(prev => ({
-      ...prev,
-      [market]: parseFloat(rawPrice)  // ✅ excludes fees
+        ...prev,
+        [market]: parseFloat(rawPrice)  // Live price excludes fees
       }));
 
       // Update simulated USDC balance
@@ -661,7 +662,7 @@ export default function App() {
 
               <div className="min-margin">
                 <div>Min margin required:</div>
-                <div className="min-margin-value">${(currentDv01 * 20).toLocaleString()}</div>
+                <div className="min-margin-value">${(currentDv01 * 50).toLocaleString()}</div>
               </div>
 
               <div className="trade-buttons">
@@ -681,10 +682,10 @@ export default function App() {
 
               <button 
                 onClick={() => requestTrade(tradeType)}
-                disabled={!wallet || margin < currentDv01 * 20}
-                className={`enter-btn ${!wallet || margin < currentDv01 * 20 ? 'disabled' : ''}`}
+                disabled={!wallet || margin < currentDv01 * 50}
+                className={`enter-btn ${!wallet || margin < currentDv01 * 50 ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 50 ? 'Margin too low' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
@@ -830,6 +831,7 @@ export default function App() {
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
+                  <th>Margin Posted</th>
                   <th>Base DV01</th>
                   <th>Current DV01</th>
                   <th>Days Held</th>
@@ -855,6 +857,7 @@ export default function App() {
                       <td>{trade.entryPrice.toFixed(2)}%</td>
                       <td>{trade.currentPrice.toFixed(2)}%</td>
                       <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
+                      <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                       <td>{currentDay - (trade.entryDay || 0)}</td>
@@ -890,7 +893,7 @@ export default function App() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="12" className="no-positions">No positions yet</td>
+                    <td colSpan="13" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -1016,8 +1019,8 @@ export default function App() {
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
                   ).toFixed(2)}%
                 </span>
               </div>
