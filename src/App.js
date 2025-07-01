@@ -275,7 +275,7 @@ export default function App() {
       const rawEntry = trade.rawPrice; // vAMM entered at raw price (no fees)
       const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy; // Live price (no fees)
       const priceDiff = currentLivePrice - rawEntry;
-      const vammTradeResult = priceDiff * trade.currentDV01 * vammDirection;
+      const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
       vammPL += vammTradeResult;
     });
     
@@ -314,7 +314,7 @@ export default function App() {
     
     // Calculate P&L
     const priceDiff = executionPrice - trade.entryPrice;
-    const plUSD = priceDiff * trade.currentDV01 * (trade.type === 'pay' ? 1 : -1);
+    const plUSD = priceDiff * 100 * trade.currentDV01 * (trade.type === 'pay' ? 1 : -1);
     const netReturn = trade.collateral + plUSD - feeAmount;
     
     setPendingUnwind({
