@@ -351,12 +351,8 @@ export default function App() {
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
-    // In confirmUnwind, replace the fee calculation with:
-const currentOI = oiByMarket[trade.market] || 0;
-const postUnwindOI = trade.type === 'pay' ? currentOI - trade.currentDV01 : currentOI + trade.currentDV01;
-
-const protocolRiskIncreases = Math.abs(postUnwindOI) >= Math.abs(currentOI);
-const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp if risk increases, 2bp if reduces
+    const feeBps = trade.type === 'pay' ? 2 : 5; // Opposite fees for unwind
+    const feeAmount = trade.currentDV01 * feeBps;
     console.log('Adding unwind fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
     setTotalFeesCollected(prev => prev + feeAmount);
     
