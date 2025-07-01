@@ -354,7 +354,8 @@ export default function App() {
       pl: plUSD.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
-      feeRate: feeBps.toString() // Show actual basis points
+      feeRate: feeBps.toString(), // Show actual basis points
+      feeBps: feeBps // Store the actual fee basis points for later use
     });
   };
 
@@ -370,9 +371,8 @@ export default function App() {
     console.log('Adding final vAMM P&L to total:', finalVammPL, 'Previous total:', totalVammPL);
     setTotalVammPL(prev => prev + finalVammPL);
     
-    // Add unwind fee to total - when unwinding, you do the opposite trade
-    const feeBps = trade.type === 'pay' ? 5 : 2; // Pay fixed unwind = receive fixed trade (5bp), Receive fixed unwind = pay fixed trade (2bp)
-    const feeAmount = trade.currentDV01 * feeBps;
+    // Add unwind fee to total - use the actual fee basis points calculated for this unwind
+    const feeAmount = trade.currentDV01 * pendingUnwind.feeBps; // Use the feeBps from the unwind calculation
     console.log('Adding unwind fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
     setTotalFeesCollected(prev => prev + feeAmount);
     
