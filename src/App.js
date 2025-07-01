@@ -169,7 +169,7 @@ export default function App() {
             const directionFactor = trade.type === 'pay' ? 1 : -1;
             // Fixed P&L calculation: (live_price - entry_price) * current_dv01 * direction
             const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
-            const plUSD = priceDiff * updatedTrade.currentDV01 * directionFactor;
+            const plUSD = priceDiff * 100 * updatedTrade.currentDV01 * directionFactor;
             
             updatedTrade.pl = plUSD.toFixed(2);
             updatedTrade.pnl = plUSD;
