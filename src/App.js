@@ -557,8 +557,8 @@ export default function App() {
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
 
-      // Add trade fee to total
-      const feeAmountBps = type === 'pay' ? 5 : 2;
+      // Add trade fee to total - use the actual calculated fee basis points
+      const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
       const feeAmount = currentDv01 * feeAmountBps;
       setTotalFeesCollected(prev => prev + feeAmount);
 
