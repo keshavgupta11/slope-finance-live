@@ -84,15 +84,24 @@ export default function App() {
         }
       });
 
-      // Calculate weighted average prices
-      if (totalPayDV01 > 0) weightedAvgPayPrice /= totalPayDV01;
-      if (totalReceiveDV01 > 0) weightedAvgReceivePrice /= totalReceiveDV01;
-
       // Determine net position
       const netDV01 = netPayDV01 - netReceiveDV01;
       const netType = netDV01 > 0 ? 'pay' : 'receive';
       const netSize = Math.abs(netDV01);
-      const netPrice = netDV01 > 0 ? weightedAvgPayPrice : weightedAvgReceivePrice;
+      
+      // Calculate weighted average price ONLY for the net position direction
+      let netPrice = 0;
+      if (netSize > 0) {
+        if (netType === 'pay') {
+          // Only use pay trades for average, weighted by remaining exposure
+          const remainingPaySize = netSize;
+          netPrice = weightedAvgPayPrice / totalPayDV01;
+        } else {
+          // Only use receive trades for average, weighted by remaining exposure  
+          const remainingReceiveSize = netSize;
+          netPrice = weightedAvgReceivePrice / totalReceiveDV01;
+        }
+      }
       
       // Calculate net P&L
       const currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
@@ -101,7 +110,7 @@ export default function App() {
       
       // Calculate required margin for net position (20x leverage)
       const requiredMargin = netSize * 20;
-      const excessMargin = Math.max(0, totalMarginAllocated - requiredMargin);
+      const collateralPosted = totalMarginAllocated;
 
       netPositions[mkt] = {
         netDV01,
@@ -113,8 +122,7 @@ export default function App() {
         totalFees,
         currentPrice,
         requiredMargin,
-        allocatedMargin: totalMarginAllocated,
-        excessMargin,
+        collateralPosted,
         hasPosition: netSize > 0
       };
     });
@@ -318,24 +326,35 @@ export default function App() {
         isNettingTrade = true;
         const newNetSize = Math.abs(currentNetPos.netDV01 - (type === 'pay' ? currentDv01 : -currentDv01));
         const newMarginRequired = newNetSize * 20;
-        marginRequired = Math.max(0, newMarginRequired - currentNetPos.allocatedMargin);
+        marginRequired = Math.max(0, newMarginRequired - currentNetPos.collateralPosted);
       }
     }
 
     const simulatedUSDC = usdcBalance + 500000;
     if (simulatedUSDC < marginRequired) {
-      alert(`Insufficient USDC balance. Required: $${marginRequired.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+      alert(`Insufficient USDC balance. Required: ${marginRequired.toLocaleString()}, Available: ${simulatedUSDC.toLocaleString()}`);
       return;
     }
 
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
-    const midpointOI = (preOI + postOI);
     const directionFactor = type === 'pay' ? 1 : -1;
 
+    // Determine if absolute risk increases or decreases
+    const absoluteRiskIncreases = Math.abs(postOI) > Math.abs(preOI);
+    
+    // Calculate midpoint based on risk change
+    let midpointOI;
+    if (absoluteRiskIncreases || Math.abs(postOI) === Math.abs(preOI)) {
+      // Risk increases or stays same: use full range
+      midpointOI = preOI + postOI;
+    } else {
+      // Risk decreases: use half range  
+      midpointOI = (preOI + postOI) / 2;
+    }
+
     const rawPrice = baseAPY + k * midpointOI;
-    const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeRate = protocolRiskIncreases ? 0.05 : 0.02;
+    const feeRate = absoluteRiskIncreases ? 0.05 : 0.02;
     const fee = feeRate * directionFactor;
     const finalPrice = rawPrice + fee;
 
@@ -348,7 +367,9 @@ export default function App() {
       preOI,
       postOI,
       marginRequired,
-      isNettingTrade
+      isNettingTrade,
+      midpointOI,
+      absoluteRiskIncreases
     });
   };
 
@@ -464,7 +485,7 @@ export default function App() {
         if (newNetPos.netSize === 0) {
           // Complete netting - return ALL allocated margin except fees
           // User gets back all their margin minus just the fees they paid
-          const totalMarginToReturn = currentNetPos.allocatedMargin;
+          const totalMarginToReturn = currentNetPos.collateralPosted;
           setUsdcBalance(prev => prev + totalMarginToReturn - feeAmount);
         } else {
           // Partial netting - return the excess margin
@@ -581,7 +602,7 @@ export default function App() {
                       Current Net Position: {currentMarketNetPosition.netType === 'pay' ? 'Pay' : 'Receive'} ${currentMarketNetPosition.netSize.toLocaleString()}
                     </div>
                     <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-                      {currentMarketNetPosition.excessMargin > 0 && `Excess Margin: $${currentMarketNetPosition.excessMargin.toLocaleString()}`}
+                      {currentMarketNetPosition.collateralPosted > 0 && `Collateral Posted: ${currentMarketNetPosition.collateralPosted.toLocaleString()}`}
                     </div>
                   </div>
                 )}
@@ -818,10 +839,7 @@ export default function App() {
                   <th>Avg Entry Price</th>
                   <th>Current Price</th>
                   <th>Total Trades</th>
-                  <th>Required Margin</th>
-                  <th>Allocated Margin</th>
-                  <th>Excess Margin</th>
-                  <th>Total Fees Paid</th>
+                  <th>Collateral Posted</th>
                 </tr>
               </thead>
               <tbody>
@@ -840,16 +858,11 @@ export default function App() {
                     <td>{pos.netPrice.toFixed(4)}%</td>
                     <td>{pos.currentPrice.toFixed(4)}%</td>
                     <td>{pos.totalTrades}</td>
-                    <td>${pos.requiredMargin.toLocaleString()}</td>
-                    <td>${pos.allocatedMargin.toLocaleString()}</td>
-                    <td style={{ color: pos.excessMargin > 0 ? '#10b981' : '#9ca3af' }}>
-                      ${pos.excessMargin.toLocaleString()}
-                    </td>
-                    <td>${pos.totalFees.toFixed(2)}</td>
+                    <td>${pos.collateralPosted.toLocaleString()}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="11" className="no-positions">No net positions</td>
+                    <td colSpan="8" className="no-positions">No net positions</td>
                   </tr>
                 )}
               </tbody>
