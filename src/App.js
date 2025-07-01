@@ -192,7 +192,9 @@ export default function App() {
     let vammPL = 0;
     let protocolPL = 0;
     
-    marketTrades.forEach(trade => {
+    // Get all trades from all markets
+      const allTrades = Object.values(tradesByMarket).flat();
+      allTrades.forEach(trade => {
       // Protocol P&L: All fees collected
       const feeAmountBps = trade.type === 'pay' ? 5 : 2; // 5bp or 2bp
       const feeAmount = trade.currentDV01 * feeAmountBps; // Convert to dollar amount
@@ -240,7 +242,7 @@ export default function App() {
 
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
-    const midpointOI = (preOI + postOI) / 2;
+    const midpointOI = (preOI + postOI) ;
     const directionFactor = type === 'pay' ? 1 : -1;
 
     const rawPrice = baseAPY + k * midpointOI;
