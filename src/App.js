@@ -32,7 +32,6 @@ export default function App() {
   const [pendingTrade, setPendingTrade] = useState(null);
   const [tradeType, setTradeType] = useState('pay');
   const [activeTab, setActiveTab] = useState("Swap");
-  const [totalMarginUsed, setTotalMarginUsed] = useState(0); // Track total margin used across all positions
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -52,75 +51,6 @@ export default function App() {
   };
 
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay);
-
-  // Calculate net positions for each market
-  const calculateNetPositions = () => {
-    const netPositions = {};
-    
-    Object.keys(tradesByMarket).forEach(mkt => {
-      const trades = tradesByMarket[mkt] || [];
-      let netPayDV01 = 0;
-      let netReceiveDV01 = 0;
-      let totalFees = 0;
-      let weightedAvgPayPrice = 0;
-      let weightedAvgReceivePrice = 0;
-      let totalPayDV01 = 0;
-      let totalReceiveDV01 = 0;
-      let totalMarginAllocated = 0;
-      
-      trades.forEach(trade => {
-        const feeAmount = trade.currentDV01 * trade.feeAmountBps / 10000;
-        totalFees += feeAmount;
-        totalMarginAllocated += trade.collateral;
-        
-        if (trade.type === 'pay') {
-          netPayDV01 += trade.currentDV01;
-          totalPayDV01 += trade.currentDV01;
-          weightedAvgPayPrice += trade.entryPrice * trade.currentDV01;
-        } else {
-          netReceiveDV01 += trade.currentDV01;
-          totalReceiveDV01 += trade.currentDV01;
-          weightedAvgReceivePrice += trade.entryPrice * trade.currentDV01;
-        }
-      });
-
-      // Calculate weighted average prices
-      if (totalPayDV01 > 0) weightedAvgPayPrice /= totalPayDV01;
-      if (totalReceiveDV01 > 0) weightedAvgReceivePrice /= totalReceiveDV01;
-
-      // Determine net position
-      const netDV01 = netPayDV01 - netReceiveDV01;
-      const netType = netDV01 > 0 ? 'pay' : 'receive';
-      const netSize = Math.abs(netDV01);
-      const netPrice = netDV01 > 0 ? weightedAvgPayPrice : weightedAvgReceivePrice;
-      
-      // Calculate net P&L
-      const currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
-      const directionFactor = netType === 'pay' ? 1 : -1;
-      const netPL = netSize > 0 ? (currentPrice - netPrice) * directionFactor * netSize * 100 : 0;
-      
-      // Calculate required margin for net position (20x leverage)
-      const requiredMargin = netSize * 20;
-      const excessMargin = Math.max(0, totalMarginAllocated - requiredMargin);
-
-      netPositions[mkt] = {
-        netDV01,
-        netType,
-        netSize,
-        netPrice,
-        netPL,
-        totalTrades: trades.length,
-        totalFees,
-        currentPrice,
-        requiredMargin,
-        allocatedMargin: totalMarginAllocated,
-        excessMargin,
-        hasPosition: netSize > 0
-      };
-    });
-    
-    return netPositions;
-  };
 
   // Phantom wallet functions
   const connectWallet = async () => {
@@ -204,18 +134,8 @@ export default function App() {
     };
   }, []);
 
-  // Update P&L calculations and total margin used
+  // Update P&L calculations
   useEffect(() => {
-    let totalUsedMargin = 0;
-    const netPositions = calculateNetPositions();
-    
-    // Calculate total margin actually needed for net positions
-    Object.values(netPositions).forEach(pos => {
-      totalUsedMargin += pos.requiredMargin;
-    });
-    
-    setTotalMarginUsed(totalUsedMargin);
-
     setTradesByMarket(prev => {
       const updated = { ...prev };
       Object.keys(updated).forEach(mkt => {
@@ -238,7 +158,7 @@ export default function App() {
       });
       return updated;
     });
-  }, [currentDay, lastPriceByMarket, marketSettings, tradesByMarket]);
+  }, [currentDay, lastPriceByMarket, marketSettings]);
 
   const generateChartData = () => {
     const data = [];
@@ -297,8 +217,6 @@ export default function App() {
   const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
   const { apy: baseAPY, k } = marketSettings[market];
   const { vammPL, protocolPL } = calculateProtocolMetrics();
-  const netPositions = calculateNetPositions();
-  const currentMarketNetPosition = netPositions[market];
 
   const handleMarketChange = (newMarket) => {
     setMarket(newMarket);
@@ -315,32 +233,16 @@ export default function App() {
       return;
     }
 
-    // Calculate margin requirement considering netting
-    const currentNetPos = netPositions[market];
-    let marginRequired = margin;
-    let isNettingTrade = false;
-    
-    if (currentNetPos && currentNetPos.hasPosition) {
-      // Check if this trade would reduce the net position (netting)
-      if ((currentNetPos.netType === 'pay' && type === 'receive') ||
-          (currentNetPos.netType === 'receive' && type === 'pay')) {
-        isNettingTrade = true;
-        const newNetSize = Math.abs(currentNetPos.netDV01 - (type === 'pay' ? currentDv01 : -currentDv01));
-        const newMarginRequired = newNetSize * 20;
-        marginRequired = Math.max(0, newMarginRequired - currentNetPos.allocatedMargin);
-      }
-    }
-
     // Check simulated USDC balance (for demo)
     const simulatedUSDC = usdcBalance + 500000; // Add simulated USDC for demo
-    if (simulatedUSDC < marginRequired) {
-      alert(`Insufficient USDC balance. Required: $${marginRequired.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+    if (simulatedUSDC < margin) {
+      alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
       return;
     }
 
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
-    const midpointOI = (preOI + postOI);
+    const midpointOI = (preOI + postOI) ;
     const directionFactor = type === 'pay' ? 1 : -1;
 
     const rawPrice = baseAPY + k * midpointOI;
@@ -357,8 +259,6 @@ export default function App() {
       directionFactor,
       preOI,
       postOI,
-      marginRequired,
-      isNettingTrade
     });
   };
 
@@ -372,7 +272,14 @@ export default function App() {
   };
 
   const confirmTrade = async () => {
-    const { type, finalPrice, rawPrice, directionFactor, preOI, postOI, marginRequired, isNettingTrade } = pendingTrade;
+    const { type, finalPrice, rawPrice, directionFactor, preOI, postOI } = pendingTrade;
+
+    const minMargin = currentDv01 * 20;
+    if (margin < minMargin) {
+      alert('Margin too low!');
+      setPendingTrade(null);
+      return;
+    }
 
     // Simulate transaction signing
     try {
@@ -392,7 +299,7 @@ export default function App() {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      const marginBuffer = (marginRequired / currentDv01) / 100;
+      const marginBuffer = (margin / currentDv01) / 100;
       const liq = type === 'pay' 
         ? parseFloat(finalPrice) - marginBuffer
         : parseFloat(finalPrice) + marginBuffer;
@@ -402,7 +309,7 @@ export default function App() {
         type,
         baseDV01: baseDv01,
         currentDV01: currentDv01,
-        margin: marginRequired,
+        margin,
         entry: finalPrice,
         entryPrice: parseFloat(finalPrice),
         currentPrice: parseFloat(rawPrice),
@@ -411,13 +318,12 @@ export default function App() {
         timestamp: new Date().toLocaleTimeString(),
         pl: "0.00",
         pnl: 0,
-        collateral: marginRequired,
+        collateral: margin,
         entryDay: currentDay,
         currentDay: currentDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
-        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null,
-        isNettingTrade
+        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null // Simulated tx hash
       };
 
       setTradesByMarket(prev => ({
@@ -435,13 +341,12 @@ export default function App() {
         [market]: parseFloat(rawPrice)
       }));
 
-      // Update simulated USDC balance - only deduct the margin actually required
-      setUsdcBalance(prev => prev - marginRequired);
+      // Update simulated USDC balance
+      setUsdcBalance(prev => prev - (margin )); // Simulate using margin
 
       setPendingTrade(null);
       
-      const nettingMessage = isNettingTrade ? " (Position netting applied - reduced margin required)" : "";
-      alert(`Trade executed successfully!${nettingMessage} ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
+      alert(`Trade executed successfully! ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
     } catch (error) {
       console.error('Transaction failed:', error);
       alert('Transaction failed. Please try again.');
@@ -454,23 +359,6 @@ export default function App() {
     const str = address.toString();
     return `${str.slice(0, 4)}...${str.slice(-4)}`;
   };
-
-  // Calculate minimum margin requirement for current trade considering netting
-  const getMinMarginRequired = () => {
-    const currentNetPos = netPositions[market];
-    if (currentNetPos && currentNetPos.hasPosition) {
-      // If this would be a netting trade
-      if ((currentNetPos.netType === 'pay' && tradeType === 'receive') ||
-          (currentNetPos.netType === 'receive' && tradeType === 'pay')) {
-        const newNetSize = Math.abs(currentNetPos.netDV01 - (tradeType === 'pay' ? currentDv01 : -currentDv01));
-        const newMarginRequired = newNetSize * 20;
-        return Math.max(0, newMarginRequired - currentNetPos.allocatedMargin);
-      }
-    }
-    return currentDv01 * 20;
-  };
-
-  const minMarginRequired = getMinMarginRequired();
 
   return (
     <div className="app">
@@ -493,9 +381,6 @@ export default function App() {
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
               <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 500000).toLocaleString()}</div>
-              <div style={{ color: '#f59e0b', fontSize: '0.75rem' }}>
-                Margin Used: ${totalMarginUsed.toLocaleString()}
-              </div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
               {formatAddress(wallet)}
@@ -539,16 +424,6 @@ export default function App() {
               <div className="market-info">
                 <div>Notional / DV01</div>
                 <div>$1k dv01 means you gain/lose $1,000 per 1bp move</div>
-                {currentMarketNetPosition && currentMarketNetPosition.hasPosition && (
-                  <div style={{ marginTop: '0.5rem', padding: '0.5rem', backgroundColor: '#1f2937', borderRadius: '4px' }}>
-                    <div style={{ color: '#10b981', fontSize: '0.875rem', fontWeight: '600' }}>
-                      Current Net Position: {currentMarketNetPosition.netType === 'pay' ? 'Pay' : 'Receive'} ${currentMarketNetPosition.netSize.toLocaleString()}
-                    </div>
-                    <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-                      {currentMarketNetPosition.excessMargin > 0 && `Excess Margin: $${currentMarketNetPosition.excessMargin.toLocaleString()}`}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -608,12 +483,7 @@ export default function App() {
 
               <div className="min-margin">
                 <div>Min margin required:</div>
-                <div className="min-margin-value">${minMarginRequired.toLocaleString()}</div>
-                {minMarginRequired < currentDv01 * 20 && (
-                  <div style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                    ✓ Netting benefit applied
-                  </div>
-                )}
+                <div className="min-margin-value">${(currentDv01 * 20).toLocaleString()}</div>
               </div>
 
               <div className="trade-buttons">
@@ -633,10 +503,10 @@ export default function App() {
 
               <button 
                 onClick={() => requestTrade(tradeType)}
-                disabled={!wallet || margin < minMarginRequired}
-                className={`enter-btn ${!wallet || margin < minMarginRequired ? 'disabled' : ''}`}
+                disabled={!wallet || margin < currentDv01 * 20}
+                className={`enter-btn ${!wallet || margin < currentDv01 * 20 ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < minMarginRequired ? 'Margin too low' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 20 ? 'Margin too low' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
@@ -757,72 +627,21 @@ export default function App() {
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">Protocol Risk</div>
-                  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
-                    {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
-                  </div>
-                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Net open interest exposure
-                  </div>
-                </div>
+  <div className="stat-label">Protocol Risk</div>
+  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
+    {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
+  </div>
+  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+    Net open interest exposure
+  </div>
+</div>
               </div>
             </div>
           </div>
         </div>
 
         <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
-          <h3>Net Positions</h3>
-          <div className="positions-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Market</th>
-                  <th>Net Direction</th>
-                  <th>Net DV01</th>
-                  <th>Net P&L</th>
-                  <th>Avg Entry Price</th>
-                  <th>Current Price</th>
-                  <th>Total Trades</th>
-                  <th>Required Margin</th>
-                  <th>Allocated Margin</th>
-                  <th>Excess Margin</th>
-                  <th>Total Fees Paid</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(netPositions).length > 0 ? Object.entries(netPositions)
-                  .filter(([_, pos]) => pos.hasPosition)
-                  .map(([mkt, pos]) => (
-                  <tr key={mkt}>
-                    <td>{mkt}</td>
-                    <td className={pos.netType === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                      {pos.netType === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                    </td>
-                    <td>${pos.netSize.toLocaleString()}</td>
-                    <td className={pos.netPL >= 0 ? 'profit' : 'loss'}>
-                      {pos.netPL >= 0 ? '+' : ''}${pos.netPL.toFixed(2)}
-                    </td>
-                    <td>{pos.netPrice.toFixed(4)}%</td>
-                    <td>{pos.currentPrice.toFixed(4)}%</td>
-                    <td>{pos.totalTrades}</td>
-                    <td>${pos.requiredMargin.toLocaleString()}</td>
-                    <td>${pos.allocatedMargin.toLocaleString()}</td>
-                    <td style={{ color: pos.excessMargin > 0 ? '#10b981' : '#9ca3af' }}>
-                      ${pos.excessMargin.toLocaleString()}
-                    </td>
-                    <td>${pos.totalFees.toFixed(2)}</td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="11" className="no-positions">No net positions</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Individual Trades Section */}
-          <h3 style={{ marginTop: '2rem' }}>Individual Trades</h3>
+          <h3>Positions</h3>
           <div className="positions-table">
             <table>
               <thead>
@@ -838,7 +657,6 @@ export default function App() {
                   <th>Days Held</th>
                   <th>Tx Hash</th>
                   <th>Collateral</th>
-                  <th>Netting Trade</th>
                 </tr>
               </thead>
               <tbody>
@@ -861,17 +679,10 @@ export default function App() {
                       {trade.txSignature || 'Simulated'}
                     </td>
                     <td>${trade.collateral.toLocaleString()}</td>
-                    <td>
-                      {trade.isNettingTrade ? (
-                        <span style={{ color: '#10b981', fontSize: '0.75rem' }}>✓ Netted</span>
-                      ) : (
-                        <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>-</span>
-                      )}
-                    </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="12" className="no-positions">No positions yet</td>
+                    <td colSpan="11" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -947,8 +758,8 @@ export default function App() {
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) - ((pendingTrade.marginRequired / currentDv01) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) + ((pendingTrade.marginRequired / currentDv01) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
                   ).toFixed(2)}%
                 </span>
               </div>
@@ -956,20 +767,6 @@ export default function App() {
                 <span>Fee:</span>
                 <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
               </div>
-              <div className="detail-row">
-                <span>Margin Required:</span>
-                <span style={{ color: pendingTrade.isNettingTrade ? '#10b981' : '#9ca3af' }}>
-                  ${pendingTrade.marginRequired.toLocaleString()}
-                  {pendingTrade.isNettingTrade && ' (Netted)'}
-                </span>
-              </div>
-              {pendingTrade.isNettingTrade && (
-                <div className="detail-row" style={{ backgroundColor: '#065f46', padding: '0.5rem', borderRadius: '4px', margin: '0.5rem 0' }}>
-                  <span style={{ color: '#10b981', fontSize: '0.875rem' }}>
-                    ✓ This trade reduces your net position and margin requirement
-                  </span>
-                </div>
-              )}
               {wallet && (
                 <div className="detail-row">
                   <span>Wallet:</span>
