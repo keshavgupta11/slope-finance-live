@@ -627,7 +627,7 @@ export default function App() {
                 <div className="stat-card">
   <div className="stat-label">Protocol Risk</div>
   <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
-    {netOI >= 0 ? 'Pay' : 'Receive'} ${Math.abs(netOI).toLocaleString()}
+    {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
   </div>
   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
     Net open interest exposure
