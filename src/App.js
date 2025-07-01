@@ -314,10 +314,12 @@ export default function App() {
     const { apy: baseAPY, k } = marketSettings[trade.market];
     
     if (postRisk > preRisk) {
-      // Risk increasing: use post OI directly - this IS the final price (includes fees)
+      // Risk increasing: use post OI directly + 5bp fee
       unwindPrice = baseAPY + k * postOI;
-      feeBps = 5; // For display only
-      executionPrice = unwindPrice; // No additional fees applied
+      feeBps = 5;
+      const feeInPrice = feeBps / 100;
+      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
+      executionPrice = unwindPrice + (feeInPrice * directionFactor);
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
@@ -459,10 +461,13 @@ export default function App() {
     let finalPrice;
     
     if (postRisk > preRisk) {
-      // Risk increasing: use post OI directly - this IS the final price (includes fees)
+      // Risk increasing: use post OI directly + 5bp fee
       rawPrice = baseAPY + k * postOI;
-      feeBps = 5; // For display only
-      finalPrice = rawPrice; // No additional fees applied
+      feeBps = 5;
+      const directionFactor = type === 'pay' ? 1 : -1;
+      const feeInPercentage = feeBps / 100;
+      const fee = feeInPercentage * directionFactor;
+      finalPrice = rawPrice + fee;
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
