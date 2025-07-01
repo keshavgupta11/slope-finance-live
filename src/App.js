@@ -242,6 +242,13 @@ export default function App() {
             dv01: trade.currentDV01,
             entryPrice: liquidationPrice
           });
+          console.log('Added liquidated position:', {
+            market: mkt,
+            type: trade.type,
+            dv01: trade.currentDV01,
+            entryPrice: liquidationPrice
+          });
+          console.log('Total liquidated positions:', window.liquidatedPositions.length);
           
           // Add ongoing P&L from the liquidated position that vAMM took over
           // This creates a "virtual" position at liquidation price that generates ongoing P&L
