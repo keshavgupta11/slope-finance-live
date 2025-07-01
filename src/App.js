@@ -303,19 +303,32 @@ export default function App() {
     const preOI = currentOI;
     const postOI = trade.type === 'pay' ? currentOI - trade.currentDV01 : currentOI + trade.currentDV01;
     
-    let midpointOI;
-    if (Math.abs(postOI) > Math.abs(preOI)) {
-      midpointOI = preOI + postOI;
-    } else {
-      midpointOI = (preOI + postOI) / 2;
-    }
+    // Calculate pricing based on risk change
+    const preRisk = Math.abs(preOI);
+    const postRisk = Math.abs(postOI);
+    
+    let unwindPrice;
+    let feeBps;
     
     const { apy: baseAPY, k } = marketSettings[trade.market];
-    const unwindPrice = baseAPY + k * midpointOI;
+    
+    if (postRisk > preRisk) {
+      // Risk increasing: use post OI directly
+      unwindPrice = baseAPY + k * postOI;
+      feeBps = 5;
+    } else if (postRisk < preRisk) {
+      // Risk reducing: use midpoint
+      const midpointOI = (preOI + postOI) / 2;
+      unwindPrice = baseAPY + k * midpointOI;
+      feeBps = 2;
+    } else {
+      // Risk staying same (absolute value): use midpoint with 5bp fees
+      const midpointOI = (preOI + postOI) / 2;
+      unwindPrice = baseAPY + k * midpointOI;
+      feeBps = 5;
+    }
     
     // Calculate fees
-    const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
     const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
     const feeInPrice = feeBps / 100; // Convert bp to decimal for price adjustment
     const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -350,8 +363,8 @@ export default function App() {
     console.log('Adding final vAMM P&L to total:', finalVammPL, 'Previous total:', totalVammPL);
     setTotalVammPL(prev => prev + finalVammPL);
     
-    // Add unwind fee to total
-    const feeBps = trade.type === 'pay' ? 2 : 5; // Opposite fees for unwind
+    // Add unwind fee to total - when unwinding, you do the opposite trade
+    const feeBps = trade.type === 'pay' ? 5 : 2; // Pay fixed unwind = receive fixed trade (5bp), Receive fixed unwind = pay fixed trade (2bp)
     const feeAmount = trade.currentDV01 * feeBps;
     console.log('Adding unwind fee to total:', feeAmount, 'Previous total:', totalFeesCollected);
     setTotalFeesCollected(prev => prev + feeAmount);
@@ -432,29 +445,38 @@ export default function App() {
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
     
-    // Calculate midpoint based on whether absolute risk increases or decreases
-    let midpointOI;
-    if (Math.abs(postOI) > Math.abs(preOI)) {
-      // Risk increases: use preOI + postOI
-      midpointOI = preOI + postOI;
+    // Calculate pricing based on risk change
+    const preRisk = Math.abs(preOI);
+    const postRisk = Math.abs(postOI);
+    
+    let rawPrice;
+    let feeBps;
+    
+    if (postRisk > preRisk) {
+      // Risk increasing: use post OI directly
+      rawPrice = baseAPY + k * postOI;
+      feeBps = 5;
+    } else if (postRisk < preRisk) {
+      // Risk reducing: use midpoint
+      const midpointOI = (preOI + postOI) / 2;
+      rawPrice = baseAPY + k * midpointOI;
+      feeBps = 2;
     } else {
-      // Risk decreases or stays same: use (preOI + postOI) / 2
-      midpointOI = (preOI + postOI) / 2;
+      // Risk staying same (absolute value): use midpoint with 5bp fees
+      const midpointOI = (preOI + postOI) / 2;
+      rawPrice = baseAPY + k * midpointOI;
+      feeBps = 5;
     }
     
     const directionFactor = type === 'pay' ? 1 : -1;
-
-    const rawPrice = baseAPY + k * midpointOI;
-    const protocolRiskIncreases = Math.abs(postOI) >= Math.abs(preOI);
-    const feeBps = protocolRiskIncreases ? 5 : 2; // 5bp or 2bp
-    const feeInPercentage = feeBps / 100; // Convert bp to percentage points (5bp = 0.05%)
+    const feeInPercentage = feeBps / 100; // Convert bp to percentage points
     const fee = feeInPercentage * directionFactor;
     const finalPrice = rawPrice + fee;
 
     setPendingTrade({
       type,
       finalPrice: finalPrice.toFixed(4),
-      feeRate: protocolRiskIncreases ? 0.05 : 0.02, // Keep for display
+      feeRate: feeBps / 100, // Keep for display
       rawPrice: rawPrice.toFixed(4),
       directionFactor,
       preOI,
@@ -805,7 +827,7 @@ export default function App() {
                 </div>
                 <div className="stat-card">
                   <div className="stat-label">Fee Revenue</div>
-                  <div className="stat-value">$3,241</div>
+                  <div className="stat-value">$470,000</div>
                   <div className="stat-change positive">+15.7%</div>
                 </div>
               </div>
