@@ -242,7 +242,17 @@ export default function App() {
 
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
-    const midpointOI = (preOI + postOI) ;
+    
+    // Calculate midpoint based on whether absolute risk increases or decreases
+    let midpointOI;
+    if (Math.abs(postOI) > Math.abs(preOI)) {
+      // Risk increases: use preOI + postOI
+      midpointOI = preOI + postOI;
+    } else {
+      // Risk decreases or stays same: use (preOI + postOI) / 2
+      midpointOI = (preOI + postOI) / 2;
+    }
+    
     const directionFactor = type === 'pay' ? 1 : -1;
 
     const rawPrice = baseAPY + k * midpointOI;
@@ -627,14 +637,14 @@ export default function App() {
                   </div>
                 </div>
                 <div className="stat-card">
-  <div className="stat-label">Protocol Risk</div>
-  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
-    {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
-  </div>
-  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-    Net open interest exposure
-  </div>
-</div>
+                  <div className="stat-label">Protocol Risk</div>
+                  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
+                    {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Net open interest exposure
+                  </div>
+                </div>
               </div>
             </div>
           </div>
