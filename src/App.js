@@ -245,7 +245,7 @@ export default function App() {
             type: trade.type, // vAMM takes over the SAME position as the user had
             dv01: trade.currentDV01,
             entryPrice: liquidationPrice, // vAMM enters at liquidation price
-            entryDay: currentDay,
+            entryDay: trade.currentDay, // Use the trade's current day instead of the state currentDay
             id: `liquidated_${Date.now()}_${Math.random()}` // unique ID
           }]);
           
