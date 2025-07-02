@@ -31,8 +31,8 @@ export default function App() {
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
   const [pendingTrade, setPendingTrade] = useState(null);
   const [tradeType, setTradeType] = useState('pay');
-  const [chartMode, setChartMode] = useState("apy"); // "apy" or "volatility"
   const [activeTab, setActiveTab] = useState("Swap");
+  const [tradeHistory, setTradeHistory] = useState([]);
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
   const [totalVammPL, setTotalVammPL] = useState(0); // Stores P&L from closed/liquidated positions
@@ -329,7 +329,7 @@ export default function App() {
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
     if (market === "JitoSol") {
-      const apyData = [
+      return [
         { date: "2023-Q1", apy: 7.04, year: 2023.0 },
         { date: "2023-Q2", apy: 7.26, year: 2023.25 },
         { date: "2023-Q3", apy: 7.48, year: 2023.5 },
@@ -341,45 +341,9 @@ export default function App() {
         { date: "2025-Q1", apy: 8.10, year: 2025.0 },
         { date: "2025-Q2", apy: 7.959, year: 2025.25 } // Your 2025 projection
       ];
-
-      if (chartMode === "volatility") {
-        // Calculate proper rolling volatility using log returns
-        return apyData.map((point, i) => {
-          if (i < 4) {
-            // Need at least 4 quarters for rolling vol calculation
-            return { ...point, volatility: 0 };
-          }
-          
-          // Calculate log returns for last 4 quarters (1 year rolling window)
-          const returns = [];
-          for (let j = i - 3; j <= i; j++) {
-            if (j > 0) {
-              const logReturn = Math.log(apyData[j].apy / apyData[j - 1].apy);
-              returns.push(logReturn);
-            }
-          }
-          
-          // Calculate standard deviation of returns
-          const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
-          const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
-          const quarterlyVol = Math.sqrt(variance);
-          
-          // Annualize: quarterly vol * sqrt(4) and convert to basis points
-          const annualizedVol = quarterlyVol * Math.sqrt(4) * 10000; // Convert to basis points
-          
-          // Based on your Excel analysis, JitoSOL daily vol is 0.31bp
-          // Annualized this is ~5.9bp, but we're showing quarterly rolling vol
-          // Scale to realistic range
-          const scaledVol = Math.max(3, Math.min(12, annualizedVol));
-          
-          return { ...point, volatility: scaledVol };
-        });
-      }
-      
-      return apyData;
     }
     
-    // Keep original logic for other markets but with proper volatility
+    // Keep original logic for other markets
     const data = [];
     const marketTargets = {
       'Lido stETH': 4.5,
@@ -395,29 +359,11 @@ export default function App() {
         const gradualTrend = (timeIndex / 20) * 0.5;
         const apy = Math.max(1, Math.min(9, targetAPY + smoothVariation + gradualTrend));
         
-        const dataPoint = {
+        data.push({
           date: `${year}-Q${quarter}`,
           apy: parseFloat(apy.toFixed(3)),
           year: year + (quarter - 1) * 0.25
-        };
-
-        if (chartMode === "volatility") {
-          // Realistic volatility for other markets based on typical DeFi volatility
-          let baseVol;
-          if (market === "Lido stETH") {
-            baseVol = 4; // Lower vol for established ETH staking
-          } else if (market === "Ethena sUSDe") {
-            baseVol = 15; // Higher vol for delta-neutral strategy
-          } else {
-            baseVol = 8;
-          }
-          
-          // Add some realistic variation
-          const volVariation = Math.sin(timeIndex / 6) * 2 + (Math.random() - 0.5) * 1;
-          dataPoint.volatility = Math.max(2, Math.min(25, baseVol + volVariation));
-        }
-        
-        data.push(dataPoint);
+        });
       }
     }
     return data;
@@ -617,7 +563,7 @@ export default function App() {
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
 
-  const chartData = useMemo(() => generateChartData(), [market, chartMode]);
+  const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
   const protocolOI = calculateProtocolOI();
   const netOI = protocolOI[market] || 0;
@@ -960,45 +906,7 @@ export default function App() {
 
           <div className="right-panel">
             <div className="chart-header">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                  {chartMode === "apy" ? "Running 365d APY" : "APY Volatility"}
-                </span>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => setChartMode("apy")}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid var(--border-secondary)',
-                      background: chartMode === "apy" ? 'var(--gradient-accent)' : 'var(--bg-glass)',
-                      color: chartMode === "apy" ? 'white' : 'var(--text-muted)',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    APY
-                  </button>
-                  <button
-                    onClick={() => setChartMode("volatility")}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid var(--border-secondary)',
-                      background: chartMode === "volatility" ? 'var(--gradient-secondary)' : 'var(--bg-glass)',
-                      color: chartMode === "volatility" ? 'white' : 'var(--text-muted)',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    Volatility
-                  </button>
-                </div>
-              </div>
+              <span>Running 365d APY</span>
             </div>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height="100%">
@@ -1017,14 +925,14 @@ export default function App() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    domain={chartMode === "apy" ? [6, 9] : [0, 20]}
-                    tickFormatter={(value) => chartMode === "apy" ? `${value.toFixed(1)}%` : `${value.toFixed(1)}bp`}
+                    domain={[6, 9]}
+                    tickFormatter={(value) => `${value.toFixed(1)}%`}
                     scale="linear"
                   />
                   <defs>
                     <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={chartMode === "apy" ? "#10B981" : "#3B82F6"} stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor={chartMode === "apy" ? "#10B981" : "#3B82F6"} stopOpacity={0.1}/>
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
                     </linearGradient>
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -1040,11 +948,11 @@ export default function App() {
                   <rect width="100%" height="100%" fill="url(#grid)" />
                   <Line 
                     type="monotone" 
-                    dataKey={chartMode === "apy" ? "apy" : "volatility"}
-                    stroke={chartMode === "apy" ? "#10B981" : "#3B82F6"}
+                    dataKey="apy" 
+                    stroke="#10B981" 
                     strokeWidth={4}
-                    dot={{ fill: chartMode === "apy" ? "#10B981" : "#3B82F6", strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
-                    activeDot={{ r: 8, stroke: chartMode === "apy" ? "#10B981" : "#3B82F6", strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
+                    dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
+                    activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
                     fill="url(#chartGradient)"
                     fillOpacity={0.3}
                   />
@@ -1052,10 +960,7 @@ export default function App() {
               </ResponsiveContainer>
             </div>
             <div className="chart-info">
-              {chartMode === "apy" 
-                ? "This chart shows realized APY over last 365 days"
-                : "This chart shows rolling 1-year volatility calculated using log returns (basis points)"
-              }
+              This chart shows realized APY over last 365 days
             </div>
 
             <div className="market-stats">
