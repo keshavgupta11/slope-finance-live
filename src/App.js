@@ -36,7 +36,6 @@ export default function App() {
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
   const [totalVammPL, setTotalVammPL] = useState(0);
-  const [liquidatedPositions, setLiquidatedPositions] = useState([]); // Track positions taken over from liquidations
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -181,16 +180,16 @@ export default function App() {
 
             return updatedTrade;
           });
+
           // Then filter out liquidated positions
           updated[mkt] = updated[mkt].filter(trade => {
             // Check for liquidation: only if P&L is negative and exceeds margin
             if (trade.pnl < 0 && Math.abs(trade.pnl) > trade.collateral) {
-              // Position is liquidated - use the actual liquidation price, not current price
-              const actualLiquidationPrice = parseFloat(trade.liquidationPrice);
+              // Position is liquidated
               liquidatedPositions.push({
                 market: mkt,
                 trade: trade,
-                liquidationPrice: actualLiquidationPrice
+                liquidationPrice: trade.currentPrice
               });
               
               // Don't include this trade in the updated array (it's liquidated)
@@ -207,9 +206,18 @@ export default function App() {
           // Calculate vAMM P&L from CLOSING its original hedge position at liquidation price
           const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position
           const rawEntry = trade.rawPrice;
-          const netLiquidationPL = (rawEntry - liquidationPrice) * 100 * trade.currentDV01 * vammDirection;
-          console.log('Net liquidation P&L (frozen):', netLiquidationPL);
+          const actualLiquidationPrice = parseFloat(trade.liquidationPrice); // Use the trade's liquidation price (8.10%), not current price
+          // Net P&L: from original entry to liquidation price (frozen at 450k for your example)
+          const netLiquidationPL = (rawEntry - actualLiquidationPrice) * 100 * trade.currentDV01 * vammDirection;
+          console.log('Net liquidation P&L (frozen):', {
+          rawEntry: rawEntry,
+          liquidationPrice: actualLiquidationPrice,
+          dv01: trade.currentDV01,
+          direction: vammDirection,
+          netPL: netLiquidationPL
+          });
           setTotalVammPL(prev => prev + netLiquidationPL);
+
           
           // Add to trade history
           setTradeHistory(prevHistory => [...prevHistory, {
@@ -234,41 +242,8 @@ export default function App() {
             };
           });
           
-          // Store liquidated position info for ongoing P&L calculation
-          
-          console.log('Added liquidated position:', {
-            market: mkt,
-            type: trade.type,
-            dv01: trade.currentDV01,
-            entryPrice: liquidationPrice
-          });
-          console.log('Total liquidated positions:', window.liquidatedPositions.length);
-          
-          // Add ongoing P&L from the liquidated position that vAMM took over
-          // This creates a "virtual" position at liquidation price that generates ongoing P&L
-          const ongoingLiquidatedPL = () => {
-            const currentLivePrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
-            const priceDiff = currentLivePrice - liquidationPrice;
-            const vammDirection = trade.type === 'pay' ? 1 : -1; // Same direction as user
-            return priceDiff * 100 * trade.currentDV01 * vammDirection;
-          };
-          
-          // Store this calculation function for later use in metrics
-          if (!window.liquidatedPositionsPL) window.liquidatedPositionsPL = [];
-          window.liquidatedPositionsPL.push({
-            market: mkt,
-            calculatePL: ongoingLiquidatedPL
-          });
-          
-          // Add the liquidated position as a new vAMM position starting from liquidation price
-          setLiquidatedPositions(prev => [...prev, {
-            market: mkt,
-            type: trade.type, // vAMM takes over the SAME position as the user had
-            dv01: trade.currentDV01,
-            entryPrice: liquidationPrice, // vAMM enters at liquidation price
-            entryDay: currentDay,
-            id: `liquidated_${Date.now()}_${Math.random()}` // unique ID
-          }]);
+          console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
+          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
         });
       }
       
@@ -318,18 +293,7 @@ export default function App() {
       openVammPL += vammTradeResult;
     });
     
-    // Add P&L from liquidated positions
-    if (window.liquidatedPositionsPL) {
-      window.liquidatedPositionsPL.forEach(liqPos => {
-        try {
-          openVammPL += liqPos.calculatePL();
-        } catch (e) {
-          // Ignore calculation errors
-        }
-      });
-    }
-    
-    // Total vAMM P&L = closed trades P&L + open trades P&L + liquidated positions P&L
+    // Total vAMM P&L = closed trades P&L + open trades P&L
     const totalVammPLCombined = totalVammPL + openVammPL;
     
     // Use cumulative fees and vAMM P&L
