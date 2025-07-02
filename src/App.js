@@ -915,7 +915,7 @@ export default function App() {
                     dataKey="year" 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
                     type="number"
                     scale="linear"
                     domain={[2023, 2025]}
@@ -924,14 +924,25 @@ export default function App() {
                   <YAxis 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
                     domain={[6, 9]}
                     tickFormatter={(value) => `${value.toFixed(1)}%`}
                     scale="linear"
                   />
                   <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
                     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.2)" strokeWidth="1"/>
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
                     </pattern>
                   </defs>
                   <rect width="100%" height="100%" fill="url(#grid)" />
@@ -939,9 +950,11 @@ export default function App() {
                     type="monotone" 
                     dataKey="apy" 
                     stroke="#10B981" 
-                    strokeWidth={3}
-                    dot={false}
-                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 3, fill: '#000' }}
+                    strokeWidth={4}
+                    dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
+                    activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
+                    fill="url(#chartGradient)"
+                    fillOpacity={0.3}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -1075,26 +1088,52 @@ export default function App() {
                       <td>
                         <span style={{ 
                           color: isRisky ? '#ef4444' : '#22c55e', 
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '1rem',
+                          backgroundColor: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                          border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+                          fontSize: '0.875rem'
                         }}>
+                          <span style={{ fontSize: '0.75rem' }}>
+                            {isRisky ? '⚠️' : '✅'}
+                          </span>
                           {isRisky ? 'RISKY' : 'Safe'}
                         </span>
                       </td>
                       <td>
                         <button 
                           onClick={() => requestUnwind(i)}
+                          className="unwind-btn"
                           style={{
-                            backgroundColor: '#ef4444',
+                            background: 'linear-gradient(45deg, #ef4444, #dc2626)',
                             color: 'white',
                             border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '0.375rem',
+                            padding: '0.75rem 1.25rem',
+                            borderRadius: '0.75rem',
                             fontSize: '0.875rem',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: '600',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 14px rgba(239, 68, 68, 0.25)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.025em'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.25)';
                           }}
                         >
-                          Unwind
+                          Close Position
                         </button>
                       </td>
                     </tr>
@@ -1142,8 +1181,19 @@ export default function App() {
                     <td>
                       <span style={{ 
                         color: trade.status === 'LIQUIDATED' ? '#ef4444' : '#22c55e',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '1rem',
+                        backgroundColor: trade.status === 'LIQUIDATED' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                        border: `1px solid ${trade.status === 'LIQUIDATED' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+                        fontSize: '0.875rem'
                       }}>
+                        <span style={{ fontSize: '0.75rem' }}>
+                          {trade.status === 'LIQUIDATED' ? '💥' : '✅'}
+                        </span>
                         {trade.status}
                       </span>
                     </td>
@@ -1174,21 +1224,40 @@ export default function App() {
                 Advance one day forward and set closing prices for all markets. This will update all live positions with new DV01s and recalculate daily P&L.
               </div>
             </div>
-            <button 
-              onClick={requestDayAdvancement}
-              style={{
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              Advance to Day {globalDay + 1}
-            </button>
+              <button 
+                onClick={requestDayAdvancement}
+                className="day-advance-btn"
+                style={{
+                  background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 2rem',
+                  borderRadius: '1rem',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 14px rgba(59, 130, 246, 0.25)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
+                }}
+              >
+                <span style={{ fontSize: '1rem' }}>🚀</span>
+                Advance to Day {globalDay + 1}
+              </button>
           </div>
 
           <h3>Market Settings</h3>
@@ -1297,8 +1366,67 @@ export default function App() {
               )}
             </div>
             <div className="modal-buttons">
-              <button onClick={confirmTrade} className="confirm-btn">Confirm Trade</button>
-              <button onClick={() => setPendingTrade(null)} className="cancel-btn">Cancel</button>
+              <button 
+                onClick={confirmTrade} 
+                className="confirm-btn"
+                style={{
+                  background: 'linear-gradient(45deg, #059669, #10b981)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #10b981, #34d399)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #059669, #10b981)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.25)';
+                }}
+              >
+                <span>⚡</span>
+                Execute Trade
+              </button>
+              <button 
+                onClick={() => setPendingTrade(null)} 
+                className="cancel-btn"
+                style={{
+                  background: 'rgba(55, 65, 81, 0.6)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(75, 85, 99, 0.5)',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  flex: 1
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(75, 85, 99, 0.6)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(55, 65, 81, 0.6)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -1328,7 +1456,7 @@ export default function App() {
               <div className="detail-row">
                 <span>Total P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
-                  {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${Math.abs(parseFloat(pendingUnwind.pl)).toLocaleString()}
+                  {parseFloat(pendingUnwind.pl) >= 0 ? '+' : '-'}${Math.abs(parseFloat(pendingUnwind.pl)).toLocaleString()}
                 </span>
               </div>
               <div className="detail-row">
@@ -1343,8 +1471,67 @@ export default function App() {
               </div>
             </div>
             <div className="modal-buttons">
-              <button onClick={confirmUnwind} className="confirm-btn">Confirm Unwind</button>
-              <button onClick={() => setPendingUnwind(null)} className="cancel-btn">Cancel</button>
+              <button 
+                onClick={confirmUnwind} 
+                className="confirm-btn"
+                style={{
+                  background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.25)';
+                }}
+              >
+                <span>🔒</span>
+                Close Position
+              </button>
+              <button 
+                onClick={() => setPendingUnwind(null)} 
+                className="cancel-btn"
+                style={{
+                  background: 'rgba(55, 65, 81, 0.6)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(75, 85, 99, 0.5)',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  flex: 1
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(75, 85, 99, 0.6)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(55, 65, 81, 0.6)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -1401,8 +1588,67 @@ export default function App() {
               </div>
             </div>
             <div className="modal-buttons">
-              <button onClick={confirmDayAdvancement} className="confirm-btn">Advance Day</button>
-              <button onClick={() => setPendingDayAdvancement(null)} className="cancel-btn">Cancel</button>
+              <button 
+                onClick={confirmDayAdvancement} 
+                className="confirm-btn"
+                style={{
+                  background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  flex: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
+                }}
+              >
+                <span>🚀</span>
+                Advance Day
+              </button>
+              <button 
+                onClick={() => setPendingDayAdvancement(null)} 
+                className="cancel-btn"
+                style={{
+                  background: 'rgba(55, 65, 81, 0.6)',
+                  color: 'white',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(75, 85, 99, 0.5)',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem',
+                  flex: 1
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(75, 85, 99, 0.6)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(55, 65, 81, 0.6)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
