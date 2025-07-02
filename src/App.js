@@ -783,7 +783,9 @@ export default function App() {
                 </div>
                 <div className="price-row">
                   <span>2025 realized APY:</span>
-                  <span className="realized-apy">{(marketSettings[market].apy * 0.98).toFixed(3)}%</span>
+                  <span className="realized-apy">
+                    {market === "JitoSol" ? "4.03% / 8.43%" : (marketSettings[market].apy * 0.98).toFixed(3) + "%"}
+                  </span>
                 </div>
                 <div className="price-row">
                   <span>Global Day:</span>
