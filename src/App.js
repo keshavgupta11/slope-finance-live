@@ -204,7 +204,7 @@ export default function App() {
       if (liquidatedPositions.length > 0) {
         liquidatedPositions.forEach(({ market: mkt, trade, liquidationPrice }) => {
           // Calculate vAMM P&L from CLOSING its original hedge position at liquidation price
-          const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position
+          const vammDirection = trade.type === 'pay' ? 1 : -1; // vAMM had opposite position
           const rawEntry = trade.rawPrice;
           const actualLiquidationPrice = parseFloat(trade.liquidationPrice); // Use the trade's liquidation price (8.10%), not current price
           // Net P&L: from original entry to liquidation price (frozen at 450k for your example)
@@ -285,7 +285,7 @@ export default function App() {
     // Calculate P&L from currently open trades
     const allTrades = Object.values(tradesByMarket).flat();
     allTrades.forEach(trade => {
-      const vammDirection = trade.type === 'pay' ? 1 : -1;
+      const vammDirection = trade.type === 'pay' ? -1 : 1;
       const rawEntry = trade.rawPrice;
       const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
       const priceDiff = currentLivePrice - rawEntry;
