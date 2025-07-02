@@ -59,6 +59,29 @@ export default function App() {
     return baseDv01 * (timeToMaturity / totalDays);
   };
 
+  // Helper function to round t/T ratio up to nearest 0.1
+  const roundTimeRatioUp = (ratio) => {
+    return Math.ceil(ratio * 10) / 10;
+  };
+
+  // Helper function to calculate dynamic k based on time to maturity
+  const calculateDynamicK = (baseK, daysToMaturity, totalDays = 365) => {
+    const timeRatio = daysToMaturity / totalDays;
+    const roundedRatio = roundTimeRatioUp(timeRatio);
+    return baseK * roundedRatio;
+  };
+
+  // Helper function to round price to 3 decimal places with direction-specific rounding
+  const roundPriceForDisplay = (price, tradeType) => {
+    if (tradeType === 'pay') {
+      // Round UP for payers
+      return Math.ceil(price * 1000) / 1000;
+    } else {
+      // Round DOWN for receivers
+      return Math.floor(price * 1000) / 1000;
+    }
+  };
+
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
 
   // Calculate total P&L for a position from entry to current day
@@ -467,9 +490,13 @@ export default function App() {
     
     const { apy: baseAPY, k } = marketSettings[trade.market];
     
+    // Calculate dynamic k based on current global day
+    const daysToMaturity = Math.max(0, 365 - globalDay);
+    const dynamicK = calculateDynamicK(k, daysToMaturity);
+    
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
-      unwindPrice = baseAPY + k * postOI;
+      unwindPrice = baseAPY + dynamicK * postOI;
       feeBps = 5;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -477,7 +504,7 @@ export default function App() {
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + k * midpointOI;
+      unwindPrice = baseAPY + dynamicK * midpointOI;
       feeBps = 2;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -485,26 +512,31 @@ export default function App() {
     } else {
       // Risk staying same (absolute value): use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + k * midpointOI;
+      unwindPrice = baseAPY + dynamicK * midpointOI;
       feeBps = 5;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
       executionPrice = unwindPrice + (feeInPrice * directionFactor);
     }
     
+    // Round execution price for display with directional rounding
+    // For unwind, the trade direction is opposite: pay traders are selling (receive), receive traders are buying (pay)
+    const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
+    const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
+    
     // Calculate fees using current DV01
     const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
     
     // Calculate P&L using total P&L calculation
-    const totalPL = calculateTotalPL(trade, executionPrice);
+    const totalPL = calculateTotalPL(trade, roundedExecutionPrice);
     const netReturn = trade.collateral + totalPL;
     
     setPendingUnwind({
       tradeIndex,
       trade,
-      executionPrice: executionPrice.toFixed(4),
+      executionPrice: roundedExecutionPrice.toFixed(3), // Show 3 decimal places
       rawUnwindPrice: unwindPrice.toFixed(4), // Store the raw unwind price separately
-      entryPrice: trade.entryPrice.toFixed(4),
+      entryPrice: trade.entryPrice.toFixed(3),
       pl: totalPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
@@ -604,9 +636,13 @@ export default function App() {
     let feeBps;
     let finalPrice;
     
+    // Calculate dynamic k based on current global day
+    const daysToMaturity = Math.max(0, 365 - globalDay);
+    const dynamicK = calculateDynamicK(k, daysToMaturity);
+    
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
-      rawPrice = baseAPY + k * postOI;
+      rawPrice = baseAPY + dynamicK * postOI;
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
@@ -615,7 +651,7 @@ export default function App() {
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
-      rawPrice = baseAPY + k * midpointOI;
+      rawPrice = baseAPY + dynamicK * midpointOI;
       feeBps = 2;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
@@ -624,7 +660,7 @@ export default function App() {
     } else {
       // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
-      rawPrice = baseAPY + k * midpointOI;
+      rawPrice = baseAPY + dynamicK * midpointOI;
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
@@ -632,11 +668,14 @@ export default function App() {
       finalPrice = rawPrice + fee;
     }
 
+    // Round final price for display with directional rounding
+    const roundedFinalPrice = roundPriceForDisplay(finalPrice, type);
+
     setPendingTrade({
       type,
-      finalPrice: finalPrice.toFixed(4),
+      finalPrice: roundedFinalPrice.toFixed(3), // Show 3 decimal places
       feeRate: feeBps / 100,
-      rawPrice: rawPrice.toFixed(4),
+      rawPrice: rawPrice.toFixed(4), // Keep raw price precise for calculations
       directionFactor: type === 'pay' ? 1 : -1,
       preOI,
       postOI,
@@ -1261,31 +1300,63 @@ export default function App() {
           </div>
 
           <h3>Market Settings</h3>
-          {Object.keys(marketSettings).map((mkt) => (
-            <div key={mkt} className="market-setting">
-              <h4>{mkt}</h4>
-              <div className="setting-inputs">
-                <div>
-                  <label>Oracle APY:</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={marketSettings[mkt].apy}
-                    onChange={(e) => updateMarketSetting(mkt, "apy", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label>K:</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={marketSettings[mkt].k}
-                    onChange={(e) => updateMarketSetting(mkt, "k", e.target.value)}
-                  />
+          {Object.keys(marketSettings).map((mkt) => {
+            const daysToMaturity = Math.max(0, 365 - globalDay);
+            const timeRatio = daysToMaturity / 365;
+            const roundedTimeRatio = roundTimeRatioUp(timeRatio);
+            const currentDynamicK = marketSettings[mkt].k * roundedTimeRatio;
+            
+            return (
+              <div key={mkt} className="market-setting">
+                <h4>{mkt}</h4>
+                <div className="setting-inputs">
+                  <div>
+                    <label>Oracle APY:</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={marketSettings[mkt].apy}
+                      onChange={(e) => updateMarketSetting(mkt, "apy", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Base K:</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={marketSettings[mkt].k}
+                      onChange={(e) => updateMarketSetting(mkt, "k", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>
+                      Current Dynamic K:
+                      <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: '0.5rem' }}>
+                        (Base K × {roundedTimeRatio})
+                      </span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={currentDynamicK.toFixed(8)}
+                      onChange={(e) => {
+                        // Calculate what the base K should be to achieve this dynamic K
+                        const targetDynamicK = parseFloat(e.target.value);
+                        const newBaseK = roundedTimeRatio > 0 ? targetDynamicK / roundedTimeRatio : targetDynamicK;
+                        updateMarketSetting(mkt, "k", newBaseK);
+                      }}
+                      style={{ backgroundColor: '#2d3748', color: '#e2e8f0' }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+                    <div>Days to Maturity: {daysToMaturity}</div>
+                    <div>Time Ratio (t/T): {timeRatio.toFixed(3)} → {roundedTimeRatio.toFixed(1)}</div>
+                    <div>Dynamic K = Base K × {roundedTimeRatio.toFixed(1)} = {currentDynamicK.toFixed(8)}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <div className="closing-prices-section" style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #374151', borderRadius: '0.5rem' }}>
             <h3>Historical Closing Prices</h3>
