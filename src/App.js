@@ -24,7 +24,7 @@ export default function App() {
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
   const [market, setMarket] = useState("JitoSol");
   const [baseDv01, setBaseDv01] = useState(10000);
-  const [margin, setMargin] = useState(200000);
+  const [margin, setMargin] = useState(500000);
   const [currentDay, setCurrentDay] = useState(0); // UI slider only - doesn't affect real positions
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
