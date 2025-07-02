@@ -535,7 +535,7 @@ export default function App() {
       tradeIndex,
       trade,
       executionPrice: roundedExecutionPrice.toFixed(3), // Show 3 decimal places
-      rawUnwindPrice: unwindPrice.toFixed(4), // Store the raw unwind price separately
+      rawUnwindPrice: unwindPrice.toFixed(3), // Store the raw unwind price separately
       entryPrice: trade.entryPrice.toFixed(3),
       pl: totalPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
