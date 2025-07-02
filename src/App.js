@@ -974,7 +974,7 @@ export default function App() {
                 <div className="stat-card">
                   <div className="stat-label">vAMM P&L</div>
                   <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
-                    {vammPL >= 0 ? '+' : ''}${vammPL.toFixed(0)}
+                    {vammPL >= 0 ? '+' : ''}${Math.abs(vammPL).toLocaleString()}{vammPL < 0 ? '' : ''}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
                     Daily P&L calculation
@@ -983,7 +983,7 @@ export default function App() {
                 <div className="stat-card">
                   <div className="stat-label">Protocol P&L (Fees)</div>
                   <div className="stat-value" style={{ color: '#10b981' }}>
-                    +${protocolPL.toFixed(0)}
+                    +${protocolPL.toLocaleString()}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
                     Fee revenue collected
@@ -1038,10 +1038,10 @@ export default function App() {
                         {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
                       </td>
                       <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
-                        {trade.pnl >= 0 ? '+' : ''}${trade.pl}
+                        {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
                       </td>
                       <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                        {trade.todaysPL >= 0 ? '+' : ''}${trade.todaysPL.toFixed(2)}
+                        {trade.todaysPL >= 0 ? '+' : ''}${Math.abs(trade.todaysPL).toLocaleString()}{trade.todaysPL < 0 ? '' : ''}
                       </td>
                       <td>{trade.entryPrice.toFixed(2)}%</td>
                       <td>{trade.currentPrice.toFixed(2)}%</td>
@@ -1119,7 +1119,7 @@ export default function App() {
                     <td>{trade.exitPrice}%</td>
                     <td>${trade.dv01?.toLocaleString()}</td>
                     <td className={parseFloat(trade.finalPL) >= 0 ? 'profit' : 'loss'}>
-                      {parseFloat(trade.finalPL) >= 0 ? '+' : ''}${trade.finalPL}
+                      {parseFloat(trade.finalPL) >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.finalPL)).toLocaleString()}
                     </td>
                     <td>
                       <span style={{ 
@@ -1310,7 +1310,7 @@ export default function App() {
               <div className="detail-row">
                 <span>Total P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
-                  {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${pendingUnwind.pl}
+                  {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${Math.abs(parseFloat(pendingUnwind.pl)).toLocaleString()}
                 </span>
               </div>
               <div className="detail-row">
@@ -1320,7 +1320,7 @@ export default function App() {
               <div className="detail-row">
                 <span>Net Return:</span>
                 <span className={parseFloat(pendingUnwind.netReturn) >= 0 ? 'profit' : 'loss'}>
-                  ${pendingUnwind.netReturn}
+                  ${Math.abs(parseFloat(pendingUnwind.netReturn)).toLocaleString()}
                 </span>
               </div>
             </div>
