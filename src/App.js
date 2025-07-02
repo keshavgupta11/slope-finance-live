@@ -67,27 +67,33 @@ export default function App() {
     const entryDay = trade.entryDay || 0;
     const directionFactor = trade.type === 'pay' ? 1 : -1;
 
-    // Day 0 P&L: (day 0 closing - entry price) * day 0 DV01
-    const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || trade.entryPrice;
-    const day0PL = (day0ClosingPrice - trade.entryPrice) * trade.baseDV01 * directionFactor;
-    totalPL += day0PL;
+    if (globalDay === entryDay) {
+      // On entry day, P&L is simply current price vs entry price
+      const priceDiff = currentPrice - trade.entryPrice;
+      totalPL = priceDiff * trade.baseDV01 * directionFactor;
+    } else {
+      // Day 0 P&L: (day 0 closing - entry price) * day 0 DV01
+      const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || currentPrice;
+      const day0PL = (day0ClosingPrice - trade.entryPrice) * trade.baseDV01 * directionFactor;
+      totalPL += day0PL;
 
-    // Add daily P&L for each day from entry to current
-    for (let day = entryDay + 1; day <= globalDay; day++) {
-      const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
-      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
-      
-      let dayPrice;
-      if (day === globalDay) {
-        // For current day, use live price
-        dayPrice = currentPrice;
-      } else {
-        // For past days, use closing price
-        dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
+      // Add daily P&L for each day from entry+1 to current
+      for (let day = entryDay + 1; day <= globalDay; day++) {
+        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
+        const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
+        
+        let dayPrice;
+        if (day === globalDay) {
+          // For current day, use live price
+          dayPrice = currentPrice;
+        } else {
+          // For past days, use closing price
+          dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
+        }
+        
+        const dayPL = (dayPrice - prevDayClosing) * dayDv01 * directionFactor;
+        totalPL += dayPL;
       }
-      
-      const dayPL = (dayPrice - prevDayClosing) * dayDv01 * directionFactor;
-      totalPL += dayPL;
     }
 
     return totalPL;
@@ -329,14 +335,23 @@ export default function App() {
       const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
       const currentTradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
       
-      // vAMM has opposite position
-      const vammTrade = {
-        ...trade,
-        type: trade.type === 'pay' ? 'receive' : 'pay'
-      };
+      // vAMM has opposite position - calculate its P&L
+      const vammDirectionFactor = trade.type === 'pay' ? -1 : 1; // Opposite of user
       
-      const vammComplexPL = calculateComplexPL(vammTrade, currentPrice, currentTradeDv01);
-      openVammPL += vammComplexPL;
+      if (globalDay === (trade.entryDay || 0)) {
+        // On entry day, vAMM P&L is simply current price vs entry price
+        const priceDiff = currentPrice - trade.entryPrice;
+        const vammPL = priceDiff * trade.baseDV01 * vammDirectionFactor;
+        openVammPL += vammPL;
+      } else {
+        // Use complex calculation for vAMM
+        const vammTrade = {
+          ...trade,
+          type: trade.type === 'pay' ? 'receive' : 'pay'
+        };
+        const vammComplexPL = calculateComplexPL(vammTrade, currentPrice, currentTradeDv01);
+        openVammPL += vammComplexPL;
+      }
     });
     
     // Total vAMM P&L = closed trades P&L + open trades P&L
