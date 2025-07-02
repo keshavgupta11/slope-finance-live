@@ -1,4 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+          // Calculate net vAMM P&L from liquidation (entry to liquidation price)
+          const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position initially
+          const rawEntry = trade.rawPrice;
+          
+          // Net P&L: from original entry to liquidation price (frozen)
+          const netLiquidationPL = (rawEntry - liquidationPrice) * 100 * trade.currentDV01 * vammDirection;
+          
+          console.log('Net liquidation P&L (frozen):', {
+            rawEntry: rawEntry,
+            liquidationPrice: liquidationPrice,
+            dv01: trade.currentDV01,
+            direction: vammDirection,
+            netPL: netLiquidationPL
+          });
+          
+          setTotalVammPL(prev => prev + netLiquidationPL);import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -235,21 +250,8 @@ export default function App() {
             };
           });
           
-          // Store liquidated position info for ongoing P&L calculation
-          if (!window.liquidatedPositions) window.liquidatedPositions = [];
-          window.liquidatedPositions.push({
-            market: mkt,
-            type: trade.type, // vAMM takes over SAME position as user
-            dv01: trade.currentDV01,
-            entryPrice: liquidationPrice
-          });
-          console.log('Added liquidated position:', {
-            market: mkt,
-            type: trade.type,
-            dv01: trade.currentDV01,
-            entryPrice: liquidationPrice
-          });
-          console.log('Total liquidated positions:', window.liquidatedPositions.length);
+          // Remove the liquidated position tracking since we're freezing the P&L
+          // No longer need to track ongoing P&L from liquidated positions
           
           // Add ongoing P&L from the liquidated position that vAMM took over
           // This creates a "virtual" position at liquidation price that generates ongoing P&L
