@@ -1,50 +1,10 @@
-  // Generate chart data based on selected market
-  const generateChartData = useMemo(() => {
-    // Use actual historical data for JitoSOL based on your Excel analysis
-    if (market === "JitoSol") {
-      return [
-        { date: "2023-Q1", apy: 0.0704, year: 2023 },
-        { date: "2023-Q2", apy: 0.0726, year: 2023.25 },
-        { date: "2023-Q3", apy: 0.0747, year: 2023.5 },
-        { date: "2023-Q4", apy: 0.0763, year: 2023.75 },
-        { date: "2024-Q1", apy: 0.0819, year: 2024 },
-        { date: "2024-Q2", apy: 0.0828, year: 2024.25 },
-        { date: "2024-Q3", apy: 0.0824, year: 2024.5 },
-        { date: "2024-Q4", apy: 0.0824, year: 2024.75 },
-        { date: "2025-Q1", apy: 0.0796, year: 2025 },
-        { date: "2025-Q2", apy: 0.0796, year: 2025.25 }
-      ];
-    }
-    
-    // Keep simulated data for other markets
-    const data = [];
-    const marketTargets = {
-      'Lido stETH': 4.5,
-      'Ethena sUSDe': 3.0
-    };
-    
-    const targetAPY = marketTargets[market] || 5.0;
-    
-    for (let year = 2023; year <= 2025; year++) {
-      for (let quarter = 1; quarter <= (year === 2025 ? 2 : 4); quarter++) {
-        const timeIndex = (year - 2023) * 4 + quarter - 1;
-        const smoothVariation = Math.sin(timeIndex / 12) * 0.8;
-        const gradualTrend = (timeIndex / 20) * 0.5;
-        const apy = Math.max(1, Math.min(9, targetAPY + smoothVariation + gradualTrend));
-        
-        data.push({
-          date: `${year}-Q${quarter}`,
-          apy: parseFloat(apy.toFixed(3)),
-          year: year + (quarter - 1) * 0.25
-        });
-      }
-    }
-    return data;
-  }, [market]);import React, { useState, useEffect, useMemo } from 'react';
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
-import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
+
+// Solana imports
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // Phantom wallet detection
 const getProvider = () => {
@@ -56,14 +16,7 @@ const getProvider = () => {
 
 export default function App() {
   const initialMarketSettings = {
-    "JitoSol": { 
-      apy: 7.959, // Based on your 2025 projection (7.959%)
-      k: 0.00001, 
-      symbol: "JitoSOL",
-      historicalMin: 6.84,
-      historicalMax: 8.29,
-      dailyVolatility: 0.0031 // For future use if needed
-    },
+    "JitoSol": { apy: 7.959, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
     "Lido stETH": { apy: 5.0, k: 0.00001, symbol: "stETH" },
     "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
   };
@@ -374,9 +327,25 @@ export default function App() {
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices]);
 
   const generateChartData = () => {
+    // Use actual historical data for JitoSOL based on your Excel analysis
+    if (market === "JitoSol") {
+      return [
+        { date: "2023-Q1", apy: 7.04, year: 2023.0 },
+        { date: "2023-Q2", apy: 7.26, year: 2023.25 },
+        { date: "2023-Q3", apy: 7.48, year: 2023.5 },
+        { date: "2023-Q4", apy: 7.63, year: 2023.75 },
+        { date: "2024-Q1", apy: 7.85, year: 2024.0 },
+        { date: "2024-Q2", apy: 8.28, year: 2024.25 },
+        { date: "2024-Q3", apy: 8.26, year: 2024.5 },
+        { date: "2024-Q4", apy: 8.24, year: 2024.75 },
+        { date: "2025-Q1", apy: 8.10, year: 2025.0 },
+        { date: "2025-Q2", apy: 7.959, year: 2025.25 } // Your 2025 projection
+      ];
+    }
+    
+    // Keep original logic for other markets
     const data = [];
     const marketTargets = {
-      'JitoSol': 7.5,
       'Lido stETH': 4.5,
       'Ethena sUSDe': 3.0
     };
@@ -594,7 +563,7 @@ export default function App() {
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
 
-  const chartData = generateChartData;
+  const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
   const protocolOI = calculateProtocolOI();
   const netOI = protocolOI[market] || 0;
@@ -810,11 +779,11 @@ export default function App() {
               <div className="price-info">
                 <div className="price-row">
                   <span>Live Price:</span>
-                  <span className="live-price">{lastPrice.toFixed(2)}%</span>
+                  <span className="live-price">{lastPrice.toFixed(3)}%</span>
                 </div>
                 <div className="price-row">
                   <span>2025 realized APY:</span>
-                  <span className="realized-apy">{(marketSettings[market].apy * 0.98).toFixed(2)}%</span>
+                  <span className="realized-apy">{(marketSettings[market].apy * 0.98).toFixed(3)}%</span>
                 </div>
                 <div className="price-row">
                   <span>Global Day:</span>
@@ -822,7 +791,7 @@ export default function App() {
                 </div>
                 <div className="indicator">
                   <span className="indicator-icon">⚡</span>
-                  <span>{marketSettings[market].apy.toFixed(2)}%</span>
+                  <span>{marketSettings[market].apy.toFixed(3)}%</span>
                 </div>
               </div>
             </div>
@@ -834,8 +803,8 @@ export default function App() {
                 ))}
               </select>
               <div className="market-info">
-                <div>Notional / DV01: $10mm / $1k DV01</div>
-                <div>$1k dv01 means you gain/lose $1,000 per 1bp move</div>
+                <div>Notional / DV01: $10mm / $1k DV01, Day 0</div>
+                <div>$1k DV01 means you gain/lose $1,000 per 1bp move</div>
               </div>
             </div>
 
@@ -954,7 +923,7 @@ export default function App() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                    domain={[0, 10]}
+                    domain={[6, 9]}
                     tickFormatter={(value) => `${value.toFixed(1)}%`}
                     scale="linear"
                   />
@@ -1090,9 +1059,9 @@ export default function App() {
                       <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
                         {trade.todaysPL >= 0 ? '+' : ''}${Math.abs(trade.todaysPL).toLocaleString()}{trade.todaysPL < 0 ? '' : ''}
                       </td>
-                      <td>{trade.entryPrice.toFixed(2)}%</td>
-                      <td>{trade.currentPrice.toFixed(2)}%</td>
-                      <td>{parseFloat(trade.liquidationPrice).toFixed(2)}%</td>
+                      <td>{trade.entryPrice.toFixed(3)}%</td>
+                      <td>{trade.currentPrice.toFixed(3)}%</td>
+                      <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
                       <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
@@ -1256,7 +1225,7 @@ export default function App() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.5rem' }}>
                     {Object.keys(dailyClosingPrices[mkt]).map(day => (
                       <div key={day} style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                        Day {day}: {dailyClosingPrices[mkt][day].toFixed(2)}%
+                        Day {day}: {dailyClosingPrices[mkt][day].toFixed(3)}%
                       </div>
                     ))}
                   </div>
@@ -1311,7 +1280,7 @@ export default function App() {
                   {(pendingTrade.type === 'pay' 
                     ? (parseFloat(pendingTrade.finalPrice) - ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
                     : (parseFloat(pendingTrade.finalPrice) + ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
-                  ).toFixed(2)}%
+                  ).toFixed(3)}%
                 </span>
               </div>
               <div className="detail-row">
@@ -1399,7 +1368,7 @@ export default function App() {
                     <span>{mkt}:</span>
                     <input
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       value={pendingDayAdvancement.closingPrices[mkt]}
                       onChange={(e) => {
                         const updated = { ...pendingDayAdvancement };
