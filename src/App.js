@@ -534,13 +534,10 @@ export default function App() {
       return updated;
     });
     
-    // Update market price
-    const { apy: baseAPY, k } = marketSettings[trade.market];
-    const protocolOI = calculateProtocolOI();
-    const newRawPrice = baseAPY + k * (protocolOI[trade.market] || 0);
+    // Update market price to the raw unwind price (the new "last trade")
     setLastPriceByMarket(prev => ({
       ...prev,
-      [trade.market]: newRawPrice
+      [trade.market]: parseFloat(rawUnwindPrice)
     }));
     
     // Return funds to user
