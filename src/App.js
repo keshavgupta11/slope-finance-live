@@ -1,4 +1,45 @@
-import React, { useState, useEffect, useMemo } from 'react';
+  const generateChartData = () => {
+    // Use actual historical data for JitoSOL based on your Excel analysis
+    if (market === "JitoSol") {
+      return [
+        { date: "2023-Q1", apy: 0.0704, year: 2023 },
+        { date: "2023-Q2", apy: 0.0726, year: 2023.25 },
+        { date: "2023-Q3", apy: 0.0747, year: 2023.5 },
+        { date: "2023-Q4", apy: 0.0763, year: 2023.75 },
+        { date: "2024-Q1", apy: 0.0819, year: 2024 },
+        { date: "2024-Q2", apy: 0.0828, year: 2024.25 },
+        { date: "2024-Q3", apy: 0.0824, year: 2024.5 },
+        { date: "2024-Q4", apy: 0.0824, year: 2024.75 },
+        { date: "2025-Q1", apy: 0.0796, year: 2025 },
+        { date: "2025-Q2", apy: 0.0796, year: 2025.25 }
+      ];
+    }
+    
+    // Keep simulated data for other markets
+    const data = [];
+    const marketTargets = {
+      'Lido stETH': 4.5,
+      'Ethena sUSDe': 3.0
+    };
+    
+    const targetAPY = marketTargets[market] || 5.0;
+    
+    for (let year = 2023; year <= 2025; year++) {
+      for (let quarter = 1; quarter <= (year === 2025 ? 2 : 4); quarter++) {
+        const timeIndex = (year - 2023) * 4 + quarter - 1;
+        const smoothVariation = Math.sin(timeIndex / 12) * 0.8;
+        const gradualTrend = (timeIndex / 20) * 0.5;
+        const apy = Math.max(1, Math.min(9, targetAPY + smoothVariation + gradualTrend));
+        
+        data.push({
+          date: `${year}-Q${quarter}`,
+          apy: parseFloat(apy.toFixed(3)),
+          year: year + (quarter - 1) * 0.25
+        });
+      }
+    }
+    return data;
+  };import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -16,7 +57,14 @@ const getProvider = () => {
 
 export default function App() {
   const initialMarketSettings = {
-    "JitoSol": { apy: 8.45, k: 0.00001, symbol: "JitoSOL" },
+    "JitoSol": { 
+      apy: 7.959, // Based on your 2025 projection (7.959%)
+      k: 0.00001, 
+      symbol: "JitoSOL",
+      historicalMin: 6.84,
+      historicalMax: 8.29,
+      dailyVolatility: 0.0031 // For future use if needed
+    },
     "Lido stETH": { apy: 5.0, k: 0.00001, symbol: "stETH" },
     "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
   };
@@ -787,8 +835,8 @@ export default function App() {
                 ))}
               </select>
               <div className="market-info">
-                <div>Notional / DV01: $10mm / $1k DV01, Day 0</div>
-                <div>$1k DV01 means you gain/lose $1,000 per 1bp move</div>
+                <div>Notional / DV01: $10mm / $1k DV01</div>
+                <div>$1k dv01 means you gain/lose $1,000 per 1bp move</div>
               </div>
             </div>
 
