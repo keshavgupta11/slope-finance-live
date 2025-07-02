@@ -61,8 +61,8 @@ export default function App() {
 
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
 
-  // Calculate total P&L for a position (sum of all days)
-  const calculateTotalPL = (trade, currentPrice) => {
+  // Calculate daily P&L for a position
+  const calculateDailyPL = (trade, currentPrice) => {
     let totalPL = 0;
     const entryDay = trade.entryDay || 0;
     const directionFactor = trade.type === 'pay' ? 1 : -1;
@@ -107,126 +107,8 @@ export default function App() {
     return totalPL;
   };
 
-  // Calculate current day's P&L only
-  const calculateCurrentDayPL = (trade, currentPrice) => {
-    const entryDay = trade.entryDay || 0;
-    const directionFactor = trade.type === 'pay' ? 1 : -1;
-    const currentDayDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
-
-    if (globalDay === entryDay) {
-      // Still on entry day - current day P&L is total P&L
-      const priceDiff = currentPrice - trade.entryPrice;
-      return priceDiff * 100 * currentDayDv01 * directionFactor;
-    } else {
-      // Past entry day - calculate only current day's P&L
-      const prevDayClosing = dailyClosingPrices[trade.market]?.[globalDay - 1] || trade.entryPrice;
-      const priceDiff = currentPrice - prevDayClosing;
-      return priceDiff * 100 * currentDayDv01 * directionFactor;
-    }
-  };
-
-  // Calculate total P&L for unwinding positions (handles multi-day correctly)
-  const calculateUnwindPL = (trade, unwindPrice, unwindDay = globalDay) => {
-    let totalPL = 0;
-    const entryDay = trade.entryDay || 0;
-    const directionFactor = trade.type === 'pay' ? 1 : -1;
-
-    console.log('calculateUnwindPL called with:', {
-      trade: trade,
-      unwindPrice: unwindPrice,
-      unwindDay: unwindDay,
-      entryDay: entryDay,
-      directionFactor: directionFactor
-    });
-
-    // Calculate P&L for each day from entry to unwind day
-    for (let day = entryDay; day <= unwindDay; day++) {
-      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
-      let dayPL = 0;
-
-      if (day === entryDay) {
-        // Day 0 (entry day)
-        if (unwindDay === entryDay) {
-          // Same day unwind - use unwind price
-          const priceDiff = unwindPrice - trade.entryPrice;
-          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-          console.log('Same day unwind calculation:', {
-            unwindPrice: unwindPrice,
-            entryPrice: trade.entryPrice,
-            priceDiff: priceDiff,
-            dayDv01: dayDv01,
-            directionFactor: directionFactor,
-            dayPL: dayPL
-          });
-        } else {
-          // Multi-day position - use day 0 closing price for day 0
-          const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || unwindPrice;
-          const priceDiff = day0ClosingPrice - trade.entryPrice;
-          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-        }
-      } else if (day === unwindDay) {
-        // Unwind day - use unwind price
-        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
-        const priceDiff = unwindPrice - prevDayClosing;
-        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-      } else {
-        // Intermediate days - use closing prices
-        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
-        const dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
-        const priceDiff = dayPrice - prevDayClosing;
-        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-      }
-      
-      totalPL += dayPL;
-    }
-
-    console.log('calculateUnwindPL result:', totalPL);
-    return totalPL;
-  };
-
   // Calculate protocol OI using current DV01s
   const calculateProtocolOI = () => {
-  // Calculate total P&L for unwinding positions (handles multi-day correctly)
-  const calculateUnwindPL = (trade, unwindPrice, unwindDay = globalDay) => {
-    let totalPL = 0;
-    const entryDay = trade.entryDay || 0;
-    const directionFactor = trade.type === 'pay' ? 1 : -1;
-
-    // Calculate P&L for each day from entry to unwind day
-    for (let day = entryDay; day <= unwindDay; day++) {
-      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
-      let dayPL = 0;
-
-      if (day === entryDay) {
-        // Day 0 (entry day)
-        if (unwindDay === entryDay) {
-          // Same day unwind - use unwind price
-          const priceDiff = unwindPrice - trade.entryPrice;
-          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-        } else {
-          // Multi-day position - use day 0 closing price for day 0
-          const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || unwindPrice;
-          const priceDiff = day0ClosingPrice - trade.entryPrice;
-          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-        }
-      } else if (day === unwindDay) {
-        // Unwind day - use unwind price
-        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
-        const priceDiff = unwindPrice - prevDayClosing;
-        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-      } else {
-        // Intermediate days - use closing prices
-        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
-        const dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
-        const priceDiff = dayPrice - prevDayClosing;
-        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
-      }
-      
-      totalPL += dayPL;
-    }
-
-    return totalPL;
-  };
     const oiByMarketCurrent = {};
     
     Object.keys(tradesByMarket).forEach(mkt => {
@@ -358,13 +240,10 @@ export default function App() {
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, globalDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
 
-            // Calculate both total P&L and current day P&L
-            const totalPL = calculateTotalPL(updatedTrade, updatedTrade.currentPrice);
-            const currentDayPL = calculateCurrentDayPL(updatedTrade, updatedTrade.currentPrice);
-            
-            updatedTrade.pl = totalPL.toFixed(2); // Total P&L
-            updatedTrade.pnl = totalPL; // Total P&L for liquidation check
-            updatedTrade.dailyPL = currentDayPL.toFixed(2); // Current day P&L
+            // Use daily P&L calculation
+            const dailyPL = calculateDailyPL(updatedTrade, updatedTrade.currentPrice);
+            updatedTrade.pl = dailyPL.toFixed(2);
+            updatedTrade.pnl = dailyPL;
 
             return updatedTrade;
           });
@@ -394,13 +273,13 @@ export default function App() {
           // Calculate vAMM P&L from liquidation and freeze it
           const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM has opposite position
           
-          // Calculate vAMM's total P&L up to liquidation point using raw entry price
+          // Calculate vAMM's daily P&L up to liquidation point using raw entry price
           const vammTrade = {
             ...trade,
             entryPrice: trade.rawPrice, // vAMM enters at raw price
             type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
           };
-          const vammLiquidationPL = calculateTotalPL(vammTrade, parseFloat(trade.liquidationPrice));
+          const vammLiquidationPL = calculateDailyPL(vammTrade, parseFloat(trade.liquidationPrice));
           setTotalVammPL(prev => prev + vammLiquidationPL);
           
           // Add to trade history
@@ -470,7 +349,7 @@ export default function App() {
         type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
       };
       
-      const vammDailyPL = calculateTotalPL(vammTrade, currentPrice);
+      const vammDailyPL = calculateDailyPL(vammTrade, currentPrice);
       openVammPL += vammDailyPL;
     });
     
@@ -580,17 +459,16 @@ export default function App() {
     // Calculate fees using current DV01
     const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
     
-    // Calculate P&L using unwind-specific calculation
-    const totalPL = calculateUnwindPL(trade, parseFloat(executionPrice));
-    const netReturn = trade.collateral + totalPL;
+    // Calculate P&L using daily calculation
+    const dailyPL = calculateDailyPL(trade, executionPrice);
+    const netReturn = trade.collateral + dailyPL;
     
     setPendingUnwind({
       tradeIndex,
       trade,
       executionPrice: executionPrice.toFixed(4),
-      unwindPrice: unwindPrice.toFixed(4), // Store raw unwind price
       entryPrice: trade.entryPrice.toFixed(4),
-      pl: totalPL.toFixed(2),
+      pl: dailyPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
       feeRate: feeBps.toString(),
@@ -608,7 +486,7 @@ export default function App() {
       type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
     };
     const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-    const finalVammPL = calculateTotalPL(vammTrade, currentPrice);
+    const finalVammPL = calculateDailyPL(vammTrade, currentPrice);
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
@@ -1114,8 +992,7 @@ export default function App() {
                 <tr>
                   <th>Market</th>
                   <th>Direction</th>
-                  <th>Current Day P&L</th>
-                  <th>Total P&L</th>
+                  <th>Daily P&L</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
@@ -1139,9 +1016,6 @@ export default function App() {
                       <td>{trade.market}</td>
                       <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
                         {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                      </td>
-                      <td className={parseFloat(trade.dailyPL || 0) >= 0 ? 'profit' : 'loss'}>
-                        {parseFloat(trade.dailyPL || 0) >= 0 ? '+' : ''}${trade.dailyPL || '0.00'}
                       </td>
                       <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
                         {trade.pnl >= 0 ? '+' : ''}${trade.pl}
@@ -1186,7 +1060,7 @@ export default function App() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="15" className="no-positions">No positions yet</td>
+                    <td colSpan="14" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -1407,7 +1281,7 @@ export default function App() {
                 <span className="execution-price">{pendingUnwind.executionPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Total P&L:</span>
+                <span>Daily P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
                   {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${pendingUnwind.pl}
                 </span>
@@ -1489,6 +1363,5 @@ export default function App() {
         </div>
       )}
     </div>
-    
   );
 }
