@@ -488,6 +488,7 @@ export default function App() {
       tradeIndex,
       trade,
       executionPrice: executionPrice.toFixed(4),
+      unwindPrice: unwindPrice.toFixed(4), // Store raw unwind price
       entryPrice: trade.entryPrice.toFixed(4),
       pl: totalPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
