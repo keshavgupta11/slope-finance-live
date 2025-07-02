@@ -467,6 +467,7 @@ export default function App() {
       tradeIndex,
       trade,
       executionPrice: executionPrice.toFixed(4),
+      rawUnwindPrice: unwindPrice.toFixed(4), // Store the raw unwind price separately
       entryPrice: trade.entryPrice.toFixed(4),
       pl: dailyPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
@@ -477,7 +478,7 @@ export default function App() {
   };
 
   const confirmUnwind = () => {
-    const { tradeIndex, trade, executionPrice, pl, netReturn } = pendingUnwind;
+    const { tradeIndex, trade, executionPrice, rawUnwindPrice, pl, netReturn } = pendingUnwind;
     
     // Calculate final vAMM P&L using daily calculation and freeze it
     const vammTrade = {
@@ -485,8 +486,8 @@ export default function App() {
       entryPrice: trade.rawPrice, // vAMM enters at raw price
       type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
     };
-    const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-    const finalVammPL = calculateDailyPL(vammTrade, currentPrice);
+    // Use the raw unwind price (without user fees) for vAMM P&L calculation
+    const finalVammPL = calculateDailyPL(vammTrade, parseFloat(rawUnwindPrice));
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
@@ -1277,8 +1278,12 @@ export default function App() {
                 <span>{pendingUnwind.entryPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Unwind Price:</span>
+                <span>Unwind Price (with fees):</span>
                 <span className="execution-price">{pendingUnwind.executionPrice}%</span>
+              </div>
+              <div className="detail-row">
+                <span>Raw Unwind Price:</span>
+                <span className="execution-price">{pendingUnwind.rawUnwindPrice}%</span>
               </div>
               <div className="detail-row">
                 <span>Daily P&L:</span>
