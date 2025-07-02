@@ -131,6 +131,14 @@ export default function App() {
     const entryDay = trade.entryDay || 0;
     const directionFactor = trade.type === 'pay' ? 1 : -1;
 
+    console.log('calculateUnwindPL called with:', {
+      trade: trade,
+      unwindPrice: unwindPrice,
+      unwindDay: unwindDay,
+      entryDay: entryDay,
+      directionFactor: directionFactor
+    });
+
     // Calculate P&L for each day from entry to unwind day
     for (let day = entryDay; day <= unwindDay; day++) {
       const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
@@ -142,6 +150,14 @@ export default function App() {
           // Same day unwind - use unwind price
           const priceDiff = unwindPrice - trade.entryPrice;
           dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+          console.log('Same day unwind calculation:', {
+            unwindPrice: unwindPrice,
+            entryPrice: trade.entryPrice,
+            priceDiff: priceDiff,
+            dayDv01: dayDv01,
+            directionFactor: directionFactor,
+            dayPL: dayPL
+          });
         } else {
           // Multi-day position - use day 0 closing price for day 0
           const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || unwindPrice;
@@ -164,6 +180,7 @@ export default function App() {
       totalPL += dayPL;
     }
 
+    console.log('calculateUnwindPL result:', totalPL);
     return totalPL;
   };
 
