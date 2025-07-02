@@ -125,6 +125,48 @@ export default function App() {
     }
   };
 
+  // Calculate total P&L for unwinding positions (handles multi-day correctly)
+  const calculateUnwindPL = (trade, unwindPrice, unwindDay = globalDay) => {
+    let totalPL = 0;
+    const entryDay = trade.entryDay || 0;
+    const directionFactor = trade.type === 'pay' ? 1 : -1;
+
+    // Calculate P&L for each day from entry to unwind day
+    for (let day = entryDay; day <= unwindDay; day++) {
+      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
+      let dayPL = 0;
+
+      if (day === entryDay) {
+        // Day 0 (entry day)
+        if (unwindDay === entryDay) {
+          // Same day unwind - use unwind price
+          const priceDiff = unwindPrice - trade.entryPrice;
+          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+        } else {
+          // Multi-day position - use day 0 closing price for day 0
+          const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || unwindPrice;
+          const priceDiff = day0ClosingPrice - trade.entryPrice;
+          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+        }
+      } else if (day === unwindDay) {
+        // Unwind day - use unwind price
+        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
+        const priceDiff = unwindPrice - prevDayClosing;
+        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+      } else {
+        // Intermediate days - use closing prices
+        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
+        const dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
+        const priceDiff = dayPrice - prevDayClosing;
+        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+      }
+      
+      totalPL += dayPL;
+    }
+
+    return totalPL;
+  };
+
   // Calculate protocol OI using current DV01s
   const calculateProtocolOI = () => {
   // Calculate total P&L for unwinding positions (handles multi-day correctly)
