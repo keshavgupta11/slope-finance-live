@@ -1,19 +1,4 @@
-          // Calculate net vAMM P&L from liquidation (entry to liquidation price)
-          const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position initially
-          const rawEntry = trade.rawPrice;
-          
-          // Net P&L: from original entry to liquidation price (frozen)
-          const netLiquidationPL = (rawEntry - liquidationPrice) * 100 * trade.currentDV01 * vammDirection;
-          
-          console.log('Net liquidation P&L (frozen):', {
-            rawEntry: rawEntry,
-            liquidationPrice: liquidationPrice,
-            dv01: trade.currentDV01,
-            direction: vammDirection,
-            netPL: netLiquidationPL
-          });
-          
-          setTotalVammPL(prev => prev + netLiquidationPL);import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -222,10 +207,9 @@ export default function App() {
           // Calculate vAMM P&L from CLOSING its original hedge position at liquidation price
           const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM had opposite position
           const rawEntry = trade.rawPrice;
-          const priceDiff = liquidationPrice - rawEntry;
-          const liquidatedVammPL = priceDiff * 100 * trade.currentDV01 * vammDirection;
-          console.log('Adding liquidated vAMM P&L (closing hedge) to total:', liquidatedVammPL);
-          setTotalVammPL(prev => prev + liquidatedVammPL);
+          const netLiquidationPL = (rawEntry - liquidationPrice) * 100 * trade.currentDV01 * vammDirection;
+          console.log('Net liquidation P&L (frozen):', netLiquidationPL);
+          setTotalVammPL(prev => prev + netLiquidationPL);
           
           // Add to trade history
           setTradeHistory(prevHistory => [...prevHistory, {
@@ -250,8 +234,15 @@ export default function App() {
             };
           });
           
-          // Remove the liquidated position tracking since we're freezing the P&L
-          // No longer need to track ongoing P&L from liquidated positions
+          // Store liquidated position info for ongoing P&L calculation
+          
+          console.log('Added liquidated position:', {
+            market: mkt,
+            type: trade.type,
+            dv01: trade.currentDV01,
+            entryPrice: liquidationPrice
+          });
+          console.log('Total liquidated positions:', window.liquidatedPositions.length);
           
           // Add ongoing P&L from the liquidated position that vAMM took over
           // This creates a "virtual" position at liquidation price that generates ongoing P&L
