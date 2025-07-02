@@ -1,6 +1,6 @@
-  const generateChartData = () => {
+  const generateChartData = (selectedMarket) => {
     // Use actual historical data for JitoSOL based on your Excel analysis
-    if (market === "JitoSol") {
+    if (selectedMarket === "JitoSol") {
       return [
         { date: "2023-Q1", apy: 0.0704, year: 2023 },
         { date: "2023-Q2", apy: 0.0726, year: 2023.25 },
@@ -22,7 +22,7 @@
       'Ethena sUSDe': 3.0
     };
     
-    const targetAPY = marketTargets[market] || 5.0;
+    const targetAPY = marketTargets[selectedMarket] || 5.0;
     
     for (let year = 2023; year <= 2025; year++) {
       for (let quarter = 1; quarter <= (year === 2025 ? 2 : 4); quarter++) {
@@ -595,7 +595,7 @@ export default function App() {
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
 
-  const chartData = useMemo(() => generateChartData(), [market]);
+  const chartData = useMemo(() => generateChartData(market), [market]);
   const marketTrades = tradesByMarket[market] || [];
   const protocolOI = calculateProtocolOI();
   const netOI = protocolOI[market] || 0;
