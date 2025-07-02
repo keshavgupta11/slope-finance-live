@@ -1,6 +1,7 @@
-  const generateChartData = (selectedMarket) => {
+  // Generate chart data based on selected market
+  const generateChartData = useMemo(() => {
     // Use actual historical data for JitoSOL based on your Excel analysis
-    if (selectedMarket === "JitoSol") {
+    if (market === "JitoSol") {
       return [
         { date: "2023-Q1", apy: 0.0704, year: 2023 },
         { date: "2023-Q2", apy: 0.0726, year: 2023.25 },
@@ -22,7 +23,7 @@
       'Ethena sUSDe': 3.0
     };
     
-    const targetAPY = marketTargets[selectedMarket] || 5.0;
+    const targetAPY = marketTargets[market] || 5.0;
     
     for (let year = 2023; year <= 2025; year++) {
       for (let quarter = 1; quarter <= (year === 2025 ? 2 : 4); quarter++) {
@@ -39,13 +40,11 @@
       }
     }
     return data;
-  };import React, { useState, useEffect, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import './App.css';
-
-// Solana imports
+  }, [market]);import React, { useState, useEffect, useMemo } from 'react';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import './App.css';
 
 // Phantom wallet detection
 const getProvider = () => {
@@ -595,7 +594,7 @@ export default function App() {
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
 
-  const chartData = useMemo(() => generateChartData(market), [market]);
+  const chartData = generateChartData;
   const marketTrades = tradesByMarket[market] || [];
   const protocolOI = calculateProtocolOI();
   const netOI = protocolOI[market] || 0;
