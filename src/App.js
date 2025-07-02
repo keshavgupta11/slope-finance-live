@@ -25,7 +25,7 @@ export default function App() {
   const [market, setMarket] = useState("JitoSol");
   const [baseDv01, setBaseDv01] = useState(10000);
   const [margin, setMargin] = useState(200000);
-  const [currentDay, setCurrentDay] = useState(0);
+  const [currentDay, setCurrentDay] = useState(0); // UI slider only - doesn't affect real positions
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
@@ -35,7 +35,12 @@ export default function App() {
   const [tradeHistory, setTradeHistory] = useState([]);
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
-  const [totalVammPL, setTotalVammPL] = useState(0);
+  const [totalVammPL, setTotalVammPL] = useState(0); // Stores P&L from closed/liquidated positions
+
+  // New states for daily P&L system
+  const [globalDay, setGlobalDay] = useState(0); // Protocol-wide day counter
+  const [dailyClosingPrices, setDailyClosingPrices] = useState({}); // {market: {day: price}}
+  const [pendingDayAdvancement, setPendingDayAdvancement] = useState(null);
 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
@@ -54,7 +59,73 @@ export default function App() {
     return baseDv01 * (timeToMaturity / totalDays);
   };
 
-  const currentDv01 = calculateCurrentDv01(baseDv01, currentDay);
+  const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
+
+  // Calculate daily P&L for a position
+  const calculateDailyPL = (trade, currentPrice) => {
+    let totalPL = 0;
+    const entryDay = trade.entryDay || 0;
+    const directionFactor = trade.type === 'pay' ? 1 : -1;
+
+    // Calculate P&L for each day from entry to current global day
+    for (let day = entryDay; day <= globalDay; day++) {
+      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
+      let dayPL = 0;
+
+      if (day === entryDay) {
+        // Day 0 (entry day)
+        if (globalDay === entryDay) {
+          // Still on entry day - use live price
+          const priceDiff = currentPrice - trade.entryPrice;
+          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+        } else {
+          // Past entry day - use day 0 closing price
+          const day0ClosingPrice = dailyClosingPrices[trade.market]?.[entryDay] || currentPrice;
+          const priceDiff = day0ClosingPrice - trade.entryPrice;
+          dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+        }
+      } else {
+        // Day N (N > 0)
+        const prevDayClosing = dailyClosingPrices[trade.market]?.[day - 1] || trade.entryPrice;
+        let dayPrice;
+        
+        if (day === globalDay) {
+          // Current day - use live price
+          dayPrice = currentPrice;
+        } else {
+          // Past day - use closing price
+          dayPrice = dailyClosingPrices[trade.market]?.[day] || prevDayClosing;
+        }
+        
+        const priceDiff = dayPrice - prevDayClosing;
+        dayPL = priceDiff * 100 * dayDv01 * directionFactor;
+      }
+      
+      totalPL += dayPL;
+    }
+
+    return totalPL;
+  };
+
+  // Calculate protocol OI using current DV01s
+  const calculateProtocolOI = () => {
+    const oiByMarketCurrent = {};
+    
+    Object.keys(tradesByMarket).forEach(mkt => {
+      let netOI = 0;
+      const trades = tradesByMarket[mkt] || [];
+      
+      trades.forEach(trade => {
+        const tradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+        const oiChange = trade.type === 'pay' ? tradeDv01 : -tradeDv01;
+        netOI += oiChange;
+      });
+      
+      oiByMarketCurrent[mkt] = netOI;
+    });
+    
+    return oiByMarketCurrent;
+  };
 
   // Phantom wallet functions
   const connectWallet = async () => {
@@ -146,12 +217,10 @@ export default function App() {
     if (trade.type === 'pay') {
       // Pay fixed: liquidation when price goes DOWN below liquidation price
       const bpsFromLiquidation = (currentPrice - liquidationPrice) * 100;
-      console.log('Pay Fixed - Current:', currentPrice, 'Liq:', liquidationPrice, 'BPS from liq:', bpsFromLiquidation);
       return bpsFromLiquidation;
     } else {
       // Receive fixed: liquidation when price goes UP above liquidation price
       const bpsFromLiquidation = (liquidationPrice - currentPrice) * 100;
-      console.log('Receive Fixed - Current:', currentPrice, 'Liq:', liquidationPrice, 'BPS from liq:', bpsFromLiquidation);
       return bpsFromLiquidation;
     }
   };
@@ -164,19 +233,17 @@ export default function App() {
       
       Object.keys(updated).forEach(mkt => {
         if (updated[mkt]) {
-          // First update all trades with current P&L
+          // First update all trades with current P&L using daily calculation
           updated[mkt] = updated[mkt].map(trade => {
             const updatedTrade = { ...trade };
-            updatedTrade.currentDay = currentDay;
-            updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, currentDay);
+            updatedTrade.currentDay = globalDay;
+            updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, globalDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
 
-            const directionFactor = trade.type === 'pay' ? 1 : -1;
-            const priceDiff = updatedTrade.currentPrice - trade.entryPrice;
-            const plUSD = priceDiff * 100 * updatedTrade.currentDV01 * directionFactor;
-
-            updatedTrade.pl = plUSD.toFixed(2);
-            updatedTrade.pnl = plUSD;
+            // Use daily P&L calculation
+            const dailyPL = calculateDailyPL(updatedTrade, updatedTrade.currentPrice);
+            updatedTrade.pl = dailyPL.toFixed(2);
+            updatedTrade.pnl = dailyPL;
 
             return updatedTrade;
           });
@@ -203,21 +270,17 @@ export default function App() {
       // Process liquidations
       if (liquidatedPositions.length > 0) {
         liquidatedPositions.forEach(({ market: mkt, trade, liquidationPrice }) => {
-          // Calculate vAMM P&L from CLOSING its original hedge position at liquidation price
-          const vammDirection = trade.type === 'pay' ? 1 : -1; // vAMM had opposite position
-          const rawEntry = trade.rawPrice;
-          const actualLiquidationPrice = parseFloat(trade.liquidationPrice); // Use the trade's liquidation price (8.10%), not current price
-          // Net P&L: from original entry to liquidation price (frozen at 450k for your example)
-          const netLiquidationPL = (rawEntry - actualLiquidationPrice) * 100 * trade.currentDV01 * vammDirection;
-          console.log('Net liquidation P&L (frozen):', {
-          rawEntry: rawEntry,
-          liquidationPrice: actualLiquidationPrice,
-          dv01: trade.currentDV01,
-          direction: vammDirection,
-          netPL: netLiquidationPL
-          });
-          setTotalVammPL(prev => prev + netLiquidationPL);
-
+          // Calculate vAMM P&L from liquidation and freeze it
+          const vammDirection = trade.type === 'pay' ? -1 : 1; // vAMM has opposite position
+          
+          // Calculate vAMM's daily P&L up to liquidation point using raw entry price
+          const vammTrade = {
+            ...trade,
+            entryPrice: trade.rawPrice, // vAMM enters at raw price
+            type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
+          };
+          const vammLiquidationPL = calculateDailyPL(vammTrade, parseFloat(trade.liquidationPrice));
+          setTotalVammPL(prev => prev + vammLiquidationPL);
           
           // Add to trade history
           setTradeHistory(prevHistory => [...prevHistory, {
@@ -231,17 +294,6 @@ export default function App() {
             status: 'LIQUIDATED'
           }]);
           
-          // Update protocol risk - vAMM closes its hedge and takes over user's position
-          setOiByMarket(prevOI => {
-            const currentOI = prevOI[mkt] || 0;
-            // Remove the original hedge position effect
-            const removeHedgeEffect = trade.type === 'pay' ? -trade.currentDV01 : +trade.currentDV01;
-            return {
-              ...prevOI,
-              [mkt]: currentOI + removeHedgeEffect
-            };
-          });
-          
           console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
           alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
         });
@@ -249,7 +301,10 @@ export default function App() {
       
       return updated;
     });
-  }, [currentDay, lastPriceByMarket, marketSettings, totalVammPL]);
+    
+    // Update OI based on current DV01s
+    setOiByMarket(calculateProtocolOI());
+  }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices]);
 
   const generateChartData = () => {
     const data = [];
@@ -278,26 +333,79 @@ export default function App() {
     return data;
   };
 
-  // Calculate vAMM P&L and Protocol P&L
+  // Calculate vAMM P&L and Protocol P&L using daily calculation
   const calculateProtocolMetrics = () => {
     let openVammPL = 0;
     
-    // Calculate P&L from currently open trades
+    // Calculate P&L from currently open trades using daily calculation
     const allTrades = Object.values(tradesByMarket).flat();
     allTrades.forEach(trade => {
-      const vammDirection = trade.type === 'pay' ? -1 : 1;
-      const rawEntry = trade.rawPrice;
-      const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-      const priceDiff = currentLivePrice - rawEntry;
-      const vammTradeResult = priceDiff * 100 * trade.currentDV01 * vammDirection;
-      openVammPL += vammTradeResult;
+      const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+      
+      // vAMM has opposite position and enters at raw price
+      const vammTrade = {
+        ...trade,
+        entryPrice: trade.rawPrice, // vAMM enters at raw price (before fees)
+        type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
+      };
+      
+      const vammDailyPL = calculateDailyPL(vammTrade, currentPrice);
+      openVammPL += vammDailyPL;
     });
     
-    // Total vAMM P&L = closed trades P&L + open trades P&L
+    // Total vAMM P&L = closed/liquidated trades P&L + open trades P&L
     const totalVammPLCombined = totalVammPL + openVammPL;
     
-    // Use cumulative fees and vAMM P&L
     return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
+  };
+
+  // Day advancement functions
+  const requestDayAdvancement = () => {
+    const currentClosingPrices = {};
+    Object.keys(marketSettings).forEach(mkt => {
+      currentClosingPrices[mkt] = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
+    });
+    
+    setPendingDayAdvancement({
+      fromDay: globalDay,
+      toDay: globalDay + 1,
+      closingPrices: currentClosingPrices
+    });
+  };
+
+  const confirmDayAdvancement = () => {
+    const { toDay, closingPrices } = pendingDayAdvancement;
+    
+    // Store closing prices for the previous day
+    setDailyClosingPrices(prev => {
+      const updated = { ...prev };
+      Object.keys(closingPrices).forEach(mkt => {
+        if (!updated[mkt]) updated[mkt] = {};
+        updated[mkt][globalDay] = closingPrices[mkt]; // Store current day's closing prices
+      });
+      return updated;
+    });
+    
+    // Update global day
+    setGlobalDay(toDay);
+    
+    // Update all live trades with new DV01s (P&L will be recalculated in useEffect)
+    setTradesByMarket(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(mkt => {
+        if (updated[mkt]) {
+          updated[mkt] = updated[mkt].map(trade => ({
+            ...trade,
+            currentDay: toDay,
+            currentDV01: calculateCurrentDv01(trade.baseDV01, toDay)
+          }));
+        }
+      });
+      return updated;
+    });
+    
+    setPendingDayAdvancement(null);
+    alert(`Advanced to Day ${toDay}. All live positions updated with new DV01s and daily P&L recalculated.`);
   };
 
   // Unwind function
@@ -305,11 +413,13 @@ export default function App() {
     const trade = marketTrades[tradeIndex];
     if (!trade) return;
 
-    const currentOI = oiByMarket[trade.market] || 0;
+    const protocolOI = calculateProtocolOI();
+    const currentOI = protocolOI[trade.market] || 0;
     
-    // Calculate unwind execution price
+    // Calculate unwind execution price using current DV01
     const preOI = currentOI;
-    const postOI = trade.type === 'pay' ? currentOI - trade.currentDV01 : currentOI + trade.currentDV01;
+    const currentTradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+    const postOI = trade.type === 'pay' ? currentOI - currentTradeDv01 : currentOI + currentTradeDv01;
     
     // Calculate pricing based on risk change
     const preRisk = Math.abs(preOI);
@@ -346,20 +456,19 @@ export default function App() {
       executionPrice = unwindPrice + (feeInPrice * directionFactor);
     }
     
-    // Calculate fees
-    const feeAmount = trade.currentDV01 * feeBps; // DV01 * basis points
+    // Calculate fees using current DV01
+    const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
     
-    // Calculate P&L
-    const priceDiff = executionPrice - trade.entryPrice;
-    const plUSD = priceDiff * 100 * trade.currentDV01 * (trade.type === 'pay' ? 1 : -1);
-    const netReturn = trade.collateral + plUSD;
+    // Calculate P&L using daily calculation
+    const dailyPL = calculateDailyPL(trade, executionPrice);
+    const netReturn = trade.collateral + dailyPL;
     
     setPendingUnwind({
       tradeIndex,
       trade,
       executionPrice: executionPrice.toFixed(4),
       entryPrice: trade.entryPrice.toFixed(4),
-      pl: plUSD.toFixed(2),
+      pl: dailyPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
       feeRate: feeBps.toString(),
@@ -370,16 +479,19 @@ export default function App() {
   const confirmUnwind = () => {
     const { tradeIndex, trade, executionPrice, pl, netReturn } = pendingUnwind;
     
-    // Calculate final vAMM P&L for this trade and add to total
-    const vammDirection = trade.type === 'pay' ? -1 : 1;
-    const rawEntry = trade.rawPrice;
-    const currentLivePrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-    const priceDiff = currentLivePrice - rawEntry;
-    const finalVammPL = priceDiff * 100 * trade.currentDV01 * vammDirection;
+    // Calculate final vAMM P&L using daily calculation and freeze it
+    const vammTrade = {
+      ...trade,
+      entryPrice: trade.rawPrice, // vAMM enters at raw price
+      type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
+    };
+    const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+    const finalVammPL = calculateDailyPL(vammTrade, currentPrice);
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
-    const feeAmount = trade.currentDV01 * pendingUnwind.feeBps;
+    const currentTradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+    const feeAmount = currentTradeDv01 * pendingUnwind.feeBps;
     setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
@@ -389,7 +501,7 @@ export default function App() {
       direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
       entryPrice: trade.entryPrice.toFixed(2),
       exitPrice: parseFloat(executionPrice).toFixed(2),
-      dv01: trade.currentDV01,
+      dv01: currentTradeDv01,
       finalPL: pl,
       status: 'CLOSED'
     }]);
@@ -401,19 +513,10 @@ export default function App() {
       return updated;
     });
     
-    // Update protocol OI
-    setOiByMarket(prev => {
-      const currentOI = prev[trade.market] || 0;
-      const oiChange = trade.type === 'pay' ? -trade.currentDV01 : +trade.currentDV01;
-      return {
-        ...prev,
-        [trade.market]: currentOI + oiChange
-      };
-    });
-    
     // Update market price
     const { apy: baseAPY, k } = marketSettings[trade.market];
-    const newRawPrice = baseAPY + k * (oiByMarket[trade.market] || 0);
+    const protocolOI = calculateProtocolOI();
+    const newRawPrice = baseAPY + k * (protocolOI[trade.market] || 0);
     setLastPriceByMarket(prev => ({
       ...prev,
       [trade.market]: newRawPrice
@@ -428,7 +531,8 @@ export default function App() {
 
   const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
-  const netOI = oiByMarket[market] || 0;
+  const protocolOI = calculateProtocolOI();
+  const netOI = protocolOI[market] || 0;
   const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
   const { apy: baseAPY, k } = marketSettings[market];
   const { vammPL, protocolPL } = calculateProtocolMetrics();
@@ -547,7 +651,7 @@ export default function App() {
         market,
         type,
         baseDV01: baseDv01,
-        currentDV01: currentDv01,
+        currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
         margin,
         entry: finalPrice,
         entryPrice: parseFloat(finalPrice),
@@ -558,8 +662,8 @@ export default function App() {
         pl: "0.00",
         pnl: 0,
         collateral: margin,
-        entryDay: currentDay,
-        currentDay: currentDay,
+        entryDay: globalDay, // Use global day for real positions
+        currentDay: globalDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
@@ -567,17 +671,13 @@ export default function App() {
 
       // Add trade fee to total - use the actual calculated fee basis points
       const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
-      const feeAmount = currentDv01 * feeAmountBps;
+      const actualDv01 = calculateCurrentDv01(baseDv01, globalDay); // Use global day
+      const feeAmount = actualDv01 * feeAmountBps;
       setTotalFeesCollected(prev => prev + feeAmount);
 
       setTradesByMarket(prev => ({
         ...prev,
         [market]: [...(prev[market] || []), trade]
-      }));
-
-      setOiByMarket(prev => ({
-        ...prev,
-        [market]: postOI
       }));
 
       setLastPriceByMarket(prev => ({
@@ -650,6 +750,10 @@ export default function App() {
                   <span>2025 realized APY:</span>
                   <span className="realized-apy">{(marketSettings[market].apy * 0.98).toFixed(2)}%</span>
                 </div>
+                <div className="price-row">
+                  <span>Global Day:</span>
+                  <span className="global-day" style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
+                </div>
                 <div className="indicator">
                   <span className="indicator-icon">⚡</span>
                   <span>{marketSettings[market].apy.toFixed(2)}%</span>
@@ -671,7 +775,7 @@ export default function App() {
 
             <div className="input-group">
               <label>
-                <span>Days from Entry: {currentDay}</span>
+                <span>Days from Entry (UI Only): {currentDay}</span>
                 <span>Time to Maturity: {365 - currentDay} days</span>
               </label>
               <input
@@ -702,7 +806,7 @@ export default function App() {
               <div className="input-group">
                 <label>
                   <span>Base DV01 ($) - Day 0</span>
-                  <span>Current DV01: ${currentDv01.toLocaleString()}</span>
+                  <span>Current DV01 (UI): ${currentDv01.toLocaleString()}</span>
                 </label>
                 <input
                   type="number"
@@ -854,7 +958,7 @@ export default function App() {
                     {vammPL >= 0 ? '+' : ''}${vammPL.toFixed(0)}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Opposite side of user trades
+                    Daily P&L calculation
                   </div>
                 </div>
                 <div className="stat-card">
@@ -872,7 +976,7 @@ export default function App() {
                     {netOI >= 0 ? 'Receive' : 'Pay'} ${Math.abs(netOI).toLocaleString()}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Net open interest exposure
+                    Current DV01 based OI
                   </div>
                 </div>
               </div>
@@ -888,13 +992,14 @@ export default function App() {
                 <tr>
                   <th>Market</th>
                   <th>Direction</th>
-                  <th>Live P&L</th>
+                  <th>Daily P&L</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
                   <th>Margin Posted</th>
                   <th>Base DV01</th>
                   <th>Current DV01</th>
+                  <th>Entry Day</th>
                   <th>Days Held</th>
                   <th>Tx Hash</th>
                   <th>Liquidation Risk</th>
@@ -921,7 +1026,8 @@ export default function App() {
                       <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
-                      <td>{currentDay - (trade.entryDay || 0)}</td>
+                      <td>{trade.entryDay || 0}</td>
+                      <td>{globalDay - (trade.entryDay || 0)}</td>
                       <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
                         {trade.txSignature || 'Simulated'}
                       </td>
@@ -954,7 +1060,7 @@ export default function App() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="13" className="no-positions">No positions yet</td>
+                    <td colSpan="14" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -1016,6 +1122,34 @@ export default function App() {
       {activeTab === "Settings" && (
         <div className="settings-container">
           <h2>Settings</h2>
+          
+          <div className="day-advancement-section" style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #374151', borderRadius: '0.5rem' }}>
+            <h3>Day Advancement</h3>
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                Current Global Day: <span style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
+              </div>
+              <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                Advance one day forward and set closing prices for all markets. This will update all live positions with new DV01s and recalculate daily P&L.
+              </div>
+            </div>
+            <button 
+              onClick={requestDayAdvancement}
+              style={{
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              Advance to Day {globalDay + 1}
+            </button>
+          </div>
+
           <h3>Market Settings</h3>
           {Object.keys(marketSettings).map((mkt) => (
             <div key={mkt} className="market-setting">
@@ -1042,6 +1176,28 @@ export default function App() {
               </div>
             </div>
           ))}
+
+          <div className="closing-prices-section" style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #374151', borderRadius: '0.5rem' }}>
+            <h3>Historical Closing Prices</h3>
+            {Object.keys(dailyClosingPrices).length > 0 ? (
+              Object.keys(dailyClosingPrices).map(mkt => (
+                <div key={mkt} style={{ marginBottom: '1rem' }}>
+                  <h4>{mkt}</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.5rem' }}>
+                    {Object.keys(dailyClosingPrices[mkt]).map(day => (
+                      <div key={day} style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                        Day {day}: {dailyClosingPrices[mkt][day].toFixed(2)}%
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                No historical closing prices yet. Advance days to build history.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -1068,19 +1224,23 @@ export default function App() {
                 <span className="execution-price">{pendingTrade.finalPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Current DV01:</span>
+                <span>Current DV01 (UI):</span>
                 <span>${currentDv01.toLocaleString()}</span>
               </div>
               <div className="detail-row">
-                <span>Days from Entry:</span>
-                <span>{currentDay}</span>
+                <span>Real DV01 (Global Day {globalDay}):</span>
+                <span>${calculateCurrentDv01(baseDv01, globalDay).toLocaleString()}</span>
+              </div>
+              <div className="detail-row">
+                <span>Entry Day:</span>
+                <span>{globalDay}</span>
               </div>
               <div className="detail-row">
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / currentDv01) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) + ((margin / currentDv01) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
                   ).toFixed(2)}%
                 </span>
               </div>
@@ -1121,7 +1281,7 @@ export default function App() {
                 <span className="execution-price">{pendingUnwind.executionPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>P&L:</span>
+                <span>Daily P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
                   {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${pendingUnwind.pl}
                 </span>
@@ -1140,6 +1300,64 @@ export default function App() {
             <div className="modal-buttons">
               <button onClick={confirmUnwind} className="confirm-btn">Confirm Unwind</button>
               <button onClick={() => setPendingUnwind(null)} className="cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingDayAdvancement && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Advance Day</h3>
+            <div className="trade-details">
+              <div className="detail-row">
+                <span>From Day:</span>
+                <span>{pendingDayAdvancement.fromDay}</span>
+              </div>
+              <div className="detail-row">
+                <span>To Day:</span>
+                <span>{pendingDayAdvancement.toDay}</span>
+              </div>
+              <div style={{ marginTop: '1rem' }}>
+                <h4>Set Closing Prices for Day {pendingDayAdvancement.fromDay}:</h4>
+                {Object.keys(pendingDayAdvancement.closingPrices).map(mkt => (
+                  <div key={mkt} className="detail-row">
+                    <span>{mkt}:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={pendingDayAdvancement.closingPrices[mkt]}
+                      onChange={(e) => {
+                        const updated = { ...pendingDayAdvancement };
+                        updated.closingPrices[mkt] = parseFloat(e.target.value);
+                        setPendingDayAdvancement(updated);
+                      }}
+                      style={{
+                        padding: '0.25rem',
+                        borderRadius: '0.25rem',
+                        border: '1px solid #374151',
+                        backgroundColor: '#1f2937',
+                        color: 'white',
+                        width: '80px'
+                      }}
+                    />
+                    <span>%</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: '#1f2937', borderRadius: '0.25rem', fontSize: '0.75rem', color: '#9ca3af' }}>
+                This will:
+                <ul style={{ margin: '0.5rem 0', paddingLeft: '1rem' }}>
+                  <li>Store Day {pendingDayAdvancement.fromDay} closing prices</li>
+                  <li>Advance to Day {pendingDayAdvancement.toDay}</li>
+                  <li>Update all live positions' DV01s to Day {pendingDayAdvancement.toDay} levels</li>
+                  <li>Recalculate all P&Ls using daily P&L method</li>
+                </ul>
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={confirmDayAdvancement} className="confirm-btn">Advance Day</button>
+              <button onClick={() => setPendingDayAdvancement(null)} className="cancel-btn">Cancel</button>
             </div>
           </div>
         </div>
