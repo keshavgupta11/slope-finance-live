@@ -1211,8 +1211,8 @@ export default function App() {
                     <td className={trade.direction === 'Pay Fixed' ? 'pay-fixed' : 'receive-fixed'}>
                       {trade.direction}
                     </td>
-                    <td>{trade.entryPrice}%</td>
-                    <td>{trade.exitPrice}%</td>
+                    <td>{parseFloat(trade.entryPrice).toFixed(3)}%</td>
+                    <td>{parseFloat(trade.exitPrice).toFixed(3)}%</td>
                     <td>${trade.dv01?.toLocaleString()}</td>
                     <td className={parseFloat(trade.finalPL) >= 0 ? 'profit' : 'loss'}>
                       {parseFloat(trade.finalPL) >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.finalPL)).toLocaleString()}
