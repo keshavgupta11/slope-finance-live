@@ -330,8 +330,8 @@ export default function App() {
             date: new Date().toLocaleDateString(),
             market: mkt,
             direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
-            entryPrice: trade.entryPrice.toFixed(2),
-            exitPrice: liquidationPrice.toFixed(2),
+            entryPrice: trade.entryPrice.toFixed(3),
+            exitPrice: liquidationPrice.toFixed(3),
             dv01: trade.currentDV01,
             finalPL: (-trade.collateral).toFixed(2),
             status: 'LIQUIDATED'
@@ -568,8 +568,8 @@ export default function App() {
       date: new Date().toLocaleDateString(),
       market: trade.market,
       direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
-      entryPrice: trade.entryPrice.toFixed(2),
-      exitPrice: parseFloat(executionPrice).toFixed(2),
+      entryPrice: trade.entryPrice.toFixed(3),
+      exitPrice: parseFloat(executionPrice).toFixed(3),
       dv01: currentTradeDv01,
       finalPL: pl,
       status: 'CLOSED'
