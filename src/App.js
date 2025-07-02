@@ -61,8 +61,8 @@ export default function App() {
 
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
 
-  // Calculate total P&L for a position from entry to current day
-  const calculateTotalPL = (trade, currentPrice) => {
+  // Calculate daily P&L for a position
+  const calculateDailyPL = (trade, currentPrice) => {
     let totalPL = 0;
     const entryDay = trade.entryDay || 0;
     const directionFactor = trade.type === 'pay' ? 1 : -1;
@@ -105,24 +105,6 @@ export default function App() {
     }
 
     return totalPL;
-  };
-
-  // Calculate today's P&L only (current day's performance)
-  const calculateTodaysPL = (trade, currentPrice) => {
-    const entryDay = trade.entryDay || 0;
-    const directionFactor = trade.type === 'pay' ? 1 : -1;
-    const currentDayDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
-
-    if (globalDay === entryDay) {
-      // Same day as entry - today's P&L is total P&L
-      const priceDiff = currentPrice - trade.entryPrice;
-      return priceDiff * 100 * currentDayDv01 * directionFactor;
-    } else {
-      // Different day - calculate P&L from yesterday's close to current price
-      const yesterdayClosing = dailyClosingPrices[trade.market]?.[globalDay - 1] || trade.entryPrice;
-      const priceDiff = currentPrice - yesterdayClosing;
-      return priceDiff * 100 * currentDayDv01 * directionFactor;
-    }
   };
 
   // Calculate protocol OI using current DV01s
@@ -258,12 +240,10 @@ export default function App() {
             updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, globalDay);
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
 
-            // Use total P&L calculation
-            const totalPL = calculateTotalPL(updatedTrade, updatedTrade.currentPrice);
-            const todaysPL = calculateTodaysPL(updatedTrade, updatedTrade.currentPrice);
-            updatedTrade.pl = totalPL.toFixed(2);
-            updatedTrade.pnl = totalPL;
-            updatedTrade.todaysPL = todaysPL;
+            // Use daily P&L calculation
+            const dailyPL = calculateDailyPL(updatedTrade, updatedTrade.currentPrice);
+            updatedTrade.pl = dailyPL.toFixed(2);
+            updatedTrade.pnl = dailyPL;
 
             return updatedTrade;
           });
@@ -299,7 +279,7 @@ export default function App() {
             entryPrice: trade.rawPrice, // vAMM enters at raw price
             type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
           };
-          const vammLiquidationPL = calculateTotalPL(vammTrade, parseFloat(trade.liquidationPrice));
+          const vammLiquidationPL = calculateDailyPL(vammTrade, parseFloat(trade.liquidationPrice));
           setTotalVammPL(prev => prev + vammLiquidationPL);
           
           // Add to trade history
@@ -369,7 +349,7 @@ export default function App() {
         type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
       };
       
-      const vammDailyPL = calculateTotalPL(vammTrade, currentPrice);
+      const vammDailyPL = calculateDailyPL(vammTrade, currentPrice);
       openVammPL += vammDailyPL;
     });
     
@@ -479,9 +459,9 @@ export default function App() {
     // Calculate fees using current DV01
     const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
     
-    // Calculate P&L using total P&L calculation
-    const totalPL = calculateTotalPL(trade, executionPrice);
-    const netReturn = trade.collateral + totalPL;
+    // Calculate P&L using daily calculation
+    const dailyPL = calculateDailyPL(trade, executionPrice);
+    const netReturn = trade.collateral + dailyPL;
     
     setPendingUnwind({
       tradeIndex,
@@ -489,7 +469,7 @@ export default function App() {
       executionPrice: executionPrice.toFixed(4),
       rawUnwindPrice: unwindPrice.toFixed(4), // Store the raw unwind price separately
       entryPrice: trade.entryPrice.toFixed(4),
-      pl: totalPL.toFixed(2),
+      pl: dailyPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
       feeRate: feeBps.toString(),
@@ -507,7 +487,7 @@ export default function App() {
       type: trade.type === 'pay' ? 'receive' : 'pay' // Opposite direction
     };
     // Use the raw unwind price (without user fees) for vAMM P&L calculation
-    const finalVammPL = calculateTotalPL(vammTrade, parseFloat(rawUnwindPrice));
+    const finalVammPL = calculateDailyPL(vammTrade, parseFloat(rawUnwindPrice));
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
@@ -1013,8 +993,7 @@ export default function App() {
                 <tr>
                   <th>Market</th>
                   <th>Direction</th>
-                  <th>Total P&L</th>
-                  <th>Today's P&L</th>
+                  <th>Daily P&L</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
@@ -1041,9 +1020,6 @@ export default function App() {
                       </td>
                       <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
                         {trade.pnl >= 0 ? '+' : ''}${trade.pl}
-                      </td>
-                      <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                        {trade.todaysPL >= 0 ? '+' : ''}${trade.todaysPL.toFixed(2)}
                       </td>
                       <td>{trade.entryPrice.toFixed(2)}%</td>
                       <td>{trade.currentPrice.toFixed(2)}%</td>
@@ -1085,7 +1061,7 @@ export default function App() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="15" className="no-positions">No positions yet</td>
+                    <td colSpan="14" className="no-positions">No positions yet</td>
                   </tr>
                 )}
               </tbody>
@@ -1310,7 +1286,7 @@ export default function App() {
                 <span className="execution-price">{pendingUnwind.rawUnwindPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Total P&L:</span>
+                <span>Daily P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
                   {parseFloat(pendingUnwind.pl) >= 0 ? '+' : ''}${pendingUnwind.pl}
                 </span>
