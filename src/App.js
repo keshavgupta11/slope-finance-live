@@ -804,7 +804,8 @@ export default function App() {
       const trade = {
         market,
         type,
-        baseDV01: baseDv01,
+        baseDV01: baseDv01, //for reference
+        entryDV01: calculateCurrentDv01(baseDv01, globalDay), // NEW: actual DV01 at entry
         currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
         margin,
         entry: finalPrice,
@@ -1791,7 +1792,7 @@ export default function App() {
                   <th style={{ padding: '0.75rem', textAlign: 'left', color: '#e5e7eb', fontSize: '0.875rem' }}>Direction</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Entry Price</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Liquidation Price</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Initial DV01</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Entry DV01</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Current Price</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>P&L</th>
                 </tr>
@@ -1840,7 +1841,7 @@ export default function App() {
                         color: '#e5e7eb',
                         fontSize: '0.875rem'
                       }}>
-                        ${trade.baseDV01.toLocaleString()}
+                        ${(trade.entryDV01 || trade.baseDV01).toLocaleString()}
                       </td>
                       <td style={{ 
                         padding: '0.75rem', 
