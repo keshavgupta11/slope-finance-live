@@ -672,12 +672,12 @@ export default function App() {
     const newTradeOI = type === 'pay' ? currentDv01 : -currentDv01;
     const postTradeNetOI = currentNetOI + newTradeOI;
     
-    if (type === 'pay' && currentNetOI > 80000) {
+    if (type === 'pay' && currentNetOI > 60000) {
       alert(`Cannot open new Pay Fixed positions. Protocol net OI is ${currentNetOI.toLocaleString()} (limit: 100k). Current protocol risk: Pay Fixed exposure too high.`);
       return;
     }
     
-    if (type === 'receive' && currentNetOI < -80000) {
+    if (type === 'receive' && currentNetOI < -60000) {
       alert(`Cannot open new Receive Fixed positions. Protocol net OI is ${Math.abs(currentNetOI).toLocaleString()} Receive Fixed (limit: 100k). Current protocol risk: Receive Fixed exposure too high.`);
       return;
     }
