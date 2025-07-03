@@ -36,7 +36,6 @@ export default function App() {
   const [pendingUnwind, setPendingUnwind] = useState(null);
   const [totalFeesCollected, setTotalFeesCollected] = useState(0);
   const [totalVammPL, setTotalVammPL] = useState(0); // Stores P&L from closed/liquidated positions
-  const [tempSettlementPrices, setTempSettlementPrices] = useState({});
 
   // New states for daily P&L system
   const [globalDay, setGlobalDay] = useState(0); // Protocol-wide day counter
@@ -859,18 +858,6 @@ export default function App() {
     return `${str.slice(0, 4)}...${str.slice(-4)}`;
   };
 
-  const handleRiskSettlement = () => {
-    const finalPrices = {};
-    Object.keys(marketSettings).forEach(mkt => {
-      finalPrices[mkt] = tempSettlementPrices[mkt] ? 
-        parseFloat(tempSettlementPrices[mkt]) : 
-        (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
-    });
-  setSettlementPrices(finalPrices);
-    setIsSettlementMode(true);
-    alert('Settlement mode activated from Risk Management!');
-  };
-
   return (
     <div className="app">
       <header className="header">
@@ -883,8 +870,7 @@ export default function App() {
             <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
             <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
             <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
-            <span className={`nav-item ${activeTab === "Risk" ? "active" : ""}`} onClick={() => setActiveTab("Risk")}>Risk</span>
-          </nav>
+           </nav>
         </div>
         
         {wallet ? (
