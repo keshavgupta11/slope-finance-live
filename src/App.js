@@ -654,6 +654,24 @@ export default function App() {
   };
 
   const requestTrade = (type) => {
+    console.log('=== DEBUG TRADE ===');
+  console.log('Trade amount:', currentDv01);
+  console.log('Pre OI:', preOI);
+  console.log('Post OI:', postOI);
+  console.log('Base APY:', baseAPY);
+  console.log('Base K:', k);
+  console.log('Days to maturity:', daysToMaturity);
+  console.log('Dynamic K:', dynamicK);
+  console.log('Pre Risk:', preRisk);
+  console.log('Post Risk:', postRisk);
+  console.log('Fee BPS:', feeBps);
+  console.log('Raw price calculation:', baseAPY + dynamicK * postOI);
+  console.log('Final raw price:', rawPrice);
+  console.log('Fee amount:', feeBps / 100);
+  console.log('Final price before rounding:', finalPrice);
+  console.log('==================');
+  
+
     // Check if wallet is connected
     if (!wallet) {
       alert('Please connect your Phantom wallet first!');
