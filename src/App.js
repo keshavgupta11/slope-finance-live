@@ -454,7 +454,7 @@ export default function App() {
 
   const exitSettlementMode = () => {
    setIsSettlementMode(false);
-    etSettlementPrices({});
+    setSettlementPrices({});
     alert('Exited settlement mode.');
   };
 
