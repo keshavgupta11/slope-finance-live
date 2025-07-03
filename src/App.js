@@ -947,7 +947,7 @@ export default function App() {
                   left: '12px', 
                   top: '50%', 
                   transform: 'translateY(-50%)', 
-                  color: '#9ca3af', 
+                  color: 'white', 
                   fontSize: '1rem',
                    pointerEvents: 'none'
                 }}>$</span>
@@ -972,7 +972,7 @@ export default function App() {
           left: '12px', 
           top: '50%', 
           transform: 'translateY(-50%)', 
-          color: '#9ca3af', 
+          color: 'white', 
           fontSize: '1rem',
           pointerEvents: 'none'
         }}>$</span>
