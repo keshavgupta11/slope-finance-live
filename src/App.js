@@ -1050,9 +1050,9 @@ export default function App() {
               </div>
 
               <button 
-                onClick={() => requestTrade(tradeType)}
-                disabled={!wallet || margin < currentDv01 * 50}
-                className={`enter-btn ${!wallet || margin < currentDv01 * 50 ? 'disabled' : ''}`}
+                onClick={() => !isSettlementMode && requestTrade(tradeType)}
+                disabled={!wallet || margin < currentDv01 * 50 || isSettlementMode}
+                className={`enter-btn ${!wallet || margin < currentDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
               >
                 {!wallet ? 'Connect Wallet' : margin < currentDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Enter Position'}
               </button>
