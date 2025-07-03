@@ -703,7 +703,6 @@ export default function App() {
       // Risk increasing: use post OI directly + 5bp fee
       const priceImpact = parseFloat((dynamicK * postOI).toFixed(5));
       console.log('CLEANED priceImpact:', priceImpact);
-
       rawPrice = baseAPY + priceImpact;
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
@@ -741,7 +740,6 @@ console.log('PRICING DEBUG:', {
   baseAPY: baseAPY,
   dynamicK: dynamicK,
   postOI: postOI,
-  priceImpact: dynamicK * postOI,
   rawPrice: rawPrice,
   feeBps: feeBps,
   finalPrice: finalPrice
