@@ -1446,7 +1446,7 @@ export default function App() {
           {Object.keys(marketSettings).map((mkt) => {
             const daysToMaturity = Math.max(0, 365 - globalDay);
             const timeRatio = daysToMaturity / 365;
-            const roundedTimeRatio = timeRatio;
+            const roundedTimeRatio = roundTimeRatioUp(timeRatio);
             const currentDynamicK = marketSettings[mkt].k * roundedTimeRatio;
             
             return (
@@ -1481,7 +1481,7 @@ export default function App() {
                     <input
                       type="number"
                       step="0.000001"
-                      value={currentDynamicK.toFixed(8)}
+                      value={currentDynamicK.toFixed(5)}
                       onChange={(e) => {
                         // Calculate what the base K should be to achieve this dynamic K
                         const targetDynamicK = parseFloat(e.target.value);
