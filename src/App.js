@@ -16,7 +16,7 @@ const getProvider = () => {
 
 export default function App() {
   const initialMarketSettings = {
-    "JitoSol": { apy: 7.959, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
+    "JitoSol": { apy: 8.1, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
     "Lido stETH": { apy: 5.0, k: 0.00002, symbol: "stETH" },
     "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
   };
@@ -362,7 +362,7 @@ export default function App() {
         { date: "2024-Q3", apy: 8.26, year: 2024.5 },
         { date: "2024-Q4", apy: 8.24, year: 2024.75 },
         { date: "2025-Q1", apy: 8.10, year: 2025.0 },
-        { date: "2025-Q2", apy: 7.959, year: 2025.25 } // Your 2025 projection
+        { date: "2025-Q2", apy: 8.11, year: 2025.25 } // Your 2025 projection
       ];
     }
     
