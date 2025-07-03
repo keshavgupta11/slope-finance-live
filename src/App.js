@@ -667,6 +667,21 @@ export default function App() {
       return;
     }
 
+    // Check protocol risk limits
+    const currentNetOI = netOI;
+    const newTradeOI = type === 'pay' ? currentDv01 : -currentDv01;
+    const postTradeNetOI = currentNetOI + newTradeOI;
+    
+    if (type === 'pay' && currentNetOI > 100000) {
+      alert(`Cannot open new Pay Fixed positions. Protocol net OI is ${currentNetOI.toLocaleString()} (limit: 100k). Current protocol risk: Pay Fixed exposure too high.`);
+      return;
+    }
+    
+    if (type === 'receive' && currentNetOI < -100000) {
+      alert(`Cannot open new Receive Fixed positions. Protocol net OI is ${Math.abs(currentNetOI).toLocaleString()} Receive Fixed (limit: 100k). Current protocol risk: Receive Fixed exposure too high.`);
+      return;
+    }
+    
     const preOI = netOI;
     const postOI = type === 'pay' ? netOI + currentDv01 : netOI - currentDv01;
     
