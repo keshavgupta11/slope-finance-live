@@ -1446,7 +1446,7 @@ export default function App() {
           {Object.keys(marketSettings).map((mkt) => {
             const daysToMaturity = Math.max(0, 365 - globalDay);
             const timeRatio = daysToMaturity / 365;
-            const roundedTimeRatio = roundTimeRatioUp(timeRatio);
+            //const roundedTimeRatio = roundTimeRatioUp(timeRatio);
             const currentDynamicK = marketSettings[mkt].k * roundedTimeRatio;
             
             return (
