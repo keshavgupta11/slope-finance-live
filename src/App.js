@@ -746,21 +746,21 @@ export default function App() {
     const roundedFinalPrice = roundPriceForDisplay(finalPrice, type);
 
     // Add the console log here:
-console.log('PRICING DEBUG:', {
-  amount: currentDv01,
-  baseAPY: baseAPY,
-  dynamicK: dynamicK,
-  postOI: postOI,
-  rawPrice: rawPrice,
-  feeBps: feeBps,
-  finalPrice: finalPrice
-});
+  console.log('PRICING DEBUG:', {
+    amount: currentDv01,
+    baseAPY: baseAPY,
+    dynamicK: dynamicK,
+    postOI: postOI,
+    rawPrice: rawPrice,
+    feeBps: feeBps,
+    finalPrice: finalPrice
+  });
 
     setPendingTrade({
       type,
-      finalPrice: roundedFinalPrice.toFixed(3), // Show 3 decimal places
+      finalPrice: finalPrice.toFixed(3), // Show 3 decimal places
       feeRate: feeBps / 100,
-      rawPrice: rawPrice.toFixed(4), // Keep raw price precise for calculations
+      rawPrice: rawPrice.toFixed(3), // Keep raw price precise for calculations
       directionFactor: type === 'pay' ? 1 : -1,
       preOI,
       postOI,
@@ -812,7 +812,7 @@ console.log('PRICING DEBUG:', {
         currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
         margin,
         entry: finalPrice,
-        entryPrice: finalPrice,
+        entryPrice: parseFloat(finalPrice),
         currentPrice: parseFloat(rawPrice),
         liq: liq.toFixed(3),
         liquidationPrice: liq.toFixed(3),
