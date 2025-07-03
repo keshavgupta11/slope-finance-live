@@ -81,22 +81,18 @@ export default function App() {
     console.log('ROUNDING DEBUG:');
     console.log('Input price:', price);
     console.log('price * 1000:', price * 1000);
-    console.log('trade type',tradeType);
-    console.log('tradeType length:', tradeType.length);
-    console.log('tradeType charCodes:', tradeType.split('').map(c => c.charCodeAt(0)));
-    console.log('typeof tradeType:', typeof tradeType);
-    console.log('tradeType === "pay":', tradeType === 'pay');
     console.log('Math.ceil(price * 1000):', Math.ceil(price * 1000));
     console.log('Final result:', Math.ceil(price * 1000) / 1000);
+    const numPrice = Number(price);
     if (tradeType === 'pay') {
       console.log('entering pay condition');
-      const cleanPrice = parseFloat(price.toFixed(4));
-      console.log('cleanprice'.cleanPrice);
+      const cleanPrice = parseFloat(numPrice.toFixed(4));
+      console.log('cleanprice',cleanPrice);
       // Round UP for payers
       return Math.ceil(cleanPrice * 1000) / 1000;
     } else {
-        const cleanPrice = parseFloat(price.toFixed(4));
-        console.log('cleanprice'.cleanPrice);
+        const cleanPrice = parseFloat(numPrice.toFixed(4));
+        console.log('cleanprice',cleanPrice);
       // Round DOWN for receivers
       return Math.floor(cleanPrice * 1000) / 1000;
     }
