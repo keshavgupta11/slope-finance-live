@@ -46,7 +46,9 @@ export default function App() {
   const [isSettlementMode, setIsSettlementMode] = useState(false);
   const [settlementPrices, setSettlementPrices] = useState({});
   const [pendingSettlement, setPendingSettlement] = useState(null);
-
+  //riskk
+  const [tempSettlementPrices, setTempSettlementPrices] = useState({});
+ 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -856,9 +858,21 @@ export default function App() {
     if (!address) return '';
     const str = address.toString();
     return `${str.slice(0, 4)}...${str.slice(-4)}`;
-  };
-
-  return (
+   };
+   //riskk
+   const handleRiskSettlement = () => {
+  const finalPrices = {};
+  Object.keys(marketSettings).forEach(mkt => {
+    finalPrices[mkt] = tempSettlementPrices[mkt] ? 
+      parseFloat(tempSettlementPrices[mkt]) : 
+      (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
+  });
+  
+  setSettlementPrices(finalPrices);
+  setIsSettlementMode(true);
+  alert('Settlement mode activated from Risk Management!');
+};
+    return (
     <div className="app">
       <header className="header">
         <div className="header-left">
@@ -870,6 +884,7 @@ export default function App() {
             <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
             <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
             <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
+            <span className={`nav-item ${activeTab === "Risk" ? "active" : ""}`} onClick={() => setActiveTab("Risk")}>Risk</span>
            </nav>
         </div>
         
@@ -1557,6 +1572,304 @@ export default function App() {
           </div>
         )
       ))}
+    {activeTab === "Risk" && (
+  <div className="risk-management-container">
+    <h2>Risk Management</h2>
+    
+    {/* Settlement Controls */}
+    <div className="settlement-controls" style={{ 
+      marginBottom: '2rem', 
+      padding: '1.5rem', 
+      border: '1px solid #374151', 
+      borderRadius: '0.75rem',
+      backgroundColor: '#1f2937'
+    }}>
+      <h3 style={{ marginBottom: '1rem', color: '#f9fafb' }}>Settlement Controls</h3>
+      
+      {!isSettlementMode ? (
+        <div>
+          <div style={{ marginBottom: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+            Set settlement prices for all markets and calculate final P&L for all positions
+          </div>
+          
+          {/* Settlement Price Inputs */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            {Object.keys(marketSettings).map(mkt => (
+              <div key={mkt} style={{ 
+                padding: '1rem', 
+                border: '1px solid #4b5563', 
+                borderRadius: '0.5rem',
+                backgroundColor: '#374151'
+              }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: '#e5e7eb',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}>
+                  {mkt} Settlement Price:
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="number"
+                    step="0.001"
+                    placeholder={marketSettings[mkt].apy.toFixed(3)}
+                    value={tempSettlementPrices[mkt] || ''}
+                    onChange={(e) => {
+                      setTempSettlementPrices(prev => ({
+                        ...prev,
+                        [mkt]: e.target.value
+                      }));
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      border: '1px solid #6b7280',
+                      backgroundColor: '#1f2937',
+                      color: 'white',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                  <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>%</span>
+                </div>
+                <div style={{ 
+                  marginTop: '0.25rem', 
+                  color: '#9ca3af', 
+                  fontSize: '0.75rem' 
+                }}>
+                  Current: {(lastPriceByMarket[mkt] || marketSettings[mkt].apy).toFixed(3)}%
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <button
+            onClick={handleRiskSettlement}
+            style={{
+              background: 'linear-gradient(45deg, #f59e0b, #d97706)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <span>⚖️</span>
+            Apply Settlement Prices
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '1rem'
+          }}>
+            <div>
+              <div style={{ color: '#f59e0b', fontWeight: '600', fontSize: '0.875rem' }}>
+                🔒 Settlement Mode Active
+              </div>
+              <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
+                All P&L calculations using settlement prices
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setIsSettlementMode(false);
+                setSettlementPrices({});
+                setTempSettlementPrices({});
+              }}
+              style={{
+                background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Exit Settlement
+            </button>
+          </div>
+          
+          {/* Current Settlement Prices */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '1rem'
+          }}>
+            {Object.keys(settlementPrices).map(mkt => (
+              <div key={mkt} style={{ 
+                padding: '0.75rem', 
+                backgroundColor: '#374151', 
+                borderRadius: '0.375rem',
+                border: '1px solid #f59e0b'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{mkt}</div>
+                <div style={{ color: '#f59e0b', fontWeight: '600' }}>
+                  {settlementPrices[mkt].toFixed(3)}%
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Positions by Market */}
+    {Object.keys(marketSettings).map(mkt => {
+      const marketTrades = tradesByMarket[mkt] || [];
+      if (marketTrades.length === 0) return null;
+      
+      const totalPL = marketTrades.reduce((sum, trade) => {
+        const pl = isSettlementMode ? 
+          calculateSettlementPL(trade) : 
+          calculateTotalPL(trade, lastPriceByMarket[mkt] || marketSettings[mkt].apy);
+        return sum + pl;
+      }, 0);
+      
+      return (
+        <div key={mkt} className="market-positions" style={{ 
+          marginBottom: '2rem', 
+          border: '1px solid #374151', 
+          borderRadius: '0.75rem',
+          overflow: 'hidden'
+        }}>
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: '#374151', 
+            borderBottom: '1px solid #4b5563',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div>
+              <h3 style={{ margin: 0, color: '#f9fafb' }}>{mkt} Positions</h3>
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: '#9ca3af',
+                marginTop: '0.25rem'
+              }}>
+                {marketTrades.length} active position{marketTrades.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Total P&L</div>
+              <div style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '700',
+                color: totalPL >= 0 ? '#22c55e' : '#ef4444'
+              }}>
+                {totalPL >= 0 ? '+' : ''}${totalPL.toLocaleString()}
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ overflow: 'auto' }}>
+            <table style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              backgroundColor: '#1f2937'
+            }}>
+              <thead>
+                <tr style={{ backgroundColor: '#374151' }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', color: '#e5e7eb', fontSize: '0.875rem' }}>Direction</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Entry Price</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Liquidation Price</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Initial DV01</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Current Price</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>P&L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marketTrades.map((trade, i) => {
+                  const currentPrice = isSettlementMode ? 
+                    settlementPrices[mkt] : 
+                    (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
+                  const pl = isSettlementMode ? 
+                    calculateSettlementPL(trade) : 
+                    calculateTotalPL(trade, currentPrice);
+                  
+                  return (
+                    <tr key={i} style={{ 
+                      borderBottom: '1px solid #374151'
+                    }}>
+                      <td style={{ padding: '0.75rem' }}>
+                        <span style={{ 
+                          color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                          fontWeight: '600',
+                          fontSize: '0.875rem'
+                        }}>
+                          {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                        </span>
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: '#e5e7eb',
+                        fontSize: '0.875rem'
+                      }}>
+                        {trade.entryPrice.toFixed(3)}%
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: '#ef4444',
+                        fontSize: '0.875rem'
+                      }}>
+                        {parseFloat(trade.liquidationPrice).toFixed(3)}%
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: '#e5e7eb',
+                        fontSize: '0.875rem'
+                      }}>
+                        ${trade.baseDV01.toLocaleString()}
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: '#e5e7eb',
+                        fontSize: '0.875rem'
+                      }}>
+                        {currentPrice.toFixed(3)}%
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        color: pl >= 0 ? '#22c55e' : '#ef4444'
+                      }}>
+                        {pl >= 0 ? '+' : ''}${pl.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
 
       {pendingTrade && (
         <div className="modal-overlay">
