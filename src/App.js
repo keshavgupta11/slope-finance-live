@@ -1214,7 +1214,7 @@ export default function App() {
                   <th>Current Price</th>
                   <th>Liquidation Price</th>
                   <th>Margin Posted</th>
-                  <th>Base DV01</th>
+                  <th>Entry DV01</th>
                   <th>Current DV01</th>
                   <th>Entry Day</th>
                   <th>Days Held</th>
@@ -1244,7 +1244,7 @@ export default function App() {
                       <td>{trade.currentPrice.toFixed(3)}%</td>
                       <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
                       <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
-                      <td>${trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                      <td>${(trade.entryDV01 || trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
                       <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
                       <td>{trade.entryDay || 0}</td>
                       <td>{globalDay - (trade.entryDay || 0)}</td>
