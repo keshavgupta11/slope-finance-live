@@ -78,18 +78,12 @@ export default function App() {
 
   // Helper function to round price to 3 decimal places with direction-specific rounding
   const roundPriceForDisplay = (price, tradeType) => {
-    console.log('ROUNDING DEBUG:');
-    console.log('Input price:', price);
-    console.log('price * 1000:', price * 1000);
-    console.log('Math.ceil(price * 1000):', Math.ceil(price * 1000));
-    console.log('Final result:', Math.ceil(price * 1000) / 1000);
-    const numPrice = Number(price);
-    if (tradeType === 'pay') {
-      console.log('entering pay condition');
-      const cleanPrice = parseFloat(numPrice.toFixed(4));
-      console.log('cleanprice',cleanPrice);
-      // Round UP for payers
-      return Math.ceil(cleanPrice * 1000) / 1000;
+      const numPrice = Number(price);
+      if (tradeType === 'pay') {
+        const cleanPrice = parseFloat(numPrice.toFixed(4));
+        console.log('cleanprice',cleanPrice);
+        // Round UP for payers
+        return Math.ceil(cleanPrice * 1000) / 1000;
     } else {
         const cleanPrice = parseFloat(numPrice.toFixed(4));
         console.log('cleanprice',cleanPrice);
