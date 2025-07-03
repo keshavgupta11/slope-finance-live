@@ -565,8 +565,9 @@ export default function App() {
     const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
     const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
     
-    // Calculate fees using current DV01
-    const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
+    // Calculate fees using current DV01 and no fee if settlement day
+    const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * feeBps;
+
     
     // Calculate P&L using settlement or total P&L calculation
     const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
