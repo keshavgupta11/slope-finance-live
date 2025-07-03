@@ -715,7 +715,7 @@ export default function App() {
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
       const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(4));
+      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
@@ -725,7 +725,7 @@ export default function App() {
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
       const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(4));
+      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
     } else {
       // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
@@ -735,7 +735,7 @@ export default function App() {
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
       const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(4));
+      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
     }
 
     // Round final price for display with directional rounding
