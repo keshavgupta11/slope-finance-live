@@ -702,6 +702,8 @@ export default function App() {
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
       const priceImpact = parseFloat((dynamicK * postOI).toFixed(5));
+      console.log('CLEANED priceImpact:', priceImpact);
+
       rawPrice = baseAPY + priceImpact;
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
