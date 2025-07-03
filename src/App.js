@@ -730,6 +730,18 @@ export default function App() {
     // Round final price for display with directional rounding
     const roundedFinalPrice = roundPriceForDisplay(finalPrice, type);
 
+    // Add the console log here:
+console.log('PRICING DEBUG:', {
+  amount: currentDv01,
+  baseAPY: baseAPY,
+  dynamicK: dynamicK,
+  postOI: postOI,
+  priceImpact: dynamicK * postOI,
+  rawPrice: rawPrice,
+  feeBps: feeBps,
+  finalPrice: finalPrice
+});
+
     setPendingTrade({
       type,
       finalPrice: roundedFinalPrice.toFixed(3), // Show 3 decimal places
