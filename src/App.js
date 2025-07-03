@@ -78,6 +78,11 @@ export default function App() {
 
   // Helper function to round price to 3 decimal places with direction-specific rounding
   const roundPriceForDisplay = (price, tradeType) => {
+    console.log('ROUNDING DEBUG:');
+    console.log('Input price:', price);
+    console.log('price * 1000:', price * 1000);
+    console.log('Math.ceil(price * 1000):', Math.ceil(price * 1000));
+    console.log('Final result:', Math.ceil(price * 1000) / 1000);
     if (tradeType === 'pay') {
       // Round UP for payers
       return Math.ceil(price * 1000) / 1000;
@@ -816,7 +821,9 @@ console.log('PRICING DEBUG:', {
         rawPrice: parseFloat(pendingTrade.rawPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
-
+      //console to check entry of user
+      console.log('STORED ENTRY PRICE:', trade.entryPrice);
+      console.log('MODAL DISPLAYED PRICE:', pendingTrade.finalPrice);
       // Add trade fee to total - use the actual calculated fee basis points
       const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
       const actualDv01 = calculateCurrentDv01(baseDv01, globalDay); // Use global day
