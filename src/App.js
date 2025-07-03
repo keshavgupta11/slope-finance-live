@@ -710,7 +710,7 @@ export default function App() {
       // Risk increasing: use post OI directly + 5bp fee
       const priceImpact = parseFloat((dynamicK * postOI).toFixed(5));
       console.log('CLEANED priceImpact:', priceImpact);
-      rawPrice = baseAPY + priceImpact;
+      rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
@@ -720,7 +720,7 @@ export default function App() {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
       const priceImpact = parseFloat((dynamicK * midpointOI).toFixed(5));
-      rawPrice = baseAPY + priceImpact;
+      rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 2;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
@@ -730,7 +730,7 @@ export default function App() {
       // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
       const priceImpact = parseFloat((dynamicK * midpointOI).toFixed(5));
-      rawPrice = baseAPY + priceImpact;
+      rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
