@@ -706,7 +706,7 @@ export default function App() {
       const directionFactor = type === 'pay' ? 1 : -1;
       const feeInPercentage = feeBps / 100;
       const fee = feeInPercentage * directionFactor;
-      finalPrice = rawPrice + fee;
+      finalPrice = parseFloat((rawPrice + fee).toFixed(5));
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
