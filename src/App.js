@@ -42,6 +42,11 @@ export default function App() {
   const [dailyClosingPrices, setDailyClosingPrices] = useState({}); // {market: {day: price}}
   const [pendingDayAdvancement, setPendingDayAdvancement] = useState(null);
 
+  //settlement states
+  const [isSettlementMode, setIsSettlementMode] = useState(false);
+  const [settlementPrices, setSettlementPrices] = useState({});
+  const [pendingSettlement, setPendingSettlement] = useState(null);
+
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -83,6 +88,19 @@ export default function App() {
   };
 
   const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
+
+  // Settlement P&L calculation
+  const calculateSettlementPL = (trade) => {
+  const settlementPrice = settlementPrices[trade.market];
+  if (!settlementPrice) return 0;
+  
+  const entryPrice = trade.entryPrice;
+  const initialDV01 = trade.baseDV01;
+  const directionFactor = trade.type === 'pay' ? 1 : -1;
+  
+  return (settlementPrice - entryPrice) / 100 * initialDV01 * directionFactor;
+};
+
 
   // Calculate total P&L for a position from entry to current day
   const calculateTotalPL = (trade, currentPrice) => {
@@ -282,8 +300,8 @@ export default function App() {
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
 
             // Use total P&L calculation
-            const totalPL = calculateTotalPL(updatedTrade, updatedTrade.currentPrice);
-            const todaysPL = calculateTodaysPL(updatedTrade, updatedTrade.currentPrice);
+            const totalPL = isSettlementMode ? calculateSettlementPL(updatedTrade) : calculateTotalPL(updatedTrade, updatedTrade.currentPrice);
+            const todaysPL = isSettlementMode ? 0 : calculateTodaysPL(updatedTrade, updatedTrade.currentPrice);
             updatedTrade.pl = totalPL.toFixed(2);
             updatedTrade.pnl = totalPL;
             updatedTrade.todaysPL = todaysPL;
@@ -347,7 +365,7 @@ export default function App() {
     
     // Update OI based on current DV01s
     setOiByMarket(calculateProtocolOI());
-  }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices]);
+  }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
@@ -417,6 +435,29 @@ export default function App() {
     
     return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
   };
+
+  // Settlement functions
+  const requestSettlement = () => {
+    const initialPrices = {};
+    Object.keys(marketSettings).forEach(mkt => {
+    initialPrices[mkt] = marketSettings[mkt].apy;
+    });
+  setPendingSettlement({ prices: initialPrices });
+  };
+
+  const confirmSettlement = () => {
+    setSettlementPrices(pendingSettlement.prices);
+    setIsSettlementMode(true);
+    setPendingSettlement(null);
+    alert('Settlement mode activated! All positions now show settlement P&L.');
+  };
+
+  const exitSettlementMode = () => {
+   setIsSettlementMode(false);
+    etSettlementPrices({});
+    alert('Exited settlement mode.');
+  };
+
 
   // Day advancement functions
   const requestDayAdvancement = () => {
@@ -1081,7 +1122,7 @@ export default function App() {
                 <tr>
                   <th>Market</th>
                   <th>Direction</th>
-                  <th>Total P&L</th>
+                  <th>{isSettlementMode ? 'Settlement P&L' : 'Total P&L'}</th>
                   <th>Today's P&L</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
@@ -1111,7 +1152,7 @@ export default function App() {
                         {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
                       </td>
                       <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                        {trade.todaysPL >= 0 ? '+' : ''}${Math.abs(trade.todaysPL).toLocaleString()}{trade.todaysPL < 0 ? '' : ''}
+                        {isSettlementMode ? '$0' : (trade.todaysPL >= 0 ? '+' : '') + '$' + Math.abs(trade.todaysPL).toLocaleString() + (trade.todaysPL < 0 ? '' : '')}
                       </td>
                       <td>{trade.entryPrice.toFixed(3)}%</td>
                       <td>{trade.currentPrice.toFixed(3)}%</td>
@@ -1252,6 +1293,62 @@ export default function App() {
       {activeTab === "Settings" && (
         <div className="settings-container">
           <h2>Settings</h2>
+
+          
+
+    <div className="settlement-section" style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #374151', borderRadius: '0.5rem' }}>
+     <h3>Settlement (Day 365)</h3>
+      <div style={{ marginBottom: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+       Jump to settlement and calculate final P&L using realized settlement prices vs entry prices.
+        Settlement P&L = (Settlement Price - Entry Price) × Initial DV01
+      </div>
+  
+      {!isSettlementMode ? (
+       <button 
+        onClick={requestSettlement}
+        style={{
+        background: 'linear-gradient(45deg, #f59e0b, #d97706)',
+        color: 'white',
+        border: 'none',
+        padding: '1rem 2rem',
+        borderRadius: '1rem',
+        fontSize: '0.95rem',
+        cursor: 'pointer',
+        fontWeight: '600',
+        textTransform: 'uppercase'
+      }}
+    >
+      Go to Settlement (Day 365)
+    </button>
+  ) : (
+    <div>
+      <button 
+        onClick={exitSettlementMode}
+        style={{
+          background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+          color: 'white',
+          border: 'none',
+          padding: '1rem 2rem',
+          borderRadius: '1rem',
+          fontSize: '0.95rem',
+          cursor: 'pointer',
+          fontWeight: '600',
+          textTransform: 'uppercase'
+        }}
+      >
+        Exit Settlement Mode
+      </button>
+      <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#1f2937', borderRadius: '0.5rem' }}>
+        <h4 style={{ margin: '0 0 0.5rem 0', color: '#f59e0b' }}>Settlement Prices:</h4>
+        {Object.keys(settlementPrices).map(mkt => (
+          <div key={mkt} style={{ fontSize: '0.875rem', color: '#e5e7eb' }}>
+            {mkt}: {settlementPrices[mkt].toFixed(3)}%
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
           
           <div className="day-advancement-section" style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #374151', borderRadius: '0.5rem' }}>
             <h3>Day Advancement</h3>
@@ -1607,6 +1704,54 @@ export default function App() {
           </div>
         </div>
       )}
+      {pendingSettlement && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Settlement - Input Settlement Prices</h3>
+      <div style={{ marginBottom: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+        Enter the settlement price for each market. Settlement P&L will be calculated as:
+        <br /><strong>(Settlement Price - Entry Price) × Initial DV01</strong>
+      </div>
+      <div className="trade-details">
+        {Object.keys(pendingSettlement.prices).map(mkt => (
+          <div key={mkt} className="detail-row">
+            <span>{mkt} Settlement Price:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="number"
+                step="0.001"
+                value={pendingSettlement.prices[mkt]}
+                onChange={(e) => {
+                  const updated = { ...pendingSettlement };
+                  updated.prices[mkt] = parseFloat(e.target.value) || 0;
+                  setPendingSettlement(updated);
+                }}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #374151',
+                  backgroundColor: '#1f2937',
+                  color: 'white',
+                  width: '100px'
+                }}
+              />
+              <span>%</span>
+            </div>
+          </div>
+        ))}
+        <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#1f2937', borderRadius: '0.375rem', fontSize: '0.75rem', color: '#9ca3af' }}>
+          <strong>Example:</strong> Pay Fixed 8.5% with 10k DV01, settlement 9.0%
+          <br />Settlement P&L = (9.0% - 8.5%) × 10k = +500,000
+        </div>
+      </div>
+      <div className="modal-buttons">
+        <button onClick={confirmSettlement} className="confirm-btn">Activate Settlement</button>
+        <button onClick={() => setPendingSettlement(null)} className="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {pendingDayAdvancement && (
         <div className="modal-overlay">
