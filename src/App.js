@@ -85,6 +85,7 @@ export default function App() {
     console.log('Final result:', Math.ceil(price * 1000) / 1000);
     if (tradeType === 'pay') {
       const cleanPrice = parseFloat(price.toFixed(4));
+      console.log('cleanprice'.cleanPrice);
       // Round UP for payers
       return Math.ceil(cleanPrice * 1000) / 1000;
     } else {
