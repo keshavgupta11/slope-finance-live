@@ -941,23 +941,53 @@ export default function App() {
                   <span>Base DV01 ($) - Day 0</span>
                   <span>Current DV01 (UI): ${currentDv01.toLocaleString()}</span>
                 </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ 
+                   position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  color: '#9ca3af', 
+                  fontSize: '1rem',
+                   pointerEvents: 'none'
+                }}>$</span>
                 <input
-                  type="number"
-                  value={baseDv01 || ''}
-                  onChange={(e) => setBaseDv01(e.target.value === '' ? 0 : Number(e.target.value))}
-                  placeholder="Enter base DV01 amount"
-                />
-              </div>
+                 type="text"
+                value={baseDv01 ? baseDv01.toLocaleString() : ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setBaseDv01(value === '' ? 0 : Number(value));
+                }}
+                placeholder="10,000"
+                style={{ paddingLeft: '24px' }}
+              />
+           </div>
+        </div>
 
-              <div className="input-group">
-                <label>Margin (USDC)</label>
-                <input
-                  type="number"
-                  value={margin || ''}
-                  onChange={(e) => setMargin(e.target.value === '' ? 0 : Number(e.target.value))}
-                  placeholder="Enter margin amount"
-                />
-              </div>
+      <div className="input-group">
+        <label>Margin (USDC)</label>
+        <div style={{ position: 'relative' }}>
+          <span style={{ 
+          position: 'absolute', 
+          left: '12px', 
+          top: '50%', 
+          transform: 'translateY(-50%)', 
+          color: '#9ca3af', 
+          fontSize: '1rem',
+          pointerEvents: 'none'
+        }}>$</span>
+        <input
+          type="text"
+          value={margin ? margin.toLocaleString() : ''}
+          onChange={(e) => {
+            const value = e.target.value.replace(/[^0-9]/g, '');
+            setMargin(value === '' ? 0 : Number(value));
+      }}
+      placeholder="500,000"
+      style={{ paddingLeft: '24px' }}
+      />
+    </div>
+  </div>
 
               <div className="min-margin">
                 <div>Min margin required:</div>
