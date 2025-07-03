@@ -82,6 +82,7 @@ export default function App() {
     console.log('Input price:', price);
     console.log('price * 1000:', price * 1000);
     console.log('typeof tradeType:', typeof tradeType);
+    console.log('pay or receive',tradeType);
     console.log('Math.ceil(price * 1000):', Math.ceil(price * 1000));
     console.log('Final result:', Math.ceil(price * 1000) / 1000);
     if (tradeType === 'pay') {
