@@ -565,7 +565,7 @@ export default function App() {
     const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
     const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
     
-    // Calculate fees using current DV01 and no fee if settlement day
+    // Calculate fees using current DV01 and no fee if settlement
     const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * feeBps;
 
     
@@ -576,15 +576,15 @@ export default function App() {
     setPendingUnwind({
       tradeIndex,
       trade,
-      executionPrice: roundedExecutionPrice.toFixed(3), // Show 3 decimal places
-      rawUnwindPrice: unwindPrice.toFixed(3), // Store the raw unwind price separately
+      executionPrice: isSettlementMode ? settlementPrices[trade.market].toFixed(3) : roundedExecutionPrice.toFixed(3),
+      rawUnwindPrice: isSettlementMode ? settlementPrices[trade.market].toFixed(3) : unwindPrice.toFixed(3),
       entryPrice: trade.entryPrice.toFixed(3),
       pl: totalPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
-      feeRate: feeBps.toString(),
-      feeBps: feeBps
-    });
+      feeRate: isSettlementMode ? "0" : feeBps.toString(),
+      feeBps: isSettlementMode ? 0 : feeBps
+      });
   };
 
   const confirmUnwind = () => {
