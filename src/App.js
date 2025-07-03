@@ -98,7 +98,7 @@ export default function App() {
   const initialDV01 = trade.baseDV01;
   const directionFactor = trade.type === 'pay' ? 1 : -1;
   
-  return (settlementPrice - entryPrice) * initialDV01 * directionFactor;
+  return (settlementPrice - entryPrice) * 100 * initialDV01 * directionFactor;
 };
 
 
