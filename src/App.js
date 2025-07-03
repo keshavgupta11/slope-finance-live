@@ -1054,7 +1054,7 @@ export default function App() {
                 disabled={!wallet || margin < currentDv01 * 50}
                 className={`enter-btn ${!wallet || margin < currentDv01 * 50 ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 50 ? 'Margin too low' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
