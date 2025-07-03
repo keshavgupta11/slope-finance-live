@@ -801,7 +801,7 @@ console.log('PRICING DEBUG:', {
         currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
         margin,
         entry: finalPrice,
-        entryPrice: parseFloat(finalPrice),
+        entryPrice: finalPrice,
         currentPrice: parseFloat(rawPrice),
         liq: liq.toFixed(3),
         liquidationPrice: liq.toFixed(3),
