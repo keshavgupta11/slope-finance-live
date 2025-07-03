@@ -568,8 +568,8 @@ export default function App() {
     // Calculate fees using current DV01
     const feeAmount = currentTradeDv01 * feeBps; // DV01 * basis points
     
-    // Calculate P&L using total P&L calculation
-    const totalPL = calculateTotalPL(trade, roundedExecutionPrice);
+    // Calculate P&L using settlement or total P&L calculation
+    const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
     const netReturn = trade.collateral + totalPL;
     
     setPendingUnwind({
