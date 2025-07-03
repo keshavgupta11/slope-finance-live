@@ -86,11 +86,11 @@ export default function App() {
     if (tradeType === 'pay') {
       const cleanPrice = parseFloat(price.toFixed(4));
       // Round UP for payers
-      return Math.ceil(price * 1000) / 1000;
+      return Math.ceil(cleanprice * 1000) / 1000;
     } else {
         const cleanPrice = parseFloat(price.toFixed(4));
       // Round DOWN for receivers
-      return Math.floor(price * 1000) / 1000;
+      return Math.floor(cleanPriceprice * 1000) / 1000;
     }
   };
 
