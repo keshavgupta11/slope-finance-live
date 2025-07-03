@@ -866,8 +866,7 @@ export default function App() {
         parseFloat(tempSettlementPrices[mkt]) : 
         (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
     });
-    
-    setSettlementPrices(finalPrices);
+  setSettlementPrices(finalPrices);
     setIsSettlementMode(true);
     alert('Settlement mode activated from Risk Management!');
   };
