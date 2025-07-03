@@ -801,8 +801,7 @@ console.log('PRICING DEBUG:', {
         currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
         margin,
         entry: finalPrice,
-        entryPrice: finalPrice,
-        
+        entryPrice: parseFloat(finalPrice),
         currentPrice: parseFloat(rawPrice),
         liq: liq.toFixed(3),
         liquidationPrice: liq.toFixed(3),
@@ -817,7 +816,6 @@ console.log('PRICING DEBUG:', {
         rawPrice: parseFloat(pendingTrade.rawPrice),
         txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
-      console.log('USER ENTRY PRICE:', trade.entryPrice);
 
       // Add trade fee to total - use the actual calculated fee basis points
       const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
