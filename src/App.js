@@ -16,8 +16,8 @@ const getProvider = () => {
 
 export default function App() {
   const initialMarketSettings = {
-    "JitoSol": { apy: 8.1, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
-    "Lido stETH": { apy: 5.0, k: 0.00002, symbol: "stETH" },
+    "JitoSol": { apy: 7.9, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
+    "Lido stETH": { apy: 3.0, k: 0.00002, symbol: "stETH" },
     "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
   };
 
