@@ -604,7 +604,7 @@ export default function App() {
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
-    const currentTradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+    const currentTradeDv01 = trade.baseDV01;
     const feeAmount = currentTradeDv01 * pendingUnwind.feeBps;
     setTotalFeesCollected(prev => prev + feeAmount);
     
@@ -647,11 +647,6 @@ export default function App() {
   const lastPrice = lastPriceByMarket[market] ?? marketSettings[market].apy;
   const { apy: baseAPY, k } = marketSettings[market];
   const { vammPL, protocolPL } = calculateProtocolMetrics();
-
-
-  const handleDayChange = (newDay) => {
-    setCurrentDay(Math.max(0, Math.min(365, newDay)));
-  };
 
   const requestTrade = (type) => {
     
@@ -1036,10 +1031,10 @@ export default function App() {
 
               <button 
                 onClick={() => !isSettlementMode && requestTrade(tradeType)}
-                disabled={!wallet || margin < currentDv01 * 50 || isSettlementMode}
-                className={`enter-btn ${!wallet || margin < currentDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
+                disabled={!wallet || margin < baseDv01 * 50 || isSettlementMode}
+                className={`enter-btn ${!wallet || margin < baseDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < currentDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Enter Position'}
               </button>
 
               <div className="profit-info">
@@ -1882,8 +1877,8 @@ export default function App() {
                 <span>Liquidation Price:</span>
                 <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
-                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
-                    : (parseFloat(pendingTrade.finalPrice) + ((margin / calculateCurrentDv01(baseDv01, globalDay)) / 100))
+                    ? (parseFloat(pendingTrade.finalPrice) - ((margin / baseDv01) / 100))
+                    : (parseFloat(pendingTrade.finalPrice) + ((margin / baseDv01 ) / 100))
                   ).toFixed(3)}%
                 </span>
               </div>
