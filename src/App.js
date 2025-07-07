@@ -25,7 +25,6 @@ export default function App() {
   const [market, setMarket] = useState("JitoSol");
   const [baseDv01, setBaseDv01] = useState(10000);
   const [margin, setMargin] = useState(500000);
-  const [currentDay, setCurrentDay] = useState(0); // UI slider only - doesn't affect real positions
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
@@ -60,16 +59,13 @@ export default function App() {
   // USDC token mint on devnet
   const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // Devnet USDC
 
-  // Calculate current DV01 based on time to maturity
-  const calculateCurrentDv01 = (baseDv01, daysPassed, totalDays = 365) => {
-    const timeToMaturity = Math.max(0, totalDays - daysPassed);
-    return baseDv01 * (timeToMaturity / totalDays);
-  };
+  // Calculate current DV01 based on time to maturity- deleted
+  
 
   // Helper function to round t/T ratio up to nearest 0.1
   const roundTimeRatioUp = (ratio) => {
     return Math.ceil(ratio * 10) / 10;
-  };
+  };      
 
   // Helper function to calculate dynamic k based on time to maturity
   const calculateDynamicK = (baseK, daysToMaturity, totalDays = 365) => {
@@ -94,7 +90,7 @@ export default function App() {
     }
   };
 
-  const currentDv01 = calculateCurrentDv01(baseDv01, currentDay); // For UI display only
+  const currentDv01 = baseDv01; // For UI display only
 
   // Settlement P&L calculation
   const calculateSettlementPL = (trade) => {
@@ -117,7 +113,7 @@ export default function App() {
 
     // Calculate P&L for each day from entry to current global day
     for (let day = entryDay; day <= globalDay; day++) {
-      const dayDv01 = calculateCurrentDv01(trade.baseDV01, day);
+      const dayDv01 = trade.baseDV01;
       let dayPL = 0;
 
       if (day === entryDay) {
@@ -159,7 +155,7 @@ export default function App() {
   const calculateTodaysPL = (trade, currentPrice) => {
     const entryDay = trade.entryDay || 0;
     const directionFactor = trade.type === 'pay' ? 1 : -1;
-    const currentDayDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+    const currentDayDv01 = trade.baseDV01;
 
     if (globalDay === entryDay) {
       // Same day as entry - today's P&L is total P&L
@@ -182,7 +178,7 @@ export default function App() {
       const trades = tradesByMarket[mkt] || [];
       
       trades.forEach(trade => {
-        const tradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+        const tradeDv01 = trade.baseDV01;
         const oiChange = trade.type === 'pay' ? tradeDv01 : -tradeDv01;
         netOI += oiChange;
       });
@@ -303,7 +299,7 @@ export default function App() {
           updated[mkt] = updated[mkt].map(trade => {
             const updatedTrade = { ...trade };
             updatedTrade.currentDay = globalDay;
-            updatedTrade.currentDV01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+            updatedTrade.currentDV01 = trade.baseDV01;
             updatedTrade.currentPrice = lastPriceByMarket[mkt] || marketSettings[mkt].apy;
 
             // Use total P&L calculation
@@ -504,7 +500,7 @@ export default function App() {
           updated[mkt] = updated[mkt].map(trade => ({
             ...trade,
             currentDay: toDay,
-            currentDV01: calculateCurrentDv01(trade.baseDV01, toDay)
+            currentDV01: trade.baseDV01
           }));
         }
       });
@@ -525,7 +521,7 @@ export default function App() {
     
     // Calculate unwind execution price using current DV01
     const preOI = currentOI;
-    const currentTradeDv01 = calculateCurrentDv01(trade.baseDV01, globalDay);
+    const currentTradeDv01 = trade.baseDV01;
     const postOI = trade.type === 'pay' ? currentOI - currentTradeDv01 : currentOI + currentTradeDv01;
     
     // Calculate pricing based on risk change
@@ -652,9 +648,6 @@ export default function App() {
   const { apy: baseAPY, k } = marketSettings[market];
   const { vammPL, protocolPL } = calculateProtocolMetrics();
 
-  const handleMarketChange = (newMarket) => {
-    setMarket(newMarket);
-  };
 
   const handleDayChange = (newDay) => {
     setCurrentDay(Math.max(0, Math.min(365, newDay)));
@@ -805,8 +798,8 @@ export default function App() {
         market,
         type,
         baseDV01: baseDv01, //for reference
-        entryDV01: calculateCurrentDv01(baseDv01, globalDay), // NEW: actual DV01 at entry
-        currentDV01: calculateCurrentDv01(baseDv01, globalDay), // Use global day for real positions
+        entryDV01: baseDv01, // base DV01 at entry 
+        currentDV01: baseDv01, // Use global day for real positions
         margin,
         entry: finalPrice,
         entryPrice: parseFloat(finalPrice),
@@ -829,7 +822,7 @@ export default function App() {
       console.log('MODAL DISPLAYED PRICE:', pendingTrade.finalPrice);
       // Add trade fee to total - use the actual calculated fee basis points
       const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
-      const actualDv01 = calculateCurrentDv01(baseDv01, globalDay); // Use global day
+      const actualDv01 = baseDv01; // Use global day
       const feeAmount = actualDv01 * feeAmountBps;
       setTotalFeesCollected(prev => prev + feeAmount);
 
@@ -947,39 +940,31 @@ export default function App() {
             </div>
 
             <div className="input-group">
-              <label>
-                <span>Days from Entry (UI Only): {currentDay}</span>
-                <span>Time to Maturity: {365 - currentDay} days</span>
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="365"
-                value={currentDay}
-                onChange={(e) => handleDayChange(Number(e.target.value))}
-                style={{
-                  width: '100%',
-                  margin: '0.5rem 0',
-                  accentColor: '#10b981'
-                }}
-              />
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                fontSize: '0.75rem', 
-                color: '#6b7280' 
-              }}>
-                <span>Day 0</span>
-                <span>DV01 Multiplier: {(currentDv01 / baseDv01).toFixed(3)}</span>
-                <span>Day 365</span>
-              </div>
-            </div>
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              padding: '1rem', 
+              backgroundColor: '#374151', 
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              color: '#e5e7eb'
+            }}>
+    <div>
+      <span style={{ color: '#9ca3af' }}>Days Realized: </span>
+      <span style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
+    </div>
+    <div>
+      <span style={{ color: '#9ca3af' }}>Days to Maturity: </span>
+      <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{365 - globalDay}</span>
+    </div>
+  </div>
+</div>
 
             <div className="inputs">
               <div className="input-group">
                 <label>
-                  <span>Base DV01 ($) - Day 0</span>
-                  <span>Current DV01 (UI): ${currentDv01.toLocaleString()}</span>
+                  <span> DV01 ($)</span>
+                  <span> Fixed for all calculations</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <span style={{ 
@@ -1886,12 +1871,8 @@ export default function App() {
                 <span className="execution-price">{pendingTrade.finalPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Current DV01 (UI):</span>
-                <span>${currentDv01.toLocaleString()}</span>
-              </div>
-              <div className="detail-row">
-                <span>Real DV01 (Global Day {globalDay}):</span>
-                <span>${calculateCurrentDv01(baseDv01, globalDay).toLocaleString()}</span>
+                <span>DV01:</span>
+                <span>${baseDv01.toLocaleString()}</span>
               </div>
               <div className="detail-row">
                 <span>Entry Day:</span>
