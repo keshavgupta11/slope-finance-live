@@ -849,10 +849,14 @@ export default function App() {
     return `${str.slice(0, 4)}...${str.slice(-4)}`;
    };
    //riskk
+   const handleMarketChange = (newMarket) => {
+    setMarket(newMarket);
+   };
+
    const handleRiskSettlement = () => {
-  const finalPrices = {};
-  Object.keys(marketSettings).forEach(mkt => {
-    finalPrices[mkt] = tempSettlementPrices[mkt] ? 
+      const finalPrices = {};
+      Object.keys(marketSettings).forEach(mkt => {
+      finalPrices[mkt] = tempSettlementPrices[mkt] ? 
       parseFloat(tempSettlementPrices[mkt]) : 
       (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
   });
