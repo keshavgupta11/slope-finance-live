@@ -2387,7 +2387,7 @@ export default function App() {
                     }}
                     placeholder="100,000"
                     style={{ 
-                      paddingLeft: '24px',
+                      paddingLeft: '30px',
                       padding: '0.5rem',
                       borderRadius: '0.375rem',
                       border: '1px solid #374151',
