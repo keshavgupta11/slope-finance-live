@@ -386,6 +386,20 @@ export default function App() {
         { date: "2025-Q2", apy: 8.11, year: 2025.25 } // Your 2025 projection
       ];
     }
+    if (market === "Lido stETH") {
+      return [
+        { date: "2023-Q1", apy: 4.2, year: 2023.0 },
+        { date: "2023-Q2", apy: 4.0, year: 2023.25 },
+        { date: "2023-Q3", apy: 3.9, year: 2023.5 },
+        { date: "2023-Q4", apy: 3.6, year: 2023.75 },
+        { date: "2024-Q1", apy: 3.4, year: 2024.0 },
+        { date: "2024-Q2", apy: 3.3, year: 2024.25 },
+        { date: "2024-Q3", apy: 3.1, year: 2024.5 },
+        { date: "2024-Q4", apy: 3.0, year: 2024.75 },
+        { date: "2025-Q1", apy: 2.95, year: 2025.0 },
+        { date: "2025-Q2", apy: 2.9, year: 2025.25 }
+    ];
+  }
     
     // Keep original logic for other markets
     const data = [];
@@ -1778,6 +1792,7 @@ export default function App() {
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Liquidation Price</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Entry DV01</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Current Price</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>Entry Day</th>
                   <th style={{ padding: '0.75rem', textAlign: 'right', color: '#e5e7eb', fontSize: '0.875rem' }}>P&L</th>
                 </tr>
               </thead>
@@ -1834,6 +1849,14 @@ export default function App() {
                         fontSize: '0.875rem'
                       }}>
                         {currentPrice.toFixed(3)}%
+                      </td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: '#e5e7eb',
+                        fontSize: '0.875rem'
+                      }}>
+                      Day {trade.entryDay || 0}
                       </td>
                       <td style={{ 
                         padding: '0.75rem', 
