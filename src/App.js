@@ -2353,13 +2353,36 @@ export default function App() {
             </div>
           
           {pendingMarginAdd && (
-            <div style={{position: 'fixed', top: 0, left: 0, background: 'rgba(0,0,0,0.8)', width: '100vw', height: '100vh', zIndex: 9999}}>
-               <div style={{background: 'white', color: 'black', padding: '2rem', margin: '10rem auto', width: '300px'}}>
-                  <h3>TEST MODAL</h3>
-                  <button onClick={() => setPendingMarginAdd(null)}>Close</button>
-              </div>
-          </div>
-          )}
+  <div style={{
+    position: 'fixed', 
+    top: 0, 
+    left: 0, 
+    background: 'rgba(255,0,0,0.9)', 
+    width: '100vw', 
+    height: '100vh', 
+    zIndex: 999999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }}>
+    <div style={{
+      background: 'white', 
+      color: 'black', 
+      padding: '2rem', 
+      borderRadius: '1rem',
+      boxShadow: '0 0 50px rgba(0,0,0,0.5)'
+    }}>
+      <h3>ADD MARGIN TEST</h3>
+      <p>Modal is working!</p>
+      <button 
+        onClick={() => setPendingMarginAdd(null)}
+        style={{padding: '1rem', background: 'red', color: 'white', border: 'none', borderRadius: '0.5rem'}}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
           </div>
         </div>
       )}
