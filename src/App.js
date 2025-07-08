@@ -669,6 +669,7 @@ export default function App() {
     trade
   });
   setAdditionalMargin(0);
+  console.log('Set pendingMarginAdd state');
 };
 
   const confirmAddMargin = async () => {
