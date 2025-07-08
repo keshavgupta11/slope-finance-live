@@ -2369,15 +2369,7 @@ export default function App() {
               <div className="detail-row">
                 <span>Additional Margin:</span>
                 <div style={{ position: 'relative' }}>
-                  <span style={{ 
-                    position: 'absolute', 
-                    left: '6px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    color: '#ffffff', 
-                    fontSize: '1rem',
-                    pointerEvents: 'none'
-                  }}>$</span>
+                 
                   <input
                     type="text"
                     value={additionalMargin ? additionalMargin.toLocaleString() : ''}
@@ -2385,9 +2377,8 @@ export default function App() {
                       const value = e.target.value.replace(/[^0-9]/g, '');
                       setAdditionalMargin(value === '' ? 0 : Number(value));
                     }}
-                    placeholder="100,000"
+                    placeholder="$100,000"
                     style={{ 
-                      paddingLeft: '60px',
                       padding: '0.5rem',
                       borderRadius: '0.375rem',
                       border: '1px solid #374151',
