@@ -47,10 +47,7 @@ export default function App() {
   const [pendingSettlement, setPendingSettlement] = useState(null);
   //riskk
   const [tempSettlementPrices, setTempSettlementPrices] = useState({});
-  //add margin
-  const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
-  const [additionalMargin, setAdditionalMargin] = useState(0);
-
+ 
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -656,70 +653,6 @@ export default function App() {
     setPendingUnwind(null);
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
-  //adding margin
-  const requestAddMargin = (tradeIndex) => {
-    console.log('requestAddMargin called with index:', tradeIndex);
-    const trades = tradesByMarket[market] || [];
-    const trade = trades[tradeIndex];
-    console.log('Found trade:', trade); 
-    if (!trade) return;
-
-  setPendingMarginAdd({
-    tradeIndex,
-    trade
-  });
-  setAdditionalMargin(0);
-  console.log('Set pendingMarginAdd state');
-};
-
-  const confirmAddMargin = async () => {
-  const { tradeIndex, trade } = pendingMarginAdd;
-  
-  // Check wallet balance
-  const simulatedUSDC = usdcBalance + 5000000;
-  if (simulatedUSDC < additionalMargin) {
-    alert(`Insufficient USDC balance. Required: $${additionalMargin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
-    return;
-  }
-
-  try {
-    // Simulate wallet transaction
-    if (wallet) {
-      console.log('Processing margin addition...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    // Calculate new liquidation price
-    const marginBuffer = additionalMargin / trade.currentDV01 / 100;
-    const newLiqPrice = trade.type === 'pay' 
-      ? parseFloat(trade.liquidationPrice) - marginBuffer
-      : parseFloat(trade.liquidationPrice) + marginBuffer;
-
-    // Update the trade
-    setTradesByMarket(prev => {
-      const updated = { ...prev };
-      updated[trade.market] = [...updated[trade.market]];
-      updated[trade.market][tradeIndex] = {
-        ...trade,
-        collateral: trade.collateral + additionalMargin,
-        liquidationPrice: newLiqPrice.toFixed(3)
-      };
-      return updated;
-    });
-
-    // Deduct from wallet
-    setUsdcBalance(prev => prev - additionalMargin);
-
-    setPendingMarginAdd(null);
-    alert(`Margin added successfully! New liquidation: ${newLiqPrice.toFixed(3)}%`);
-  } catch (error) {
-    console.error('Add margin failed:', error);
-    alert('Add margin failed. Please try again.');
-    setPendingMarginAdd(null);
-  }
-};
-
-
 
   const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
@@ -1366,37 +1299,6 @@ export default function App() {
                         >
                           Close Position
                         </button>
-                      <button 
-                        onClick={() => requestAddMargin(i)}
-                        className="add-margin-btn"
-                        style={{
-                          background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
-                          color: 'white',
-                          border: 'none',
-                          padding: '0.75rem 1.25rem',
-                          borderRadius: '0.75rem',
-                          fontSize: '0.875rem',
-                          cursor: 'pointer',
-                          fontWeight: '600',
-                          transition: 'all 0.3s ease',
-                          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.25)',
-                          textTransform: 'uppercase',
-                          etterSpacing: '0.025em',
-                          marginLeft: '0.5rem'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
-                          e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
-                        }}
-                      >
-                        Add Margin
-                      </button>
                       </td>
                     </tr>
                   );
@@ -2351,38 +2253,6 @@ export default function App() {
                 Cancel
               </button>
             </div>
-          
-          {pendingMarginAdd && (
-  <div style={{
-    position: 'fixed', 
-    top: 0, 
-    left: 0, 
-    background: 'rgba(255,0,0,0.9)', 
-    width: '100vw', 
-    height: '100vh', 
-    zIndex: 999999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }}>
-    <div style={{
-      background: 'white', 
-      color: 'black', 
-      padding: '2rem', 
-      borderRadius: '1rem',
-      boxShadow: '0 0 50px rgba(0,0,0,0.5)'
-    }}>
-      <h3>ADD MARGIN TEST</h3>
-      <p>Modal is working!</p>
-      <button 
-        onClick={() => setPendingMarginAdd(null)}
-        style={{padding: '1rem', background: 'red', color: 'white', border: 'none', borderRadius: '0.5rem'}}
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
           </div>
         </div>
       )}
