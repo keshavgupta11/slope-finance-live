@@ -658,9 +658,11 @@ export default function App() {
   };
   //adding margin
   const requestAddMargin = (tradeIndex) => {
-  const trades = tradesByMarket[market] || [];
-  const trade = trades[tradeIndex];
-  if (!trade) return;
+    console.log('requestAddMargin called with index:', tradeIndex);
+    const trades = tradesByMarket[market] || [];
+    const trade = trades[tradeIndex];
+    console.log('Found trade:', trade); 
+    if (!trade) return;
 
   setPendingMarginAdd({
     tradeIndex,
