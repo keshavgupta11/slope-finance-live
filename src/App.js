@@ -658,14 +658,16 @@ export default function App() {
   };
   //adding margin
   const requestAddMargin = (tradeIndex) => {
-    const trade = marketTrades[tradeIndex];
-    if (!trade) return;
-    setPendingMarginAdd({
+  const trades = tradesByMarket[market] || [];
+  const trade = trades[tradeIndex];
+  if (!trade) return;
+
+  setPendingMarginAdd({
     tradeIndex,
     trade
   });
   setAdditionalMargin(0);
-  };
+};
 
   const confirmAddMargin = async () => {
   const { tradeIndex, trade } = pendingMarginAdd;
