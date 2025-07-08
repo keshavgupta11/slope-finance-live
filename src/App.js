@@ -47,7 +47,10 @@ export default function App() {
   const [pendingSettlement, setPendingSettlement] = useState(null);
   //riskk
   const [tempSettlementPrices, setTempSettlementPrices] = useState({});
- 
+  //add margin
+  const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
+  const [additionalMargin, setAdditionalMargin] = useState(0);
+
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -653,6 +656,65 @@ export default function App() {
     setPendingUnwind(null);
     alert(`Position unwound successfully! Received: $${netReturn}`);
   };
+  //adding margin
+  const requestAddMargin = (tradeIndex) => {
+    const trade = marketTrades[tradeIndex];
+    if (!trade) return;
+    setPendingMarginAdd({
+    tradeIndex,
+    trade
+  });
+  setAdditionalMargin(0);
+  };
+
+  const confirmAddMargin = async () => {
+  const { tradeIndex, trade } = pendingMarginAdd;
+  
+  // Check wallet balance
+  const simulatedUSDC = usdcBalance + 5000000;
+  if (simulatedUSDC < additionalMargin) {
+    alert(`Insufficient USDC balance. Required: $${additionalMargin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+    return;
+  }
+
+  try {
+    // Simulate wallet transaction
+    if (wallet) {
+      console.log('Processing margin addition...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    // Calculate new liquidation price
+    const marginBuffer = additionalMargin / trade.currentDV01 / 100;
+    const newLiqPrice = trade.type === 'pay' 
+      ? parseFloat(trade.liquidationPrice) - marginBuffer
+      : parseFloat(trade.liquidationPrice) + marginBuffer;
+
+    // Update the trade
+    setTradesByMarket(prev => {
+      const updated = { ...prev };
+      updated[trade.market] = [...updated[trade.market]];
+      updated[trade.market][tradeIndex] = {
+        ...trade,
+        collateral: trade.collateral + additionalMargin,
+        liquidationPrice: newLiqPrice.toFixed(3)
+      };
+      return updated;
+    });
+
+    // Deduct from wallet
+    setUsdcBalance(prev => prev - additionalMargin);
+
+    setPendingMarginAdd(null);
+    alert(`Margin added successfully! New liquidation: ${newLiqPrice.toFixed(3)}%`);
+  } catch (error) {
+    console.error('Add margin failed:', error);
+    alert('Add margin failed. Please try again.');
+    setPendingMarginAdd(null);
+  }
+};
+
+
 
   const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
@@ -1299,6 +1361,37 @@ export default function App() {
                         >
                           Close Position
                         </button>
+                      <button 
+                        onClick={() => requestAddMargin(i)}
+                        className="add-margin-btn"
+                        style={{
+                          background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                          color: 'white',
+                          border: 'none',
+                          padding: '0.75rem 1.25rem',
+                          borderRadius: '0.75rem',
+                          fontSize: '0.875rem',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.25)',
+                          textTransform: 'uppercase',
+                          etterSpacing: '0.025em',
+                          marginLeft: '0.5rem'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
+                        }}
+                      >
+                        Add Margin
+                      </button>
                       </td>
                     </tr>
                   );
@@ -2253,6 +2346,86 @@ export default function App() {
                 Cancel
               </button>
             </div>
+          
+  {pendingMarginAdd && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Add Margin</h3>
+      <div className="trade-details">
+        <div className="detail-row">
+          <span>Position:</span>
+          <span className="trade-type">{pendingMarginAdd.trade.type} Fixed</span>
+        </div>
+        <div className="detail-row">
+          <span>Current Margin:</span>
+          <span>${pendingMarginAdd.trade.collateral.toLocaleString()}</span>
+        </div>
+        <div className="detail-row">
+          <span>Current Liquidation:</span>
+          <span>{pendingMarginAdd.trade.liquidationPrice}%</span>
+        </div>
+        <div className="detail-row">
+          <span>Additional Margin:</span>
+          <div style={{ position: 'relative' }}>
+            <span style={{ 
+              position: 'absolute', 
+              left: '12px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: '#ffffff', 
+              fontSize: '1rem',
+              pointerEvents: 'none'
+            }}>$</span>
+            <input
+              type="text"
+              value={additionalMargin ? additionalMargin.toLocaleString() : ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setAdditionalMargin(value === '' ? 0 : Number(value));
+              }}
+              placeholder="100,000"
+              style={{ 
+                paddingLeft: '24px',
+                padding: '0.5rem',
+                borderRadius: '0.375rem',
+                border: '1px solid #374151',
+                backgroundColor: '#1f2937',
+                color: 'white',
+                width: '150px'
+              }}
+            />
+          </div>
+        </div>
+        {additionalMargin > 0 && (
+          <div className="detail-row">
+            <span>New Liquidation:</span>
+            <span className="execution-price">
+              {pendingMarginAdd.trade.type === 'pay' 
+                ? (parseFloat(pendingMarginAdd.trade.liquidationPrice) - (additionalMargin / pendingMarginAdd.trade.currentDV01 / 100)).toFixed(3)
+                : (parseFloat(pendingMarginAdd.trade.liquidationPrice) + (additionalMargin / pendingMarginAdd.trade.currentDV01 / 100)).toFixed(3)
+              }%
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="modal-buttons">
+        <button 
+          onClick={confirmAddMargin} 
+          className="confirm-btn"
+          disabled={additionalMargin <= 0}
+        >
+          Add Margin
+        </button>
+        <button 
+          onClick={() => setPendingMarginAdd(null)} 
+          className="cancel-btn"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
           </div>
         </div>
       )}
