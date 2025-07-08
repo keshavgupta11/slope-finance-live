@@ -2371,7 +2371,7 @@ export default function App() {
                 <div style={{ position: 'relative' }}>
                   <span style={{ 
                     position: 'absolute', 
-                    left: '12px', 
+                    left: '6px', 
                     top: '50%', 
                     transform: 'translateY(-50%)', 
                     color: '#ffffff', 
@@ -2387,7 +2387,7 @@ export default function App() {
                     }}
                     placeholder="100,000"
                     style={{ 
-                      paddingLeft: '40px',
+                      paddingLeft: '30px',
                       padding: '0.5rem',
                       borderRadius: '0.375rem',
                       border: '1px solid #374151',
