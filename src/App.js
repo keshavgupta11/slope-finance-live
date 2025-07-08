@@ -2352,85 +2352,14 @@ export default function App() {
               </button>
             </div>
           
-  {pendingMarginAdd && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <h3>Add Margin</h3>
-      <div className="trade-details">
-        <div className="detail-row">
-          <span>Position:</span>
-          <span className="trade-type">{pendingMarginAdd.trade.type} Fixed</span>
-        </div>
-        <div className="detail-row">
-          <span>Current Margin:</span>
-          <span>${pendingMarginAdd.trade.collateral.toLocaleString()}</span>
-        </div>
-        <div className="detail-row">
-          <span>Current Liquidation:</span>
-          <span>{pendingMarginAdd.trade.liquidationPrice}%</span>
-        </div>
-        <div className="detail-row">
-          <span>Additional Margin:</span>
-          <div style={{ position: 'relative' }}>
-            <span style={{ 
-              position: 'absolute', 
-              left: '12px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              color: '#ffffff', 
-              fontSize: '1rem',
-              pointerEvents: 'none'
-            }}>$</span>
-            <input
-              type="text"
-              value={additionalMargin ? additionalMargin.toLocaleString() : ''}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setAdditionalMargin(value === '' ? 0 : Number(value));
-              }}
-              placeholder="100,000"
-              style={{ 
-                paddingLeft: '24px',
-                padding: '0.5rem',
-                borderRadius: '0.375rem',
-                border: '1px solid #374151',
-                backgroundColor: '#1f2937',
-                color: 'white',
-                width: '150px'
-              }}
-            />
+          {pendingMarginAdd && (
+            <div style={{position: 'fixed', top: 0, left: 0, background: 'rgba(0,0,0,0.8)', width: '100vw', height: '100vh', zIndex: 9999}}>
+               <div style={{background: 'white', color: 'black', padding: '2rem', margin: '10rem auto', width: '300px'}}>
+                  <h3>TEST MODAL</h3>
+                  <button onClick={() => setPendingMarginAdd(null)}>Close</button>
+              </div>
           </div>
-        </div>
-        {additionalMargin > 0 && (
-          <div className="detail-row">
-            <span>New Liquidation:</span>
-            <span className="execution-price">
-              {pendingMarginAdd.trade.type === 'pay' 
-                ? (parseFloat(pendingMarginAdd.trade.liquidationPrice) - (additionalMargin / pendingMarginAdd.trade.currentDV01 / 100)).toFixed(3)
-                : (parseFloat(pendingMarginAdd.trade.liquidationPrice) + (additionalMargin / pendingMarginAdd.trade.currentDV01 / 100)).toFixed(3)
-              }%
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="modal-buttons">
-        <button 
-          onClick={confirmAddMargin} 
-          className="confirm-btn"
-          disabled={additionalMargin <= 0}
-        >
-          Add Margin
-        </button>
-        <button 
-          onClick={() => setPendingMarginAdd(null)} 
-          className="cancel-btn"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          )}
           </div>
         </div>
       )}
