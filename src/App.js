@@ -355,7 +355,7 @@ export default function App() {
             market: mkt,
             direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
             entryPrice: trade.entryPrice.toFixed(3),
-            exitPrice: liquidationPrice.toFixed(3),
+            exitPrice: parseFloat(trade.liquidationPrice).toFixed(3),
             dv01: trade.currentDV01,
             finalPL: (-trade.collateral).toFixed(2),
             status: 'LIQUIDATED'
