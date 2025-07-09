@@ -1185,13 +1185,14 @@ export default function App() {
                     tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
                     domain={[
                     market === "JitoSol" ? 6 :
-                    market === "Lido stETH" ? 2.5 :
-                    market === "Aave ETH Lending" ? 1.6 :6,
-                    
+                    market === "Lido stETH" ? 2 :
+                    market === "Aave ETH Lending" ? 1 :
+                    market === "Aave ETH Borrowing" ? 2 : 6,
+
                     market === "JitoSol" ? 9 :
-                    market === "Lido stETH" ? 4.5 :
-                    market === "Aave ETH Lending" ? 2.1 :
-                    market === "Aave ETH Borrowing" ? 4.5 : 9
+                    market === "Lido stETH" ? 5 :
+                    market === "Aave ETH Lending" ? 3 :
+                    market === "Aave ETH Borrowing" ? 5 : 9
                     ]}
                     tickFormatter={(value) => `${value.toFixed(1)}%`}
                     scale="linear"
