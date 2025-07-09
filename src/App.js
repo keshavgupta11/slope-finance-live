@@ -1031,9 +1031,23 @@ export default function App() {
                   <span className="global-day" style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
                 </div>
                 <div className="indicator">
-                  <span className="indicator-icon">⚡</span>
+                  <img
+                    src={
+                      market === "JitoSol" ? "/jito.png" :
+                      market === "Lido stETH" ? "/lido.png" :
+                      market === "Aave ETH Lending" ? "/aave.png" :
+                      market === "Aave ETH Borrowing" ? "/aave-logo.png" : "/default-logo.png"
+                    }
+                    alt={`${market} logo`}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      marginRight: '8px'
+                    }}
+                  />
                   <span>{marketSettings[market].apy.toFixed(3)}%</span>
                 </div>
+
               </div>
             </div>
 
