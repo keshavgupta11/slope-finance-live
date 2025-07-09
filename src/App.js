@@ -435,7 +435,7 @@ export default function App() {
       ];
     }
 
-
+    //this section not used anymore- was for adding charts
     // Keep original logic for other markets
     const data = [];
     const marketTargets = {
@@ -1183,7 +1183,16 @@ export default function App() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    domain={[6, 9]}
+                    domain={[
+                    market === "JitoSol" ? 6 :
+                    market === "Lido stETH" ? 2.5 :
+                    market === "Aave ETH Lending" ? 1.6 :6,
+                    
+                    market === "JitoSol" ? 9 :
+                    market === "Lido stETH" ? 4.5 :
+                    market === "Aave ETH Lending" ? 2.1 :
+                    market === "Aave ETH Borrowing" ? 4.5 : 9
+                    ]}
                     tickFormatter={(value) => `${value.toFixed(1)}%`}
                     scale="linear"
                   />
