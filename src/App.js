@@ -435,6 +435,13 @@ export default function App() {
       ];
     }
 
+
+    // Keep original logic for other markets
+    const data = [];
+    const marketTargets = {
+      'Lido stETH': 4.5,
+      'Ethena sUSDe': 3.0
+    };
     
     const targetAPY = marketTargets[market] || 5.0;
     
