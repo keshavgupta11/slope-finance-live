@@ -420,18 +420,18 @@ export default function App() {
       ];
     }
 
-    if (market === "Aave ETH Lending") {
+    if (market === "Aave ETH Borrowing") {
       return [
-        { date: "2023-Q1", apy: 1.65, year: 2023.0 },
-        { date: "2023-Q2", apy: 1.68, year: 2023.25 },
-        { date: "2023-Q3", apy: 1.72, year: 2023.5 },
-        { date: "2023-Q4", apy: 1.75, year: 2023.75 },
-        { date: "2024-Q1", apy: 1.76, year: 2024.0 },
-        { date: "2024-Q2", apy: 1.74, year: 2024.25 },
-        { date: "2024-Q3", apy: 1.76, year: 2024.5 },
-        { date: "2024-Q4", apy: 1.84, year: 2024.75 },
-        { date: "2025-Q1", apy: 1.92, year: 2025.0 },
-       { date: "2025-Q2", apy: 1.98, year: 2025.25 }
+        { date: "2023-Q1", apy: 4.2, year: 2023.0 },
+        { date: "2023-Q2", apy: 4.0, year: 2023.25 },
+        { date: "2023-Q3", apy: 3.8, year: 2023.5 },
+        { date: "2023-Q4", apy: 3.6, year: 2023.75 },
+        { date: "2024-Q1", apy: 3.5, year: 2024.0 },
+        { date: "2024-Q2", apy: 3.1, year: 2024.25 },
+        { date: "2024-Q3", apy: 2.8, year: 2024.5 },
+        { date: "2024-Q4", apy: 2.7, year: 2024.75 },
+        { date: "2025-Q1", apy: 2.6, year: 2025.0 },
+       { date: "2025-Q2", apy: 2.6, year: 2025.25 }
       ];
     }
 
