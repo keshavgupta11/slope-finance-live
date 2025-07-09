@@ -1020,7 +1020,7 @@ export default function App() {
                 <div className="price-row">
                   <span>2025 realized APY:</span>
                   <span className="realized-apy">
-                    {market === "JitoSol" ? "4.03% / 8.43%" :
+                    {market === "JitoSol" ? "4.03% / 8.39%" :
                      market === "Lido stETH" ? "1.45% / 2.96%" :
                      market === "Aave ETH Lending" ? "0.95% / 1.93%" :
                      market === "Aave ETH Borrowing" ? "1.29% / 2.62%" : "N/A"}
