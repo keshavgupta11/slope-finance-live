@@ -1058,7 +1058,7 @@ export default function App() {
                 ))}
               </select>
               <div className="market-info">
-                <div>Notional / DV01: $10mm / $1k DV01, Day 0</div>
+                <div>Notional / DV01: $10mm / $1k DV01</div>
                 <div>$1k DV01 means you gain/lose $1,000 per 1bp move</div>
               </div>
             </div>
