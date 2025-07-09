@@ -586,10 +586,13 @@ export default function App() {
     // Calculate dynamic k based on current global day
     const daysToMaturity = Math.max(0, 365 - globalDay);
     const dynamicK = calculateDynamicK(k, daysToMaturity);
+    //correlation
+    const correlationMultiplier = getCorrelationMultiplier(market, type, currentDv01);
+    const adjustedDynamicK = dynamicK * correlationMultiplier;
     
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
-      unwindPrice = baseAPY + dynamicK * postOI;
+      unwindPrice = baseAPY + adjustedDynamicK * postOI;
       feeBps = 5;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -597,7 +600,7 @@ export default function App() {
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + dynamicK * midpointOI;
+      unwindPrice = baseAPY + adjustedDynamicK * midpointOI;
       feeBps = 2;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -605,7 +608,7 @@ export default function App() {
     } else {
       // Risk staying same (absolute value): use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + dynamicK * midpointOI;
+      unwindPrice = baseAPY + adjustedDynamicK * midpointOI;
       feeBps = 5;
       const feeInPrice = feeBps / 100;
       const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
@@ -747,6 +750,49 @@ export default function App() {
     }
   };
 
+  const getCorrelationMultiplier = (market, tradeType, tradeDv01) => {
+  // Only apply to correlated pair: Lido stETH and Aave ETH Lending
+    if (market !== "Lido stETH" && market !== "Aave ETH Lending") {
+      return 1.0; // No adjustment for other markets
+    }
+  
+    // Calculate combined exposure for the correlated pair
+    const lidoTrades = tradesByMarket["Lido stETH"] || [];
+    const aaveLendingTrades = tradesByMarket["Aave ETH Lending"] || [];
+  
+    let combinedOI = 0;
+  
+    // Sum Lido positions
+    lidoTrades.forEach(trade => {
+      combinedOI += trade.type === 'pay' ? trade.baseDV01 : -trade.baseDV01;
+    });
+  
+  // Sum Aave Lending positions  
+    aaveLendingTrades.forEach(trade => {
+      combinedOI += trade.type === 'pay' ? trade.baseDV01 : -trade.baseDV01;
+    });
+  
+  // Add proposed trade to combined exposure
+    const newTradeOI = tradeType === 'pay' ? tradeDv01 : -tradeDv01;
+    const postTradeCombinedOI = combinedOI + newTradeOI;
+  
+  // Only apply correlation adjustment if absolute exposure >= 20k
+    if (Math.abs(combinedOI) < 20000) {
+      return 1.0; // Normal pricing under 20k threshold
+    }
+  
+  // If trade reduces combined correlated exposure: tighter spread (0.5x k)
+    if (Math.abs(postTradeCombinedOI) < Math.abs(combinedOI)) {
+      return 0.5;
+    }
+  
+  // If trade increases combined correlated exposure: wider spread (2x k)
+    if (Math.abs(postTradeCombinedOI) > Math.abs(combinedOI)) {
+      return 2.0;
+    }
+  
+    return 1.0; // No change if exposure stays same
+  };
 
   const chartData = useMemo(() => generateChartData(), [market]);
   const marketTrades = tradesByMarket[market] || [];
@@ -801,10 +847,13 @@ export default function App() {
     // Calculate dynamic k based on current global day
     const daysToMaturity = Math.max(0, 365 - globalDay);
     const dynamicK = calculateDynamicK(k, daysToMaturity);
+    //correlation 
+    const correlationMultiplier = getCorrelationMultiplier(market, type, currentDv01);
+    const adjustedDynamicK = dynamicK * correlationMultiplier;
     
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
-      const priceImpact = parseFloat((dynamicK * postOI).toFixed(5));
+      const priceImpact = parseFloat((adjustedDynamicK * postOI).toFixed(5));
       console.log('CLEANED priceImpact:', priceImpact);
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 5;
@@ -815,7 +864,7 @@ export default function App() {
     } else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
-      const priceImpact = parseFloat((dynamicK * midpointOI).toFixed(5));
+      const priceImpact = parseFloat((adjustedDynamicK * midpointOI).toFixed(5));
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 2;
       const directionFactor = type === 'pay' ? 1 : -1;
@@ -825,7 +874,7 @@ export default function App() {
     } else {
       // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
-      const priceImpact = parseFloat((dynamicK * midpointOI).toFixed(5));
+      const priceImpact = parseFloat((adjustedDynamicK * midpointOI).toFixed(5));
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
       feeBps = 5;
       const directionFactor = type === 'pay' ? 1 : -1;
