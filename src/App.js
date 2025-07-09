@@ -17,8 +17,9 @@ const getProvider = () => {
 export default function App() {
   const initialMarketSettings = {
     "JitoSol": { apy: 7.9, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
-    "Lido stETH": { apy: 3.0, k: 0.000005, symbol: "stETH" },
-    "Ethena sUSDe": { apy: 4.0, k: 0.00001, symbol: "sUSDe" },
+    "Lido stETH": { apy: 2.91, k: 0.000005, symbol: "stETH" },
+    "Aave ETH Lending": { apy: 1.92, k: 0.000005, symbol: "aETH" },
+    "Aave ETH Borrowing": { apy: 2.6, k: 0.000005, symbol: "aETHBorrow" },
   };
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
@@ -401,15 +402,39 @@ export default function App() {
         { date: "2024-Q4", apy: 3.0, year: 2024.75 },
         { date: "2025-Q1", apy: 2.95, year: 2025.0 },
         { date: "2025-Q2", apy: 2.9, year: 2025.25 }
-    ];
-  }
+      ];
+    } 
     
-    // Keep original logic for other markets
-    const data = [];
-    const marketTargets = {
-      'Lido stETH': 4.5,
-      'Ethena sUSDe': 3.0
-    };
+    if (market === "Aave ETH Lending") {
+      return [
+        { date: "2023-Q1", apy: 1.65, year: 2023.0 },
+        { date: "2023-Q2", apy: 1.68, year: 2023.25 },
+        { date: "2023-Q3", apy: 1.72, year: 2023.5 },
+        { date: "2023-Q4", apy: 1.75, year: 2023.75 },
+        { date: "2024-Q1", apy: 1.76, year: 2024.0 },
+        { date: "2024-Q2", apy: 1.74, year: 2024.25 },
+        { date: "2024-Q3", apy: 1.76, year: 2024.5 },
+        { date: "2024-Q4", apy: 1.84, year: 2024.75 },
+        { date: "2025-Q1", apy: 1.92, year: 2025.0 },
+        { date: "2025-Q2", apy: 1.98, year: 2025.25 }
+      ];
+    }
+
+    if (market === "Aave ETH Lending") {
+      return [
+        { date: "2023-Q1", apy: 1.65, year: 2023.0 },
+        { date: "2023-Q2", apy: 1.68, year: 2023.25 },
+        { date: "2023-Q3", apy: 1.72, year: 2023.5 },
+        { date: "2023-Q4", apy: 1.75, year: 2023.75 },
+        { date: "2024-Q1", apy: 1.76, year: 2024.0 },
+        { date: "2024-Q2", apy: 1.74, year: 2024.25 },
+        { date: "2024-Q3", apy: 1.76, year: 2024.5 },
+        { date: "2024-Q4", apy: 1.84, year: 2024.75 },
+        { date: "2025-Q1", apy: 1.92, year: 2025.0 },
+       { date: "2025-Q2", apy: 1.98, year: 2025.25 }
+      ];
+    }
+
     
     const targetAPY = marketTargets[market] || 5.0;
     
