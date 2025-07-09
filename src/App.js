@@ -1291,7 +1291,7 @@ export default function App() {
                     <tr key={i}>
                       <td>{trade.market}</td>
                       <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                        {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                        {trade.type === 'pay' ? 'Paid Fixed' : 'Received Fixed'}
                       </td>
                       <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
                         {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
