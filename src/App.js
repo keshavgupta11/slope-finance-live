@@ -588,8 +588,9 @@ export default function App() {
     const dynamicK = calculateDynamicK(k, daysToMaturity);
 
     // Apply correlation adjustment for Lido/Aave ETH Lending
-    const correlationMultiplier = getCorrelationMultiplier(market, type, currentDv01);
+    const correlationMultiplier = getCorrelationMultiplier(trade.market, trade.type === 'pay' ? 'receive' : 'pay', currentTradeDv01);
     const adjustedDynamicK = dynamicK * correlationMultiplier;
+
     
     if (postRisk > preRisk) {
       // Risk increasing: use post OI directly + 5bp fee
