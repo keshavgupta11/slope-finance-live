@@ -52,6 +52,8 @@ export default function App() {
   //add margin
   const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
   const [additionalMargin, setAdditionalMargin] = useState(0);
+  const [showVammBreakdown, setShowVammBreakdown] = useState(false);
+
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -796,6 +798,63 @@ export default function App() {
   
   return 1.0; // No change if exposure stays same
 };
+//function to show vAMM PL breakdown
+const calculateVammBreakdown = () => {
+  const breakdown = [];
+  
+  // Add open positions
+  Object.keys(tradesByMarket).forEach(market => {
+    const trades = tradesByMarket[market] || [];
+    trades.forEach((trade, index) => {
+      const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+      
+      // vAMM has opposite position at raw price
+      const vammTrade = {
+        ...trade,
+        entryPrice: trade.rawPrice,
+        type: trade.type === 'pay' ? 'receive' : 'pay'
+      };
+      
+      const vammPL = calculateTotalPL(vammTrade, currentPrice);
+      
+      breakdown.push({
+        id: `${market}-${index}`,
+        market,
+        userDirection: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
+        vammDirection: trade.type === 'pay' ? 'Receive Fixed' : 'Pay Fixed',
+        entryPrice: trade.entryPrice.toFixed(3),
+        vammEntryPrice: trade.rawPrice.toFixed(3),
+        currentPrice: currentPrice.toFixed(3),
+        dv01: trade.baseDV01,
+        vammPL: vammPL,
+        status: 'OPEN',
+        entryDay: trade.entryDay || 0,
+        daysHeld: globalDay - (trade.entryDay || 0)
+      });
+    });
+  });
+  
+  // Add closed/liquidated positions from trade history
+  tradeHistory.forEach((trade, index) => {
+    // Calculate what the vAMM P&L was for this closed trade
+    // This would be stored when the trade was closed, but for now we can estimate
+    breakdown.push({
+      id: `history-${index}`,
+      market: trade.market,
+      userDirection: trade.direction,
+      vammDirection: trade.direction === 'Pay Fixed' ? 'Receive Fixed' : 'Pay Fixed',
+      entryPrice: trade.entryPrice,
+      vammEntryPrice: 'N/A', // Would need to store this
+      exitPrice: trade.exitPrice,
+      dv01: trade.dv01,
+      vammPL: 0, // Would need to calculate/store this when trade was closed
+      status: trade.status,
+      finalPL: trade.finalPL
+    });
+  });
+  
+  return breakdown;
+};
 
 
 
@@ -1342,13 +1401,13 @@ export default function App() {
             <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
               <h4>Protocol Metrics</h4>
               <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                <div className="stat-card">
+                <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setShowVammBreakdown(true)}>
                   <div className="stat-label">vAMM P&L</div>
                   <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
                     {vammPL >= 0 ? '+' : ''}${Math.abs(vammPL).toLocaleString()}{vammPL < 0 ? '' : ''}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Daily P&L calculation
+                    Click to view breakdown
                   </div>
                 </div>
                 <div className="stat-card">
@@ -2546,6 +2605,76 @@ export default function App() {
                 }}
               >
               Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showVammBreakdown && (
+        <div className="modal-overlay">
+         <div className="modal" style={{ maxWidth: '90vw', width: '1200px' }}>
+            <h3>vAMM P&L Breakdown</h3>
+            <div style={{ maxHeight: '500px', overflow: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#374151' }}>
+                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>Market</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>User Position</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>vAMM Position</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>User Entry</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>vAMM Entry</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Current/Exit</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>DV01</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>vAMM P&L</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left' }}>Status</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Days</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calculateVammBreakdown().map((item, i) => (
+                    <tr key={item.id} style={{ borderBottom: '1px solid #374151' }}>
+                      <td style={{ padding: '0.75rem' }}>{item.market}</td>
+                      <td style={{ padding: '0.75rem' }}>{item.userDirection}</td>
+                      <td style={{ padding: '0.75rem' }}>{item.vammDirection}</td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>{item.entryPrice}%</td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>{item.vammEntryPrice}%</td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                        {item.status === 'OPEN' ? item.currentPrice : item.exitPrice}%
+                      </td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>${item.dv01?.toLocaleString()}</td>
+                      <td style={{ 
+                        padding: '0.75rem', 
+                        textAlign: 'right',
+                        color: item.vammPL >= 0 ? '#22c55e' : '#ef4444',
+                          fontWeight: '600'
+                      }}>
+                        {item.vammPL >= 0 ? '+' : ''}${item.vammPL.toLocaleString()}
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <span style={{ 
+                          color: item.status === 'OPEN' ? '#10b981' : 
+                                item.status === 'LIQUIDATED' ? '#ef4444' : '#6b7280'
+                        }}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                        {item.status === 'OPEN' ? item.daysHeld : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', padding: '1rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
+              <div>
+                <strong>Total vAMM P&L: </strong>
+                <span style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}>
+                  {vammPL >= 0 ? '+' : ''}${Math.abs(vammPL).toLocaleString()}
+                </span>
+              </div>
+              <button onClick={() => setShowVammBreakdown(false)} className="cancel-btn">
+                Close
               </button>
             </div>
           </div>
