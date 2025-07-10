@@ -1536,15 +1536,16 @@ const calculateVammBreakdown = () => {
                         </button>
                          <button 
                           onClick={() => requestAddMargin(i)}
+                          disabled={isSettlementMode}
                           className="add-margin-btn"
                           style={{
-                            background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                            background: isSettlementMode ? '#6b7280' : 'linear-gradient(45deg, #3b82f6, #2563eb)',
                             color: 'white',
                             border: 'none',
                             padding: '0.75rem 1.25rem',
                             borderRadius: '0.75rem',
                             fontSize: '0.875rem',
-                            cursor: 'pointer',
+                            cursor: isSettlementMode ? 'not-allowed' : 'pointer',
                             fontWeight: '600',
                             transition: 'all 0.3s ease',
                             boxShadow: '0 4px 14px rgba(59, 130, 246, 0.25)',
@@ -1553,14 +1554,18 @@ const calculateVammBreakdown = () => {
                             marginLeft: '0.5rem'
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                            if (!isSettlementMode) {
+                              e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                              e.target.style.transform = 'translateY(-2px)';
+                              e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                            }
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
+                            if (!isSettlementMode) {
+                              e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                              e.target.style.transform = 'translateY(0)';
+                              e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
+                            }
                           }}
                         >
                           Add Margin
