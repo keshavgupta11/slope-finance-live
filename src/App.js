@@ -361,6 +361,7 @@ export default function App() {
             exitPrice: parseFloat(trade.liquidationPrice).toFixed(3),
             dv01: trade.currentDV01,
             finalPL: (-trade.collateral).toFixed(2),
+            vammPL: vammLiquidationPL,
             status: 'LIQUIDATED'
           }]);
           
@@ -673,6 +674,7 @@ export default function App() {
       exitPrice: parseFloat(executionPrice).toFixed(3),
       dv01: currentTradeDv01,
       finalPL: pl,
+      vammPL: finalVammPL,
       status: 'CLOSED'
     }]);
     
@@ -847,7 +849,7 @@ const calculateVammBreakdown = () => {
       vammEntryPrice: 'N/A', // Would need to store this
       exitPrice: trade.exitPrice,
       dv01: trade.dv01,
-      vammPL: 0, // Would need to calculate/store this when trade was closed
+      vammPL: trade.vammPL || 0, // Use the stored vAMM P&L
       status: trade.status,
       finalPL: trade.finalPL
     });
