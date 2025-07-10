@@ -790,12 +790,12 @@ export default function App() {
   
   // If trade reduces combined correlated exposure: tighter spread (0.5x k)
   if (Math.abs(postTradeCombinedOI) < Math.abs(combinedOI)) {
-    return 0.5;
+    return 0.8;
   }
   
   // If trade increases combined correlated exposure: wider spread (2x k)
   if (Math.abs(postTradeCombinedOI) > Math.abs(combinedOI)) {
-    return 2.0;
+    return 1.5;
   }
   
   return 1.0; // No change if exposure stays same
