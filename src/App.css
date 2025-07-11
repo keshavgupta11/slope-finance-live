@@ -4,7 +4,8 @@
   transform: scale(0.8);
   transform-origin: top left;
   width: 125%;
-  height: 125%;
+  height: 100vh; /* Change this from 125% to 100vh */
+  overflow: hidden; /* Add this to prevent scrolling beyond content */
 }
 
 :root {
