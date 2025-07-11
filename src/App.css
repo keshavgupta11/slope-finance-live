@@ -47,7 +47,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  font-size: 14px; /* Base font size reduced */
+  font-size: 12.6px; /* Reduced another 10% from 14px */
 }
 
 .app {
@@ -92,7 +92,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1.5rem; /* Reduced padding */
+  padding: 0.79rem 1.35rem; /* Reduced another 10% */
   border-bottom: 1px solid var(--border-primary);
   background: var(--bg-glass);
   backdrop-filter: blur(16px);
@@ -105,7 +105,7 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 2rem; /* Reduced gap */
+  gap: 1.8rem; /* Reduced another 10% */
 }
 
 .logo-section {
@@ -115,7 +115,7 @@ body {
 }
 
 .logo {
-  font-size: 1.375rem; /* Reduced from 1.75rem */
+  font-size: 1.24rem; /* Reduced another 10% from 1.375rem */
   font-weight: 800;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
@@ -205,8 +205,8 @@ body {
 
 /* Enhanced Left Panel */
 .left-panel {
-  width: 340px; /* Reduced from 420px */
-  padding: 1.5rem; /* Reduced from 2rem */
+  width: 306px; /* Reduced another 10% from 340px */
+  padding: 1.35rem; /* Reduced another 10% from 1.5rem */
   border-right: 1px solid var(--border-primary);
   background: var(--gradient-card);
   backdrop-filter: blur(12px);
@@ -217,9 +217,9 @@ body {
 }
 
 .swap-header h2 {
-  font-size: 1.375rem; /* Reduced from 1.75rem */
+  font-size: 1.24rem; /* Reduced another 10% from 1.375rem */
   font-weight: 700;
-  margin-bottom: 0.75rem; /* Reduced margin */
+  margin-bottom: 0.68rem; /* Reduced another 10% from 0.75rem */
   background: linear-gradient(45deg, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -365,12 +365,12 @@ body {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 0.75rem; /* Reduced border radius */
-  padding: 0.75rem 1rem; /* Reduced padding */
+  border-radius: 0.68rem; /* Reduced another 10% from 0.75rem */
+  padding: 0.68rem 0.9rem; /* Reduced another 10% from 0.75rem 1rem */
   color: var(--text-primary);
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
-  font-size: 0.875rem; /* Reduced from 1rem */
+  font-size: 0.79rem; /* Reduced another 10% from 0.875rem */
   font-weight: 500;
 }
 
@@ -495,14 +495,14 @@ input[type="number"] {
 /* Enhanced Enter Button */
 .enter-btn {
   width: 100%;
-  padding: 1rem; /* Reduced padding */
-  border-radius: 0.75rem; /* Reduced border radius */
+  padding: 0.9rem; /* Reduced another 10% from 1rem */
+  border-radius: 0.68rem; /* Reduced another 10% from 0.75rem */
   font-weight: 700;
-  font-size: 0.875rem; /* Reduced from 1.05rem */
+  font-size: 0.79rem; /* Reduced another 10% from 0.875rem */
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
-  margin-bottom: 1rem; /* Reduced margin */
+  margin-bottom: 0.9rem; /* Reduced another 10% from 1rem */
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
@@ -588,15 +588,15 @@ input[type="number"] {
 }
 
 .chart-container {
-  height: 260px; /* Reduced from 320px */
+  height: 234px; /* Reduced another 10% from 260px */
   width: 100%;
   background: var(--gradient-card);
-  border-radius: 1rem; /* Reduced border radius */
-  padding: 1rem; /* Reduced padding */
+  border-radius: 0.9rem; /* Reduced another 10% from 1rem */
+  padding: 0.9rem; /* Reduced another 10% from 1rem */
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-md);
-  margin-bottom: 0.75rem; /* Reduced margin */
+  margin-bottom: 0.68rem; /* Reduced another 10% from 0.75rem */
 }
 
 .chart-info {
