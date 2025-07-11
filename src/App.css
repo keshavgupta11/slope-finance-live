@@ -1,12 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-.app {
-  transform: scale(0.8);
-  transform-origin: top left;
-  width: 125%;
-  height: 100vh; /* Change this from 125% to 100vh */
-  overflow: hidden; /* Add this to prevent scrolling beyond content */
-}
+
 
 :root {
   /* Enhanced color palette */
