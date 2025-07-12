@@ -788,12 +788,12 @@ export default function App() {
     return 1.0; // Normal pricing under 20k threshold
   }
   
-  // If trade reduces combined correlated exposure: tighter spread (0.5x k)
+  // If trade reduces combined correlated exposure: tighter spread (0.8x k)
   if (Math.abs(postTradeCombinedOI) < Math.abs(combinedOI)) {
     return 0.8;
   }
   
-  // If trade increases combined correlated exposure: wider spread (2x k)
+  // If trade increases combined correlated exposure: wider spread (1.2x k)
   if (Math.abs(postTradeCombinedOI) > Math.abs(combinedOI)) {
     return 1.2;
   }
