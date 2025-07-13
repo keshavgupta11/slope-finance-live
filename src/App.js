@@ -2109,7 +2109,7 @@ const calculateVammBreakdown = () => {
         <button
           onClick={() => calculateStressTest(1)} // +100bp
           style={{
-            background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+            background: 'linear-gradient(45deg, #6b7280, #4b5563)',
             color: 'white',
             border: 'none',
             padding: '0.75rem 1.5rem',
@@ -2125,7 +2125,7 @@ const calculateVammBreakdown = () => {
         <button
           onClick={() => calculateStressTest(-1)} // -100bp
           style={{
-            background: 'linear-gradient(45deg, #22c55e, #16a34a)',
+            background: 'linear-gradient(45deg, #6b7280, #4b5563)',
             color: 'white',
             border: 'none',
             padding: '0.75rem 1.5rem',
