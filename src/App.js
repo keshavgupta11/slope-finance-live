@@ -48,7 +48,8 @@ export default function App() {
   const [pendingSettlement, setPendingSettlement] = useState(null);
   //riskk
   const [tempSettlementPrices, setTempSettlementPrices] = useState({});
-
+  //stress testing
+  const [stressTestResult, setStressTestResult] = useState(null);
   //add margin
   const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
   const [additionalMargin, setAdditionalMargin] = useState(0);
@@ -800,6 +801,31 @@ export default function App() {
   
   return 1.0; // No change if exposure stays same
 };
+
+//stress testing function
+const calculateStressTest = (direction) => {
+  let totalPL = 0;
+  let positionCount = 0;
+  
+  Object.keys(tradesByMarket).forEach(market => {
+    const trades = tradesByMarket[market] || [];
+    trades.forEach(trade => {
+      const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+      const stressPrice = currentPrice + (direction * 1.0); // +/- 100bp (1.0%)
+      
+      const stressPL = calculateTotalPL(trade, stressPrice);
+      totalPL += stressPL;
+      positionCount++;
+    });
+  });
+  
+  setStressTestResult({
+    scenario: direction > 0 ? 'Rates +100bp' : 'Rates -100bp',
+    totalPL: Math.round(totalPL),
+    positionCount
+  });
+};
+
 //function to show vAMM PL breakdown
 const calculateVammBreakdown = () => {
   const breakdown = [];
