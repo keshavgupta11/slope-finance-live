@@ -1861,9 +1861,9 @@ const calculateVammBreakdown = () => {
               <div>
                 <h4 style={{ color: '#10b981', marginBottom: '1rem' }}>📈 How to Earn Points</h4>
                 <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1rem' }}>
-                  <li><strong>1 point per $1K DV01</strong> traded</li>
+                  <li><strong>10 point per $1K DV01</strong> traded</li>
                   <li><strong>2x multiplier</strong> for JitoSol trades</li>
-                  <li><strong>1 point</strong> for adding margin to positions</li>
+                  <li><strong>2 point</strong> for adding margin to positions</li>
                   <li><strong>2x multiplier</strong> for risk-reducing trades</li>
                   <li><strong>20 points</strong> for trading multiple markets</li>
                   <li><strong>10 points</strong> for successful referrals</li>
