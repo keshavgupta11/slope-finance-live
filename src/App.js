@@ -1834,14 +1834,79 @@ const calculateVammBreakdown = () => {
         </div>
       )}
 
-      {["Learn", "Docs", "Leaderboard", "Stats"].map(tab => (
+      {["Learn", "Docs", "Stats"].map(tab => (
         activeTab === tab && (
           <div key={tab} className="tab-content">
             <h2>{tab}</h2>
-            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : tab === "Leaderboard" ? "Leaderboard" : "Statistics"} coming soon...</p>
+            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : "Statistics"} coming soon...</p>
           </div>
         )
       ))}
+
+      {activeTab === "Leaderboard" && (
+        <div className="tab-content">
+          <h2>Leaderboard</h2>
+    
+          <div style={{ 
+            padding: '2rem', 
+            border: '1px solid #374151', 
+            borderRadius: '0.75rem',
+            backgroundColor: '#1f2937',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ marginBottom: '1.5rem', color: '#f9fafb' }}>🎯 Slope Points System</h3>
+      
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        
+              <div>
+                <h4 style={{ color: '#10b981', marginBottom: '1rem' }}>📈 How to Earn Points</h4>
+                <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1rem' }}>
+                  <li><strong>1 point per $1K DV01</strong> traded</li>
+                  <li><strong>2x multiplier</strong> for JitoSol trades</li>
+                  <li><strong>1 point</strong> for adding margin to positions</li>
+                  <li><strong>2x multiplier</strong> for risk-reducing trades</li>
+                  <li><strong>20 points</strong> for trading multiple markets</li>
+                  <li><strong>10 points</strong> for successful referrals</li>
+                  <li><strong>50 points</strong> for holding to settlement</li>
+                  <li><strong>2x multiplier</strong> for consecutive trading days</li>
+                </ul>
+              </div>
+        
+              <div>
+              <h4 style={{ color: '#3b82f6', marginBottom: '1rem' }}>💰 Fee Discounts</h4>
+                <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1rem' }}>
+                  <li><strong>Bronze (50+ points):</strong> 5% fee discount</li>
+                  <li><strong>Silver (100+ points):</strong> 10% fee discount</li>
+                  <li><strong>Gold (500+ points):</strong> 15% fee discount</li>
+                </ul>
+          
+                <h4 style={{ color: '#f59e0b', marginBottom: '1rem', marginTop: '1.5rem' }}>🎁 Future Rewards</h4>
+                <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1rem' }}>
+                  <li>Airdrop eligibility and allocation</li>
+                  <li>Exclusive features and early access</li>
+                  <li>Governance participation rights</li>
+                </ul>
+              </div>
+        
+            </div>
+      
+            <div style={{ 
+              marginTop: '1.5rem', 
+              padding: '1rem', 
+              backgroundColor: '#374151', 
+              borderRadius: '0.5rem',
+              textAlign: 'center'
+            }}>
+              <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
+                <strong>Current Season:</strong> Pre-Launch Phase - Get ready for points tracking!
+              </p>
+            </div>
+          </div>
+    
+          <p style={{ color: '#9ca3af' }}>Leaderboard and live points tracking coming soon...</p>
+        </div>
+      )}
+
     {activeTab === "Risk" && (
   <div className="risk-management-container">
     <h2>Risk Management</h2>
