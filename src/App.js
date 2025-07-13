@@ -2066,6 +2066,95 @@ const calculateVammBreakdown = () => {
       )}
     </div>
 
+    {/* Stress Testing */}
+    <div className="stress-testing-controls" style={{ 
+      marginBottom: '2rem', 
+      padding: '1.5rem', 
+      border: '1px solid #374151', 
+      borderRadius: '0.75rem',
+      backgroundColor: '#1f2937'
+    }}>
+      <h3 style={{ marginBottom: '1rem', color: '#f9fafb' }}>📊 Stress Testing</h3>
+      <div style={{ marginBottom: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+        Test portfolio performance under extreme rate movements
+      </div>
+      
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+        <button
+          onClick={() => calculateStressTest(1)} // +100bp
+          style={{
+            background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          📈 Rates +100bp
+        </button>
+        
+        <button
+          onClick={() => calculateStressTest(-1)} // -100bp
+          style={{
+            background: 'linear-gradient(45deg, #22c55e, #16a34a)',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          📉 Rates -100bp
+        </button>
+        
+        <button
+          onClick={() => setStressTestResult(null)}
+          style={{
+            background: '#6b7280',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          Clear
+        </button>
+      </div>
+      
+      {stressTestResult && (
+        <div style={{ 
+          padding: '1rem', 
+          backgroundColor: '#374151', 
+          borderRadius: '0.5rem',
+          border: `2px solid ${stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'}`
+        }}>
+          <h4 style={{ margin: '0 0 0.5rem 0', color: '#f9fafb' }}>
+            Stress Test: {stressTestResult.scenario}
+          </h4>
+          <div style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: 'bold',
+            color: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'
+          }}>
+            Total P&L: {stressTestResult.totalPL >= 0 ? '+' : ''}${stressTestResult.totalPL.toLocaleString()}
+          </div>
+          <div style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+            Across {stressTestResult.positionCount} open positions
+          </div>
+        </div>
+      )}
+    </div>
+
+    
+
     {/* Positions by Market */}
     {Object.keys(marketSettings).map(mkt => {
       const marketTrades = tradesByMarket[mkt] || [];
