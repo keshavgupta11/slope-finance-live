@@ -25,7 +25,7 @@ export default function App() {
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
   const [market, setMarket] = useState("JitoSol");
   const [baseDv01, setBaseDv01] = useState(10000);
-  const [margin, setMargin] = useState(500000);
+  const [margin, setMargin] = useState(10000000);
   const [tradesByMarket, setTradesByMarket] = useState({});
   const [oiByMarket, setOiByMarket] = useState({});
   const [lastPriceByMarket, setLastPriceByMarket] = useState({});
@@ -713,7 +713,7 @@ export default function App() {
     const { tradeIndex, trade } = pendingMarginAdd;
   
   // Check wallet balance
-    const simulatedUSDC = usdcBalance + 5000000;
+    const simulatedUSDC = usdcBalance + 10000000;
     if (simulatedUSDC < additionalMargin) {
       alert(`Insufficient USDC balance. Required: $${additionalMargin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
       return;
@@ -878,7 +878,7 @@ const calculateVammBreakdown = () => {
     }
 
     // Check simulated USDC balance
-    const simulatedUSDC = usdcBalance + 5000000;
+    const simulatedUSDC = usdcBalance + 10000000;
     if (simulatedUSDC < margin) {
       alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
       return;
@@ -1109,7 +1109,7 @@ const calculateVammBreakdown = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
-              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 5000000).toLocaleString()}</div>
+              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 10000000).toLocaleString()}</div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
               {formatAddress(wallet)}
