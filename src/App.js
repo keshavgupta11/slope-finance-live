@@ -1872,9 +1872,9 @@ const calculateVammBreakdown = () => {
       {activeTab === "Learn" && (
         <div className="tab-content">
           <h2>Learn</h2>
-    
+          
           <div style={{ maxWidth: '800px' }}>
-      
+            
             {/* What are Interest Rate Swaps */}
             <div style={{ 
               marginBottom: '2rem', 
@@ -1895,7 +1895,120 @@ const calculateVammBreakdown = () => {
               </p>
             </div>
 
-            {/* Rest of the Learn content... */}
+            {/* Key Terms */}
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem', 
+              border: '1px solid #374151', 
+              borderRadius: '0.75rem',
+              backgroundColor: '#1f2937'
+            }}>
+              <h3 style={{ color: '#3b82f6', marginBottom: '1rem' }}>📚 Key Terms</h3>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ color: '#f59e0b', marginBottom: '0.5rem' }}>Pay Fixed</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                  You lock in a fixed rate and profit if rates go <strong>higher</strong>. You're betting that 
+                  yields will increase above your fixed rate.
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ color: '#f59e0b', marginBottom: '0.5rem' }}>Receive Fixed</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                  You receive a fixed rate and profit if rates go <strong>lower</strong>. You're betting that 
+                  yields will decrease below your fixed rate.
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ color: '#f59e0b', marginBottom: '0.5rem' }}>DV01 (Dollar Value of 1 Basis Point)</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                  Your position size. <strong>$10K DV01</strong> means you gain/lose $10,000 for every 
+                  1 basis point (0.01%) the rate moves in your favor/against you.
+                </p>
+              </div>
+
+              <div>
+                <h4 style={{ color: '#f59e0b', marginBottom: '0.5rem' }}>Liquidation Price</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                  The rate level where your losses equal your posted margin. Your position gets 
+                  automatically closed to prevent further losses.
+                </p>
+              </div>
+            </div>
+
+            {/* Trading Examples */}
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem', 
+              border: '1px solid #374151', 
+              borderRadius: '0.75rem',
+              backgroundColor: '#1f2937'
+            }}>
+              <h3 style={{ color: '#ef4444', marginBottom: '1rem' }}>💡 Trading Examples</h3>
+              
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
+                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 1: Pay Fixed (Bullish on Rates)</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '0.5rem' }}>
+                  • You pay fixed 7.9% on $10K DV01 JitoSOL<br/>
+                  • JitoSOL yields rise to 8.4% (+50bp)<br/>
+                  • Your profit: 50bp × $10K = <strong style={{ color: '#22c55e' }}>+$5,000</strong>
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
+                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 2: Receive Fixed (Bearish on Rates)</h4>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                  • You receive fixed 7.9% on $10K DV01 JitoSOL<br/>
+                  • JitoSOL yields fall to 7.4% (-50bp)<br/>
+                  • Your profit: 50bp × $10K = <strong style={{ color: '#22c55e' }}>+$5,000</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* Pricing Model */}
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem', 
+              border: '1px solid #374151', 
+              borderRadius: '0.75rem',
+              backgroundColor: '#1f2937'
+            }}>
+              <h3 style={{ color: '#8b5cf6', marginBottom: '1rem' }}>⚙️ Our Pricing Model</h3>
+              <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '1rem' }}>
+                <strong>Full Year Pricing:</strong> All contracts are priced for the full 365-day period, 
+                regardless of when you enter. Whether you trade on Day 0 or Day 90, you're getting 
+                exposure to the full year's yield curve.
+              </p>
+              <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '1rem' }}>
+                <strong>Dynamic Pricing:</strong> Prices adjust based on:
+              </p>
+              <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1.5rem' }}>
+                <li>Current protocol risk exposure</li>
+                <li>Time remaining to maturity</li>
+                <li>Correlation between markets</li>
+                <li>Trade size (larger trades pay more)</li>
+              </ul>
+            </div>
+
+            {/* Risk Management */}
+            <div style={{ 
+              padding: '1.5rem', 
+              border: '1px solid #374151', 
+              borderRadius: '0.75rem',
+              backgroundColor: '#1f2937'
+            }}>
+              <h3 style={{ color: '#f59e0b', marginBottom: '1rem' }}>⚠️ Risk Management</h3>
+              <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1.5rem' }}>
+                <li><strong>Liquidation Risk:</strong> Monitor your positions - rates can move quickly</li>
+                <li><strong>Margin Requirements:</strong> Minimum 50:1 leverage (2% margin)</li>
+                <li><strong>Add Margin:</strong> Improve your liquidation price by posting more collateral</li>
+                <li><strong>Correlation Risk:</strong> Trading correlated markets (Lido + Aave) increases risk</li>
+                <li><strong>Settlement:</strong> All positions settle on Day 365 based on realized yields</li>
+              </ul>
+            </div>
+
           </div>
         </div>
       )}
