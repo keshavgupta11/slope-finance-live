@@ -54,7 +54,9 @@ export default function App() {
   const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
   const [additionalMargin, setAdditionalMargin] = useState(0);
   const [showVammBreakdown, setShowVammBreakdown] = useState(false);
-
+// 3d map
+  const [show3DView, setShow3DView] = useState(false);
+  const [selectedSphere, setSelectedSphere] = useState(null);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -377,6 +379,355 @@ export default function App() {
     // Update OI based on current DV01s
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
+
+  const FloatingSpheres3D = () => {
+    const canvasRef = useRef(null);
+    const rendererRef = useRef(null);
+    const sceneRef = useRef(null);
+    const cameraRef = useRef(null);
+    const spheresRef = useRef([]);
+    const frameRef = useRef(null);
+    const mouseRef = useRef({ x: 0, y: 0 });
+    
+    // Get all positions across all markets
+    const allPositions = [];
+    Object.keys(tradesByMarket).forEach(market => {
+      const trades = tradesByMarket[market] || [];
+      trades.forEach((trade, index) => {
+        const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+        const pl = calculateTotalPL(trade, currentPrice);
+        const liquidationRisk = calculateLiquidationRisk(trade);
+        
+        allPositions.push({
+          id: `${market}-${index}`,
+          market,
+          trade,
+          pl,
+          liquidationRisk,
+          dv01: trade.baseDV01,
+          type: trade.type
+        });
+      });
+    });
+
+    useEffect(() => {
+      if (!canvasRef.current || !show3DView) return;
+      
+      // Scene setup - using regular Canvas for compatibility
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      // Animation state
+      let animationTime = 0;
+      const spheres = [];
+      
+      // Create sphere data for each position
+      allPositions.forEach((position, i) => {
+        const angle = (i / allPositions.length) * Math.PI * 2;
+        const radius = 100 + (position.dv01 / 50000) * 80; // Distance based on size
+        
+        spheres.push({
+          ...position,
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          z: position.liquidationRisk * 2, // Height based on liquidation risk
+          size: Math.max(8, Math.min(40, position.dv01 / 1000)), // Sphere size
+          baseX: Math.cos(angle) * radius,
+          baseY: Math.sin(angle) * radius,
+          pulseOffset: i * 0.5,
+          rotationSpeed: 0.02 + (Math.abs(position.pl) / 1000000) * 0.01
+        });
+      });
+      
+      // Animation loop
+      const animate = () => {
+        frameRef.current = requestAnimationFrame(animate);
+        animationTime += 0.016; // ~60fps
+        
+        // Clear canvas
+        ctx.fillStyle = '#1a202c';
+        ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        
+        // Draw cosmic background
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+        for (let i = 0; i < 50; i++) {
+          const x = (Math.sin(animationTime * 0.1 + i) * 200 + canvas.clientWidth / 2) % canvas.clientWidth;
+          const y = (Math.cos(animationTime * 0.15 + i) * 150 + canvas.clientHeight / 2) % canvas.clientHeight;
+          ctx.beginPath();
+          ctx.arc(x, y, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Center point
+        const centerX = canvas.clientWidth / 2;
+        const centerY = canvas.clientHeight / 2;
+        
+        // Sort spheres by Z for proper layering
+        const sortedSpheres = [...spheres].sort((a, b) => b.z - a.z);
+        
+        sortedSpheres.forEach((sphere, i) => {
+          // Floating animation
+          const floatY = Math.sin(animationTime * 2 + sphere.pulseOffset) * 8;
+          const pulseSize = 1 + Math.sin(animationTime * 3 + sphere.pulseOffset) * 0.1;
+          
+          // Position on screen
+          const screenX = centerX + sphere.x + Math.sin(animationTime + sphere.pulseOffset) * 5;
+          const screenY = centerY + sphere.y + floatY;
+          const size = sphere.size * pulseSize;
+          
+          // Color based on P&L
+          let color, glowColor;
+          if (sphere.pl >= 0) {
+            const intensity = Math.min(Math.abs(sphere.pl) / 500000, 1);
+            color = `rgba(34, 197, 94, ${0.7 + intensity * 0.3})`;
+            glowColor = `rgba(34, 197, 94, 0.3)`;
+          } else {
+            const intensity = Math.min(Math.abs(sphere.pl) / 500000, 1);
+            color = `rgba(239, 68, 68, ${0.7 + intensity * 0.3})`;
+            glowColor = `rgba(239, 68, 68, 0.3)`;
+          }
+          
+          // Liquidation warning
+          if (sphere.liquidationRisk <= 20 && sphere.liquidationRisk > 0) {
+            color = `rgba(251, 191, 36, ${0.8 + Math.sin(animationTime * 10) * 0.2})`;
+            glowColor = `rgba(251, 191, 36, 0.5)`;
+          }
+          
+          // Draw glow
+          const glowSize = size + 15;
+          const gradient = ctx.createRadialGradient(screenX, screenY, size/2, screenX, screenY, glowSize);
+          gradient.addColorStop(0, color);
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw main sphere
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw inner highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.beginPath();
+          ctx.arc(screenX - size/3, screenY - size/3, size/4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Market symbol
+          ctx.fillStyle = 'white';
+          ctx.font = `bold ${Math.max(8, size/3)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const symbol = sphere.market === 'JitoSol' ? 'J' : 
+                        sphere.market === 'Lido stETH' ? 'L' : 
+                        sphere.market.includes('Aave') ? 'A' : 'M';
+          ctx.fillText(symbol, screenX, screenY);
+          
+          // Position type indicator
+          ctx.fillStyle = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(screenX + size/2, screenY - size/2, 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Store sphere data for interaction
+          sphere.screenX = screenX;
+          sphere.screenY = screenY;
+          sphere.screenSize = size;
+        });
+        
+        // Draw connections between correlated positions
+        ctx.strokeStyle = 'rgba(139, 92, 246, 0.2)';
+        ctx.lineWidth = 1;
+        spheres.forEach(sphere1 => {
+          spheres.forEach(sphere2 => {
+            if (sphere1.id !== sphere2.id && 
+                ((sphere1.market === 'Lido stETH' && sphere2.market === 'Aave ETH Lending') ||
+                (sphere1.market === 'Aave ETH Lending' && sphere2.market === 'Lido stETH'))) {
+              ctx.beginPath();
+              ctx.moveTo(sphere1.screenX, sphere1.screenY);
+              ctx.lineTo(sphere2.screenX, sphere2.screenY);
+              ctx.stroke();
+            }
+          });
+        });
+        
+        spheresRef.current = spheres;
+      };
+      
+      animate();
+      
+      // Mouse interaction
+      const handleMouseMove = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseRef.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      };
+      
+      const handleClick = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Check if click is on a sphere
+        const clickedSphere = spheresRef.current.find(sphere => {
+          const dist = Math.sqrt(
+            (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
+          );
+          return dist <= sphere.screenSize;
+        });
+        
+        if (clickedSphere) {
+          setSelectedSphere(clickedSphere);
+        } else {
+          setSelectedSphere(null);
+        }
+      };
+      
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('click', handleClick);
+      
+      return () => {
+        if (frameRef.current) {
+          cancelAnimationFrame(frameRef.current);
+        }
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('click', handleClick);
+      };
+    }, [show3DView, allPositions, lastPriceByMarket]);
+
+    if (allPositions.length === 0) {
+      return (
+        <div style={{
+          width: '100%',
+          height: '300px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid #374151',
+          borderRadius: '0.75rem',
+          backgroundColor: '#1f2937',
+          color: '#9ca3af'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🌌</div>
+            <div style={{ fontSize: '0.875rem' }}>Open positions to see the galaxy</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '0.75rem',
+            border: '1px solid #374151',
+            backgroundColor: '#1a202c',
+            cursor: 'pointer'
+          }}
+        />
+        
+        {/* Legend */}
+        <div style={{
+          position: 'absolute',
+          top: '0.75rem',
+          left: '0.75rem',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '0.5rem',
+          borderRadius: '0.375rem',
+          fontSize: '0.7rem',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{ marginBottom: '0.25rem', fontWeight: '600' }}>🌌 Position Galaxy</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#22c55e', borderRadius: '50%' }}></div>
+            <span>Profit</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
+            <span>Loss</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ width: '8px', height: '8px', backgroundColor: '#fbbf24', borderRadius: '50%' }}></div>
+            <span>At Risk</span>
+          </div>
+        </div>
+        
+        {/* Selected sphere info */}
+        {selectedSphere && (
+          <div style={{
+            position: 'absolute',
+            top: '0.75rem',
+            right: '0.75rem',
+            background: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+            padding: '0.75rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.75rem',
+            minWidth: '200px',
+            backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#fbbf24' }}>
+              {selectedSphere.market}
+            </div>
+            <div>Direction: {selectedSphere.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}</div>
+            <div>DV01: ${selectedSphere.dv01.toLocaleString()}</div>
+            <div style={{ color: selectedSphere.pl >= 0 ? '#22c55e' : '#ef4444' }}>
+              P&L: {selectedSphere.pl >= 0 ? '+' : ''}${selectedSphere.pl.toLocaleString()}
+            </div>
+            <div>Entry: {selectedSphere.trade.entryPrice.toFixed(3)}%</div>
+            <div style={{ color: selectedSphere.liquidationRisk <= 20 ? '#fbbf24' : '#22c55e' }}>
+              Liq Risk: {selectedSphere.liquidationRisk.toFixed(0)}bp
+            </div>
+            <button 
+              onClick={() => setSelectedSphere(null)}
+              style={{
+                marginTop: '0.5rem',
+                background: '#374151',
+                color: 'white',
+                border: 'none',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.25rem',
+                fontSize: '0.6rem',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
+        
+        {/* Instructions */}
+        <div style={{
+          position: 'absolute',
+          bottom: '0.75rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: '#9ca3af',
+          fontSize: '0.6rem',
+          textAlign: 'center'
+        }}>
+          Click spheres for details • Size = DV01 • Height = Liquidation Risk
+        </div>
+      </div>
+    );
+  };
+
+
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
@@ -1324,68 +1675,91 @@ const calculateVammBreakdown = () => {
           <div className="right-panel">
             <div className="chart-header">
               <span>Running 365d APY</span>
+              <button
+                onClick={() => setShow3DView(!show3DView)}
+                style={{
+                  background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  marginLeft: 'auto'
+                }}
+              >
+                {show3DView ? 'Show Chart' : 'Show Galaxy'}
+              </button>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="year" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    type="number"
-                    scale="linear"
-                    domain={[2023, 2025]}
-                    ticks={[2023, 2024, 2025]}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    domain={[
-                    market === "JitoSol" ? 6 :
-                    market === "Lido stETH" ? 2 :
-                    market === "Aave ETH Lending" ? 1 :
-                    market === "Aave ETH Borrowing" ? 2 : 6,
+              <div style={{ width: show3DView ? '50%' : '100%', transition: 'width 0.3s ease' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis 
+                      dataKey="year" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      type="number"
+                      scale="linear"
+                      domain={[2023, 2025]}
+                      ticks={[2023, 2024, 2025]}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      domain={[
+                      market === "JitoSol" ? 6 :
+                      market === "Lido stETH" ? 2 :
+                      market === "Aave ETH Lending" ? 1 :
+                      market === "Aave ETH Borrowing" ? 2 : 6,
 
-                    market === "JitoSol" ? 9 :
-                    market === "Lido stETH" ? 5 :
-                    market === "Aave ETH Lending" ? 3 :
-                    market === "Aave ETH Borrowing" ? 5 : 9
-                    ]}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                    scale="linear"
-                  />
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="apy" 
-                    stroke="#10B981" 
-                    strokeWidth={4}
-                    dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
-                    activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
-                    fill="url(#chartGradient)"
-                    fillOpacity={0.3}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+                      market === "JitoSol" ? 9 :
+                      market === "Lido stETH" ? 5 :
+                      market === "Aave ETH Lending" ? 3 :
+                      market === "Aave ETH Borrowing" ? 5 : 9
+                      ]}
+                      tickFormatter={(value) => `${value.toFixed(1)}%`}
+                      scale="linear"
+                    />
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <Line 
+                      type="monotone" 
+                      dataKey="apy" 
+                      stroke="#10B981" 
+                      strokeWidth={4}
+                      dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
+                      activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
+                      fill="url(#chartGradient)"
+                      fillOpacity={0.3}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            {show3DView && (
+              <div style={{ width: '50%' }}>
+                <FloatingSpheres3D />
+              </div>
+            )}
+          </div>
             <div className="chart-info">
               This chart shows realized APY over last 365 days
             </div>
