@@ -2002,7 +2002,7 @@ const calculateVammBreakdown = () => {
               <h3 style={{ color: '#f59e0b', marginBottom: '1rem' }}>⚠️ Risk Management</h3>
               <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1.5rem' }}>
                 <li><strong>Liquidation Risk:</strong> Monitor your positions - rates can move quickly</li>
-                <li><strong>Margin Requirements:</strong> Minimum 200:1 leverage (2% margin)</li>
+                <li><strong>Margin Requirements:</strong> Minimum 200:1 leverage (0.5% margin)</li>
                 <li><strong>Add Margin:</strong> Improve your liquidation price by posting more collateral</li>
                 <li><strong>Settlement:</strong> All positions settle on last day of the year based on realized yields</li>
               </ul>
