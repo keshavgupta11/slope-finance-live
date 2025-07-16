@@ -1949,20 +1949,20 @@ const calculateVammBreakdown = () => {
               <h3 style={{ color: '#ef4444', marginBottom: '1rem' }}>💡 Trading Examples</h3>
               
               <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
-                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 1: Pay Fixed (Bullish on Rates)</h4>
+                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 1: Pay Fixed</h4>
                 <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '0.5rem' }}>
                   • You pay fixed 7.9% on $10K DV01 JitoSOL<br/>
                   • JitoSOL yields rise to 8.4% (+50bp)<br/>
-                  • Your profit: 50bp × $10K = <strong style={{ color: '#22c55e' }}>+$5,000</strong>
+                  • Your profit: 50bp × $10K/bp = <strong style={{ color: '#22c55e' }}>+$500,000</strong>
                 </p>
               </div>
 
               <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
-                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 2: Receive Fixed (Bearish on Rates)</h4>
+                <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Example 2: Receive Fixed</h4>
                 <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
                   • You receive fixed 7.9% on $10K DV01 JitoSOL<br/>
                   • JitoSOL yields fall to 7.4% (-50bp)<br/>
-                  • Your profit: 50bp × $10K = <strong style={{ color: '#22c55e' }}>+$5,000</strong>
+                  • Your profit: 50bp × $10K/bp = <strong style={{ color: '#22c55e' }}>+$500,000</strong>
                 </p>
               </div>
             </div>
@@ -2002,10 +2002,9 @@ const calculateVammBreakdown = () => {
               <h3 style={{ color: '#f59e0b', marginBottom: '1rem' }}>⚠️ Risk Management</h3>
               <ul style={{ color: '#e5e7eb', lineHeight: '1.6', paddingLeft: '1.5rem' }}>
                 <li><strong>Liquidation Risk:</strong> Monitor your positions - rates can move quickly</li>
-                <li><strong>Margin Requirements:</strong> Minimum 50:1 leverage (2% margin)</li>
+                <li><strong>Margin Requirements:</strong> Minimum 200:1 leverage (2% margin)</li>
                 <li><strong>Add Margin:</strong> Improve your liquidation price by posting more collateral</li>
-                <li><strong>Correlation Risk:</strong> Trading correlated markets (Lido + Aave) increases risk</li>
-                <li><strong>Settlement:</strong> All positions settle on Day 365 based on realized yields</li>
+                <li><strong>Settlement:</strong> All positions settle on last day of the year based on realized yields</li>
               </ul>
             </div>
 
