@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
-import * as THREE from 'three';
-
 
 // Solana imports
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
@@ -381,46 +379,42 @@ export default function App() {
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
 
-  const calculate3DPortfolioRisk = () => {
-    const scenarios = [];
+  const calculate2DRiskGrid = () => {
     const allTrades = Object.values(tradesByMarket).flat();
-  
-    // Create grid of scenarios: rates +/- 200bp in 20bp increments
-    for (let ratesUp = -200; ratesUp <= 200; ratesUp += 20) {
-      for (let ratesDown = -200; ratesDown <= 200; ratesDown += 20) {
+    if (allTrades.length === 0) return [];
+    
+    const scenarios = [];
+    
+    // Create 10x10 grid of scenarios
+    for (let i = 0; i < 10; i++) {
+      for (let j = 0; j < 10; j++) {
+        // Rate scenarios from -200bp to +200bp
+        const rateShock = ((i - 5) * 80) / 100; // -200bp to +200bp
+        const timeShock = ((j - 5) * 0.1); // Time decay effect
+        
         let totalPL = 0;
-      
+        
         allTrades.forEach(trade => {
           const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-          let scenarioPrice;
-        
-        // Apply rate shock based on scenario
-          if (ratesUp >= 0 && ratesDown >= 0) {
-            // Both positive - use average
-            scenarioPrice = currentPrice + (ratesUp + ratesDown) / 200; // Convert bp to %
-          } else if (ratesUp <= 0 && ratesDown <= 0) {
-            // Both negative - use average  
-            scenarioPrice = currentPrice + (ratesUp + ratesDown) / 200;
-          } else {
-            // Mixed scenario - use the dominant one
-            scenarioPrice = currentPrice + (Math.abs(ratesUp) > Math.abs(ratesDown) ? ratesUp : ratesDown) / 100;
-          }
-        
+          const scenarioPrice = currentPrice + rateShock;
           const tradePL = calculateTotalPL(trade, scenarioPrice);
           totalPL += tradePL;
         });
-      
+        
         scenarios.push({
-          x: ratesUp / 100, // Convert to percentage for display
-          y: ratesDown / 100,
-          z: totalPL / 1000, // Convert to thousands for easier viewing
-          totalPL: totalPL
+          x: i,
+          y: j,
+          rateShock: rateShock * 100, // Convert to bp
+          totalPL: totalPL,
+          color: totalPL >= 0 ? '#22c55e' : '#ef4444',
+          opacity: Math.min(Math.abs(totalPL) / 1000000, 1) // Scale opacity by P&L magnitude
         });
       }
     }
-  
+    
     return scenarios;
   };
+
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
@@ -536,150 +530,144 @@ export default function App() {
     return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
   };
 
-  const Portfolio3DView = () => {
-    const canvasRef = useRef(null);
-    const sceneRef = useRef(null);
-    const rendererRef = useRef(null);
-    const cameraRef = useRef(null);
-    const frameRef = useRef(null);
+  const Simple3DRiskView = () => {
+    const scenarios = calculate2DRiskGrid();
+    const allTrades = Object.values(tradesByMarket).flat();
     
-    useEffect(() => {
-      if (!canvasRef.current || !show3DView) return;
-      
-      // Scene setup
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1a202c);
-      
-      // Camera setup
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        canvasRef.current.clientWidth / canvasRef.current.clientHeight,
-        0.1,
-        1000
+    if (allTrades.length === 0) {
+      return (
+        <div style={{
+          width: '100%',
+          height: '400px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid #374151',
+          borderRadius: '0.75rem',
+          backgroundColor: '#1f2937',
+          color: '#9ca3af'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📊</div>
+            <div>No positions to visualize</div>
+            <div style={{ fontSize: '0.875rem' }}>Open some trades to see risk analysis</div>
+          </div>
+        </div>
       );
-      camera.position.set(5, 5, 5);
-      
-      // Renderer setup
-      const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true });
-      renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
-      
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-      scene.add(ambientLight);
-      
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(10, 10, 5);
-      scene.add(directionalLight);
-      
-      // Create risk surface
-      const scenarios = calculate3DPortfolioRisk();
-      
-      // Create geometry for surface
-      const geometry = new THREE.PlaneGeometry(8, 8, 20, 20);
-      const vertices = geometry.attributes.position.array;
-      
-      // Map P&L to surface height
-      scenarios.forEach((scenario, i) => {
-        if (i < vertices.length / 3) {
-          vertices[i * 3 + 2] = scenario.z / 100; // Scale for visibility
-        }
-      });
-      
-      geometry.attributes.position.needsUpdate = true;
-      geometry.computeVertexNormals();
-      
-      // Create material with gradient
-      const material = new THREE.MeshLambertMaterial({
-        color: 0x00ff88,
-        wireframe: false,
-        transparent: true,
-        opacity: 0.8
-      });
-      
-      const surface = new THREE.Mesh(geometry, material);
-      surface.rotation.x = -Math.PI / 2;
-      scene.add(surface);
-      
-      // Add current portfolio position marker
-      const markerGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-      const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b35 });
-      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-      marker.position.set(0, 1, 0); // Current position at center
-      scene.add(marker);
-      
-      // Add axes
-      const axesHelper = new THREE.AxesHelper(3);
-      scene.add(axesHelper);
-      
-      // Add grid
-      const gridHelper = new THREE.GridHelper(8, 20, 0x444444, 0x444444);
-      scene.add(gridHelper);
-      
-      // Store refs
-      sceneRef.current = scene;
-      rendererRef.current = renderer;
-      cameraRef.current = camera;
-      
-      // Animation loop
-      const animate = () => {
-        frameRef.current = requestAnimationFrame(animate);
-        
-        // Slow rotation
-        if (surface) {
-          surface.rotation.z += 0.005;
-        }
-        
-        renderer.render(scene, camera);
-      };
-      
-      animate();
-      
-      // Handle resize
-      const handleResize = () => {
-        if (canvasRef.current && camera && renderer) {
-          camera.aspect = canvasRef.current.clientWidth / canvasRef.current.clientHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
-        }
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        if (frameRef.current) {
-          cancelAnimationFrame(frameRef.current);
-        }
-        if (rendererRef.current) {
-          rendererRef.current.dispose();
-        }
-      };
-    }, [show3DView, tradesByMarket, lastPriceByMarket]);
+    }
+    
+    const maxPL = Math.max(...scenarios.map(s => Math.abs(s.totalPL)));
     
     return (
-      <div style={{ width: '100%', height: '400px', position: 'relative' }}>
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '0.75rem',
-            border: '1px solid #374151'
-          }}
-        />
+      <div style={{
+        width: '100%',
+        height: '400px',
+        border: '1px solid #374151',
+        borderRadius: '0.75rem',
+        backgroundColor: '#1f2937',
+        padding: '1rem',
+        position: 'relative'
+      }}>
+        {/* Header */}
+        <div style={{
+          marginBottom: '1rem',
+          color: '#f9fafb',
+          fontSize: '1rem',
+          fontWeight: '600'
+        }}>
+          📈 Portfolio Risk Heat Map
+        </div>
+        
+        {/* Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(10, 1fr)',
+          gap: '2px',
+          height: '280px',
+          marginBottom: '1rem'
+        }}>
+          {scenarios.map((scenario, i) => (
+            <div
+              key={i}
+              style={{
+                backgroundColor: scenario.color,
+                opacity: 0.3 + (scenario.opacity * 0.7),
+                borderRadius: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.6rem',
+                color: 'white',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                border: scenario.x === 5 && scenario.y === 5 ? '2px solid #fbbf24' : 'none'
+              }}
+              title={`Rate Shock: ${scenario.rateShock.toFixed(0)}bp | P&L: $${scenario.totalPL.toLocaleString()}`}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.1)';
+                e.target.style.zIndex = '10';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.zIndex = '1';
+              }}
+            >
+              {Math.abs(scenario.totalPL) > 10000 && (
+                <span>{scenario.totalPL >= 0 ? '+' : '-'}{Math.abs(scenario.totalPL / 1000).toFixed(0)}k</span>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {/* Legend */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.75rem',
+          color: '#9ca3af'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ width: '12px', height: '12px', backgroundColor: '#ef4444', borderRadius: '2px' }}></div>
+              <span>Loss</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ width: '12px', height: '12px', backgroundColor: '#22c55e', borderRadius: '2px' }}></div>
+              <span>Profit</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ width: '12px', height: '12px', border: '2px solid #fbbf24', borderRadius: '2px' }}></div>
+              <span>Current</span>
+            </div>
+          </div>
+          <div>
+            <span>Rate shocks: -200bp to +200bp</span>
+          </div>
+        </div>
+        
+        {/* Stats */}
         <div style={{
           position: 'absolute',
           top: '1rem',
-          left: '1rem',
+          right: '1rem',
           background: 'rgba(0, 0, 0, 0.7)',
           color: 'white',
-          padding: '0.5rem',
+          padding: '0.75rem',
           borderRadius: '0.375rem',
-          fontSize: '0.75rem'
+          fontSize: '0.75rem',
+          minWidth: '150px'
         }}>
-          <div>🔴 Current Position</div>
-          <div>📈 Rates Up/Down Scenarios</div>
-          <div>💰 P&L Surface (Height)</div>
+          <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#fbbf24' }}>Portfolio Stats</div>
+          <div>Positions: {allTrades.length}</div>
+          <div>Max Risk: ${maxPL.toLocaleString()}</div>
+          <div style={{ 
+            color: scenarios.find(s => s.x === 5 && s.y === 5)?.totalPL >= 0 ? '#22c55e' : '#ef4444',
+            fontWeight: '600'
+          }}>
+            Current P&L: ${scenarios.find(s => s.x === 5 && s.y === 5)?.totalPL.toLocaleString() || '0'}
+          </div>
         </div>
       </div>
     );
@@ -1531,7 +1519,7 @@ const calculateVammBreakdown = () => {
                     fontWeight: '600'
                   }}
                 >
-                  {show3DView ? 'Show Chart' : 'Show 3D Risk'}
+                  {show3DView ? 'Show Chart' : 'Show Risk Map'}
                 </button>
               </div>
             </div>
@@ -1599,7 +1587,7 @@ const calculateVammBreakdown = () => {
               </div>
               {show3DView && (
                 <div style={{ width: '50%' }}>
-                  <Portfolio3DView />
+                  <Simple3DRiskView />
                 </div>
               )}
             </div>
