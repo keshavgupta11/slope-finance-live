@@ -1860,14 +1860,45 @@ const calculateVammBreakdown = () => {
         </div>
       )}
 
-      {["Learn", "Docs", "Stats"].map(tab => (
+      {["Docs", "Stats"].map(tab => (
         activeTab === tab && (
           <div key={tab} className="tab-content">
             <h2>{tab}</h2>
-            <p>{tab === "Learn" ? "Learning resources" : tab === "Docs" ? "Documentation" : "Statistics"} coming soon...</p>
+            <p>{tab === "Docs" ? "Documentation" : "Statistics"} coming soon...</p>
           </div>
         )
       ))}
+
+      {activeTab === "Learn" && (
+        <div className="tab-content">
+          <h2>Learn</h2>
+    
+          <div style={{ maxWidth: '800px' }}>
+      
+            {/* What are Interest Rate Swaps */}
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem', 
+              border: '1px solid #374151', 
+              borderRadius: '0.75rem',
+              backgroundColor: '#1f2937'
+            }}>
+              <h3 style={{ color: '#10b981', marginBottom: '1rem' }}>🔄 What are Interest Rate Swaps?</h3>
+              <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '1rem' }}>
+                Interest Rate Swaps (IRS) let you exchange variable yield exposure for fixed yield exposure. 
+                Instead of being subject to changing staking/lending rates, you can lock in a fixed rate or 
+                speculate on rate movements.
+              </p>
+              <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                <strong>Example:</strong> JitoSOL currently yields 7.9% but might change daily. You can 
+                "pay fixed" at 7.9% to lock in that rate regardless of where JitoSOL yields go.
+              </p>
+            </div>
+
+            {/* Rest of the Learn content... */}
+          </div>
+        </div>
+      )}
 
       {activeTab === "Leaderboard" && (
         <div className="tab-content">
