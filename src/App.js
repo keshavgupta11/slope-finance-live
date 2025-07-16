@@ -1944,7 +1944,7 @@ const calculateVammBreakdown = () => {
                     DV01 = $10M × 0.0001 × 1 = $1,000/bp
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                    (assuming $10M notional, 1 year to maturity)
+                    (Assuming $10M notional; Time to Maturity = 1 since we use full-year pricing regardless of entry day)
                   </div>
                 </div>
               </div>
