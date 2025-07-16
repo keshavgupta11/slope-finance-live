@@ -1923,10 +1923,30 @@ const calculateVammBreakdown = () => {
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <h4 style={{ color: '#f59e0b', marginBottom: '0.5rem' }}>DV01 (Dollar Value of 1 Basis Point)</h4>
-                <p style={{ color: '#e5e7eb', lineHeight: '1.6' }}>
+                <p style={{ color: '#e5e7eb', lineHeight: '1.6', marginBottom: '1rem' }}>
                   Your position size. <strong>$10K DV01</strong> means you gain/lose $10,000 for every 
                   1 basis point (0.01%) the rate moves in your favor/against you.
                 </p>
+                <div style={{ 
+                  padding: '1rem', 
+                  backgroundColor: '#374151', 
+                  borderRadius: '0.5rem',
+                  fontFamily: 'monospace',
+                  fontSize: '0.875rem'
+                }}>
+                  <div style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    DV01 Calculation:
+                  </div>
+                  <div style={{ color: '#e5e7eb' }}>
+                    DV01 = Notional × 1bp × Time to Maturity
+                  </div>
+                  <div style={{ color: '#e5e7eb' }}>
+                    DV01 = $10M × 0.0001 × 1 = $1,000/bp
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                    (assuming $10M notional, 1 year to maturity)
+                  </div>
+                </div>
               </div>
 
               <div>
