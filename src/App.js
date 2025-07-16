@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
+import * as THREE from 'three';
+
 
 // Solana imports
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
