@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -54,7 +54,8 @@ export default function App() {
   const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
   const [additionalMargin, setAdditionalMargin] = useState(0);
   const [showVammBreakdown, setShowVammBreakdown] = useState(false);
-
+  //3d view
+  const [show3DView, setShow3DView] = useState(false);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -378,6 +379,47 @@ export default function App() {
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
 
+  const calculate3DPortfolioRisk = () => {
+    const scenarios = [];
+    const allTrades = Object.values(tradesByMarket).flat();
+  
+    // Create grid of scenarios: rates +/- 200bp in 20bp increments
+    for (let ratesUp = -200; ratesUp <= 200; ratesUp += 20) {
+      for (let ratesDown = -200; ratesDown <= 200; ratesDown += 20) {
+        let totalPL = 0;
+      
+        allTrades.forEach(trade => {
+          const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
+          let scenarioPrice;
+        
+        // Apply rate shock based on scenario
+          if (ratesUp >= 0 && ratesDown >= 0) {
+            // Both positive - use average
+            scenarioPrice = currentPrice + (ratesUp + ratesDown) / 200; // Convert bp to %
+          } else if (ratesUp <= 0 && ratesDown <= 0) {
+            // Both negative - use average  
+            scenarioPrice = currentPrice + (ratesUp + ratesDown) / 200;
+          } else {
+            // Mixed scenario - use the dominant one
+            scenarioPrice = currentPrice + (Math.abs(ratesUp) > Math.abs(ratesDown) ? ratesUp : ratesDown) / 100;
+          }
+        
+          const tradePL = calculateTotalPL(trade, scenarioPrice);
+          totalPL += tradePL;
+        });
+      
+        scenarios.push({
+          x: ratesUp / 100, // Convert to percentage for display
+          y: ratesDown / 100,
+          z: totalPL / 1000, // Convert to thousands for easier viewing
+          totalPL: totalPL
+        });
+      }
+    }
+  
+    return scenarios;
+  };
+
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
     if (market === "JitoSol") {
@@ -490,6 +532,155 @@ export default function App() {
     const totalVammPLCombined = totalVammPL + openVammPL;
     
     return { vammPL: totalVammPLCombined, protocolPL: totalFeesCollected };
+  };
+
+  const Portfolio3DView = () => {
+    const canvasRef = useRef(null);
+    const sceneRef = useRef(null);
+    const rendererRef = useRef(null);
+    const cameraRef = useRef(null);
+    const frameRef = useRef(null);
+    
+    useEffect(() => {
+      if (!canvasRef.current || !show3DView) return;
+      
+      // Scene setup
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1a202c);
+      
+      // Camera setup
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        canvasRef.current.clientWidth / canvasRef.current.clientHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(5, 5, 5);
+      
+      // Renderer setup
+      const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true });
+      renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
+      
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+      scene.add(ambientLight);
+      
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 5);
+      scene.add(directionalLight);
+      
+      // Create risk surface
+      const scenarios = calculate3DPortfolioRisk();
+      
+      // Create geometry for surface
+      const geometry = new THREE.PlaneGeometry(8, 8, 20, 20);
+      const vertices = geometry.attributes.position.array;
+      
+      // Map P&L to surface height
+      scenarios.forEach((scenario, i) => {
+        if (i < vertices.length / 3) {
+          vertices[i * 3 + 2] = scenario.z / 100; // Scale for visibility
+        }
+      });
+      
+      geometry.attributes.position.needsUpdate = true;
+      geometry.computeVertexNormals();
+      
+      // Create material with gradient
+      const material = new THREE.MeshLambertMaterial({
+        color: 0x00ff88,
+        wireframe: false,
+        transparent: true,
+        opacity: 0.8
+      });
+      
+      const surface = new THREE.Mesh(geometry, material);
+      surface.rotation.x = -Math.PI / 2;
+      scene.add(surface);
+      
+      // Add current portfolio position marker
+      const markerGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+      const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b35 });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.set(0, 1, 0); // Current position at center
+      scene.add(marker);
+      
+      // Add axes
+      const axesHelper = new THREE.AxesHelper(3);
+      scene.add(axesHelper);
+      
+      // Add grid
+      const gridHelper = new THREE.GridHelper(8, 20, 0x444444, 0x444444);
+      scene.add(gridHelper);
+      
+      // Store refs
+      sceneRef.current = scene;
+      rendererRef.current = renderer;
+      cameraRef.current = camera;
+      
+      // Animation loop
+      const animate = () => {
+        frameRef.current = requestAnimationFrame(animate);
+        
+        // Slow rotation
+        if (surface) {
+          surface.rotation.z += 0.005;
+        }
+        
+        renderer.render(scene, camera);
+      };
+      
+      animate();
+      
+      // Handle resize
+      const handleResize = () => {
+        if (canvasRef.current && camera && renderer) {
+          camera.aspect = canvasRef.current.clientWidth / canvasRef.current.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
+        }
+      };
+      
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        if (frameRef.current) {
+          cancelAnimationFrame(frameRef.current);
+        }
+        if (rendererRef.current) {
+          rendererRef.current.dispose();
+        }
+      };
+    }, [show3DView, tradesByMarket, lastPriceByMarket]);
+    
+    return (
+      <div style={{ width: '100%', height: '400px', position: 'relative' }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '0.75rem',
+            border: '1px solid #374151'
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '1rem',
+          left: '1rem',
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          padding: '0.5rem',
+          borderRadius: '0.375rem',
+          fontSize: '0.75rem'
+        }}>
+          <div>🔴 Current Position</div>
+          <div>📈 Rates Up/Down Scenarios</div>
+          <div>💰 P&L Surface (Height)</div>
+        </div>
+      </div>
+    );
   };
 
   // Settlement functions
@@ -1323,68 +1514,92 @@ const calculateVammBreakdown = () => {
 
           <div className="right-panel">
             <div className="chart-header">
-              <span>Running 365d APY</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Running 365d APY</span>
+                <button
+                  onClick={() => setShow3DView(!show3DView)}
+                  style={{
+                    background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  {show3DView ? 'Show Chart' : 'Show 3D Risk'}
+                </button>
+              </div>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="year" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    type="number"
-                    scale="linear"
-                    domain={[2023, 2025]}
-                    ticks={[2023, 2024, 2025]}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    domain={[
-                    market === "JitoSol" ? 6 :
-                    market === "Lido stETH" ? 2 :
-                    market === "Aave ETH Lending" ? 1 :
-                    market === "Aave ETH Borrowing" ? 2 : 6,
+            <div className="chart-container" style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ width: show3DView ? '50%' : '100%', transition: 'width 0.3s ease' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis 
+                      dataKey="year" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      type="number"
+                      scale="linear"
+                      domain={[2023, 2025]}
+                      ticks={[2023, 2024, 2025]}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      domain={[
+                      market === "JitoSol" ? 6 :
+                      market === "Lido stETH" ? 2 :
+                      market === "Aave ETH Lending" ? 1 :
+                      market === "Aave ETH Borrowing" ? 2 : 6,
 
-                    market === "JitoSol" ? 9 :
-                    market === "Lido stETH" ? 5 :
-                    market === "Aave ETH Lending" ? 3 :
-                    market === "Aave ETH Borrowing" ? 5 : 9
-                    ]}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                    scale="linear"
-                  />
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="apy" 
-                    stroke="#10B981" 
-                    strokeWidth={4}
-                    dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
-                    activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
-                    fill="url(#chartGradient)"
-                    fillOpacity={0.3}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                      market === "JitoSol" ? 9 :
+                      market === "Lido stETH" ? 5 :
+                      market === "Aave ETH Lending" ? 3 :
+                      market === "Aave ETH Borrowing" ? 5 : 9
+                      ]}
+                      tickFormatter={(value) => `${value.toFixed(1)}%`}
+                      scale="linear"
+                    />
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <Line 
+                      type="monotone" 
+                      dataKey="apy" 
+                      stroke="#10B981" 
+                      strokeWidth={4}
+                      dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
+                      activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
+                      fill="url(#chartGradient)"
+                      fillOpacity={0.3}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              {show3DView && (
+                <div style={{ width: '50%' }}>
+                  <Portfolio3DView />
+                </div>
+              )}
             </div>
             <div className="chart-info">
               This chart shows realized APY over last 365 days
