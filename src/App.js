@@ -385,18 +385,19 @@ export default function App() {
     
     const scenarios = [];
     
-    // Create 10x10 grid of scenarios
-    for (let i = 0; i < 10; i++) {
-      for (let j = 0; j < 10; j++) {
-        // Rate scenarios from -200bp to +200bp
-        const rateShock = ((i - 5) * 80) / 100; // -200bp to +200bp
-        const timeShock = ((j - 5) * 0.1); // Time decay effect
+    // Create 7x7 grid of scenarios (smaller, cleaner)
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < 7; j++) {
+        // Rate scenarios from -150bp to +150bp (more realistic)
+        const rateShock = ((i - 3) * 50) / 100; // -150bp to +150bp in 50bp increments
+        const correlationFactor = ((j - 3) * 0.2); // Different correlation scenarios
         
         let totalPL = 0;
         
         allTrades.forEach(trade => {
           const currentPrice = lastPriceByMarket[trade.market] || marketSettings[trade.market].apy;
-          const scenarioPrice = currentPrice + rateShock;
+          // Apply both rate shock and correlation adjustment
+          const scenarioPrice = currentPrice + rateShock + (correlationFactor * rateShock);
           const tradePL = calculateTotalPL(trade, scenarioPrice);
           totalPL += tradePL;
         });
@@ -404,17 +405,16 @@ export default function App() {
         scenarios.push({
           x: i,
           y: j,
-          rateShock: rateShock * 100, // Convert to bp
+          rateShock: rateShock * 100, // Convert to bp for display
           totalPL: totalPL,
           color: totalPL >= 0 ? '#22c55e' : '#ef4444',
-          opacity: Math.min(Math.abs(totalPL) / 1000000, 1) // Scale opacity by P&L magnitude
+          opacity: Math.min(Math.abs(totalPL) / 500000, 1) // Better scaling
         });
       }
     }
     
     return scenarios;
   };
-
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
@@ -538,7 +538,7 @@ export default function App() {
       return (
         <div style={{
           width: '100%',
-          height: '400px',
+          height: '300px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -548,125 +548,127 @@ export default function App() {
           color: '#9ca3af'
         }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📊</div>
-            <div>No positions to visualize</div>
-            <div style={{ fontSize: '0.875rem' }}>Open some trades to see risk analysis</div>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
+            <div style={{ fontSize: '0.875rem' }}>Open positions to see risk analysis</div>
           </div>
         </div>
       );
     }
     
+    const currentScenario = scenarios.find(s => s.x === 3 && s.y === 3) || { totalPL: 0 };
     const maxPL = Math.max(...scenarios.map(s => Math.abs(s.totalPL)));
     
     return (
       <div style={{
         width: '100%',
-        height: '400px',
+        height: '300px',
         border: '1px solid #374151',
         borderRadius: '0.75rem',
         backgroundColor: '#1f2937',
-        padding: '1rem',
+        padding: '0.75rem',
         position: 'relative'
       }}>
         {/* Header */}
         <div style={{
-          marginBottom: '1rem',
+          marginBottom: '0.75rem',
           color: '#f9fafb',
-          fontSize: '1rem',
-          fontWeight: '600'
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-          📈 Portfolio Risk Heat Map
+          <span>📈 Risk Heat Map</span>
+          <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+            ±150bp scenarios
+          </span>
         </div>
         
-        {/* Grid */}
+        {/* Grid - smaller and cleaner */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(10, 1fr)',
-          gap: '2px',
-          height: '280px',
-          marginBottom: '1rem'
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: '1px',
+          height: '160px',
+          marginBottom: '0.75rem',
+          backgroundColor: '#374151',
+          padding: '2px',
+          borderRadius: '0.375rem'
         }}>
           {scenarios.map((scenario, i) => (
             <div
               key={i}
               style={{
                 backgroundColor: scenario.color,
-                opacity: 0.3 + (scenario.opacity * 0.7),
-                borderRadius: '2px',
+                opacity: 0.4 + (scenario.opacity * 0.6),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.6rem',
+                fontSize: '0.5rem',
                 color: 'white',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                border: scenario.x === 5 && scenario.y === 5 ? '2px solid #fbbf24' : 'none'
+                transition: 'all 0.15s ease',
+                border: scenario.x === 3 && scenario.y === 3 ? '1px solid #fbbf24' : 'none',
+                position: 'relative'
               }}
               title={`Rate Shock: ${scenario.rateShock.toFixed(0)}bp | P&L: $${scenario.totalPL.toLocaleString()}`}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'scale(1.1)';
+                e.target.style.transform = 'scale(1.05)';
                 e.target.style.zIndex = '10';
+                e.target.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = 'scale(1)';
                 e.target.style.zIndex = '1';
+                e.target.style.opacity = 0.4 + (scenario.opacity * 0.6);
               }}
             >
-              {Math.abs(scenario.totalPL) > 10000 && (
-                <span>{scenario.totalPL >= 0 ? '+' : '-'}{Math.abs(scenario.totalPL / 1000).toFixed(0)}k</span>
+              {Math.abs(scenario.totalPL) > 25000 && (
+                <span style={{ fontSize: '0.4rem' }}>
+                  {scenario.totalPL >= 0 ? '+' : ''}{(scenario.totalPL / 1000).toFixed(0)}k
+                </span>
               )}
             </div>
           ))}
         </div>
         
-        {/* Legend */}
+        {/* Axis labels */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: '0.6rem',
+          color: '#9ca3af',
+          marginBottom: '0.5rem'
+        }}>
+          <span>-150bp</span>
+          <span>Current</span>
+          <span>+150bp</span>
+        </div>
+        
+        {/* Stats - more compact */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          fontSize: '0.75rem',
-          color: '#9ca3af'
+          fontSize: '0.7rem',
+          color: '#e5e7eb'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '12px', height: '12px', backgroundColor: '#ef4444', borderRadius: '2px' }}></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '1px' }}></div>
               <span>Loss</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '12px', height: '12px', backgroundColor: '#22c55e', borderRadius: '2px' }}></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <div style={{ width: '8px', height: '8px', backgroundColor: '#22c55e', borderRadius: '1px' }}></div>
               <span>Profit</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '12px', height: '12px', border: '2px solid #fbbf24', borderRadius: '2px' }}></div>
-              <span>Current</span>
-            </div>
           </div>
-          <div>
-            <span>Rate shocks: -200bp to +200bp</span>
-          </div>
-        </div>
-        
-        {/* Stats */}
-        <div style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          padding: '0.75rem',
-          borderRadius: '0.375rem',
-          fontSize: '0.75rem',
-          minWidth: '150px'
-        }}>
-          <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#fbbf24' }}>Portfolio Stats</div>
-          <div>Positions: {allTrades.length}</div>
-          <div>Max Risk: ${maxPL.toLocaleString()}</div>
           <div style={{ 
-            color: scenarios.find(s => s.x === 5 && s.y === 5)?.totalPL >= 0 ? '#22c55e' : '#ef4444',
+            color: currentScenario.totalPL >= 0 ? '#22c55e' : '#ef4444',
             fontWeight: '600'
           }}>
-            Current P&L: ${scenarios.find(s => s.x === 5 && s.y === 5)?.totalPL.toLocaleString() || '0'}
+            Current: ${currentScenario.totalPL.toLocaleString()}
           </div>
         </div>
       </div>
