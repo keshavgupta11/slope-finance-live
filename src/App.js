@@ -418,10 +418,14 @@ export default function App() {
       
       // Set canvas size
       const resizeCanvas = () => {
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
       };
+      
+      // Force initial resize after a small delay
       resizeCanvas();
+      setTimeout(resizeCanvas, 100);
       
       let animationTime = 0;
       
@@ -817,7 +821,6 @@ export default function App() {
       </div>
     );
   };
-
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
