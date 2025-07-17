@@ -455,73 +455,138 @@ export default function App() {
       const animate = () => {
         animationTime += 0.01;
         
-        // Clear canvas
-        ctx.fillStyle = '#111827';
+        // Clear canvas with gradient background
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#0f172a');
+        gradient.addColorStop(0.5, '#1e293b');
+        gradient.addColorStop(1, '#0f172a');
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw subtle grid pattern
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
+        ctx.lineWidth = 1;
+        const gridSize = 30;
+        for (let x = 0; x < canvas.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        
+        // Draw floating particles for ambiance
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
+        for (let i = 0; i < 12; i++) {
+          const particleX = (Math.sin(animationTime * 0.3 + i) * 100 + canvas.width / 2) % canvas.width;
+          const particleY = (Math.cos(animationTime * 0.2 + i) * 80 + canvas.height / 2) % canvas.height;
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         
-        // Draw spheres
+        // Draw spheres with improved rendering
         spheres.forEach((sphere, i) => {
           // Position with gentle floating
           const floatOffset = Math.sin(animationTime * 2 + i) * 3;
           const screenX = centerX + sphere.x;
           const screenY = centerY + sphere.y + floatOffset;
           
-          // Color based on P&L
-          let color;
+          // Color based on P&L - more professional colors
+          let color, shadowColor;
           if (sphere.pl >= 0) {
-            color = '#22c55e'; // Green for profit
+            color = '#10b981'; // Professional green
+            shadowColor = 'rgba(16, 185, 129, 0.4)';
           } else {
-            color = '#ef4444'; // Red for loss
+            color = '#ef4444'; // Professional red
+            shadowColor = 'rgba(239, 68, 68, 0.4)';
           }
           
           // Warning color for liquidation risk
           if (sphere.liquidationRisk <= 20 && sphere.liquidationRisk > 0) {
-            color = '#fbbf24'; // Yellow for at-risk
+            color = '#f59e0b'; // Professional amber
+            shadowColor = 'rgba(245, 158, 11, 0.4)';
           }
           
-          // Draw glow effect
-          const gradient = ctx.createRadialGradient(
-            screenX, screenY, 0,
-            screenX, screenY, sphere.size + 10
-          );
-          gradient.addColorStop(0, color);
-          gradient.addColorStop(1, 'transparent');
-          ctx.fillStyle = gradient;
+          // Draw shadow
+          ctx.fillStyle = shadowColor;
           ctx.beginPath();
-          ctx.arc(screenX, screenY, sphere.size + 10, 0, Math.PI * 2);
+          ctx.arc(screenX + 2, screenY + 2, sphere.size, 0, Math.PI * 2);
           ctx.fill();
           
-          // Draw main sphere
-          ctx.fillStyle = color;
+          // Draw outer glow - more subtle
+          const glowGradient = ctx.createRadialGradient(
+            screenX, screenY, sphere.size * 0.7,
+            screenX, screenY, sphere.size + 6
+          );
+          glowGradient.addColorStop(0, color + '80');
+          glowGradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = glowGradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size + 6, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw main sphere with better gradients
+          const sphereGradient = ctx.createRadialGradient(
+            screenX - sphere.size/3, screenY - sphere.size/3, 0,
+            screenX, screenY, sphere.size
+          );
+          sphereGradient.addColorStop(0, color + 'ff');
+          sphereGradient.addColorStop(0.7, color + 'dd');
+          sphereGradient.addColorStop(1, color + '88');
+          ctx.fillStyle = sphereGradient;
           ctx.beginPath();
           ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
           ctx.fill();
           
-          // Draw highlight
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          // Draw crisp highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
           ctx.beginPath();
-          ctx.arc(screenX - sphere.size/3, screenY - sphere.size/3, sphere.size/4, 0, Math.PI * 2);
+          ctx.arc(screenX - sphere.size/3, screenY - sphere.size/3, sphere.size/5, 0, Math.PI * 2);
           ctx.fill();
           
-          // Market label
+          // Market label with better typography
           ctx.fillStyle = 'white';
-          ctx.font = `bold ${Math.max(8, sphere.size/3)}px Arial`;
+          ctx.font = `bold ${Math.max(10, sphere.size/2.5)}px -apple-system, system-ui, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          ctx.shadowBlur = 2;
           
           const label = sphere.market === 'JitoSol' ? 'J' : 
                       sphere.market === 'Lido stETH' ? 'L' : 
                       sphere.market.includes('Aave') ? 'A' : 'M';
           ctx.fillText(label, screenX, screenY);
           
-          // Position type indicator (small dot)
-          ctx.fillStyle = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
+          // Reset shadow for next elements
+          ctx.shadowColor = 'transparent';
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.shadowBlur = 0;
+          
+          // Position type indicator - more refined
+          const indicatorColor = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
+          ctx.fillStyle = indicatorColor;
           ctx.beginPath();
-          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
+          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 3, 0, Math.PI * 2);
           ctx.fill();
+          
+          // Indicator border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 3, 0, Math.PI * 2);
+          ctx.stroke();
           
           // Store screen position for click detection
           sphere.screenX = screenX;
@@ -599,9 +664,10 @@ export default function App() {
             width: '100%',
             height: '100%',
             borderRadius: '0.75rem',
-            border: '1px solid #374151',
-            backgroundColor: '#111827',
-            cursor: 'pointer'
+            border: '2px solid #334155',
+            backgroundColor: '#0f172a',
+            cursor: 'pointer',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
           }}
         />
         
