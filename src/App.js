@@ -2214,167 +2214,181 @@ const calculateVammBreakdown = () => {
         <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
           <h3>Positions</h3>
           <div className="positions-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Market</th>
-                  <th>Direction</th>
-                  <th>{isSettlementMode ? 'Settlement P&L' : 'Total P&L'}</th>
-                  <th>Today's P&L</th>
-                  <th>Entry Price</th>
-                  <th>Current Price</th>
-                  <th>Liquidation Price</th>
-                  <th>Margin Posted</th>
-                  <th> DV01</th>
-                  <th>Entry Day</th>
-                  <th>Days Held</th>
-                  <th>Tx Hash</th>
-                  <th>Liquidation Risk</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {marketTrades.length > 0 ? marketTrades.map((trade, i) => {
-                  const bpsFromLiquidation = calculateLiquidationRisk(trade);
-                  const isRisky = bpsFromLiquidation <= 5 && bpsFromLiquidation > 0;
-                  
-                  return (
-                    <tr key={i}>
-                      <td>{trade.market}</td>
-                      <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                        {trade.type === 'pay' ? 'Paid Fixed' : 'Received Fixed'}
-                      </td>
-                      <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
-                        {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
-                      </td>
-                      <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                        {isSettlementMode ? '$0' : (trade.todaysPL >= 0 ? '+' : '') + '$' + Math.abs(trade.todaysPL).toLocaleString() + (trade.todaysPL < 0 ? '' : '')}
-                      </td>
-                      <td>{trade.entryPrice.toFixed(3)}%</td>
-                      <td>{trade.currentPrice.toFixed(3)}%</td>
-                      <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
-                      <td>$<AnimatedCounter value={trade.collateral || 0} /></td>
-                      <td>${(trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
-                      <td>{trade.entryDay || 0}</td>
-                      <td>{globalDay - (trade.entryDay || 0)}</td>
-                      <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                        {trade.txSignature || 'Simulated'}
-                      </td>
-                      <td>
-                        <span style={{ 
-                          color: isRisky ? '#ef4444' : '#22c55e', 
-                          fontWeight: 'bold',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '1rem',
-                          backgroundColor: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                          border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
-                          fontSize: '0.875rem'
-                        }}>
-                          <span style={{ fontSize: '0.75rem' }}>
-                            {isRisky ? '⚠️' : '✅'}
+            {marketTrades.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Market</th>
+                    <th>Direction</th>
+                    <th>{isSettlementMode ? 'Settlement P&L' : 'Total P&L'}</th>
+                    <th>Today's P&L</th>
+                    <th>Entry Price</th>
+                    <th>Current Price</th>
+                    <th>Liquidation Price</th>
+                    <th>Margin Posted</th>
+                    <th>Entry DV01</th>
+                    <th>Current DV01</th>
+                    <th>Entry Day</th>
+                    <th>Days Held</th>
+                    <th>Tx Hash</th>
+                    <th>Liquidation Risk</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {marketTrades.map((trade, i) => {
+                    const bpsFromLiquidation = calculateLiquidationRisk(trade);
+                    const isRisky = bpsFromLiquidation <= 5 && bpsFromLiquidation > 0;
+                    
+                    return (
+                      <tr key={i}>
+                        <td>{trade.market}</td>
+                        <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
+                          {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                        </td>
+                        <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
+                          {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
+                        </td>
+                        <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
+                          {isSettlementMode ? '$0' : (trade.todaysPL >= 0 ? '+' : '') + '$' + Math.abs(trade.todaysPL).toLocaleString() + (trade.todaysPL < 0 ? '' : '')}
+                        </td>
+                        <td>{trade.entryPrice.toFixed(3)}%</td>
+                        <td>{trade.currentPrice.toFixed(3)}%</td>
+                        <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
+                        <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
+                        <td>${(trade.entryDV01 || trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
+                        <td>${trade.currentDV01?.toLocaleString() || trade.baseDV01?.toLocaleString() || 'N/A'}</td>
+                        <td>{trade.entryDay || 0}</td>
+                        <td>{globalDay - (trade.entryDay || 0)}</td>
+                        <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                          {trade.txSignature || 'Simulated'}
+                        </td>
+                        <td>
+                          <span style={{ 
+                            color: isRisky ? '#ef4444' : '#22c55e', 
+                            fontWeight: 'bold',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '1rem',
+                            backgroundColor: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                            border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+                            fontSize: '0.875rem'
+                          }}>
+                            <span style={{ fontSize: '0.75rem' }}>
+                              {isRisky ? '⚠️' : '✅'}
+                            </span>
+                            {isRisky ? 'RISKY' : 'Safe'}
                           </span>
-                          {isRisky ? 'RISKY' : 'Safe'}
-                        </span>
-                      </td>
-                      <td>
-                        <button 
-                          onClick={() => requestUnwind(i)}
-                          className="unwind-btn"
-                          style={{
-                            background: 'linear-gradient(45deg, #ef4444, #dc2626)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.75rem 1.25rem',
-                            borderRadius: '0.75rem',
-                            fontSize: '0.875rem',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 4px 14px rgba(239, 68, 68, 0.25)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.025em'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.25)';
-                          }}
-                        >
-                          Close Position
-                        </button>
-                         <button 
-                          onClick={() => requestAddMargin(i)}
-                          disabled={isSettlementMode}
-                          className="add-margin-btn"
-                          style={{
-                            background: isSettlementMode ? '#6b7280' : 'linear-gradient(45deg, #3b82f6, #2563eb)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.75rem 1.25rem',
-                            borderRadius: '0.75rem',
-                            fontSize: '0.875rem',
-                            cursor: isSettlementMode ? 'not-allowed' : 'pointer',
-                            fontWeight: '600',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.25)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.025em',
-                            marginLeft: '0.5rem'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSettlementMode) {
-                              e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => requestUnwind(i)}
+                            className="unwind-btn"
+                            style={{
+                              background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                              color: 'white',
+                              border: 'none',
+                              padding: '0.75rem 1.25rem',
+                              borderRadius: '0.75rem',
+                              fontSize: '0.875rem',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.25)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.025em'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
                               e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSettlementMode) {
-                              e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                              e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
                               e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.25)';
-                            }
-                          }}
-                        >
-                          Add Margin
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                }) : (
-                  <EmptyState
-                    icon="📊"
-                    title="No Active Positions"
-                    description="You haven't opened any positions yet. Use the swap interface above to enter your first trade."
-                    action={
-                      <button 
-                        onClick={() => setActiveTab("Swap")}
-                        style={{
-                          background: 'var(--gradient-accent)',
-                          color: 'white',
-                          border: 'none',
-                          padding: '0.75rem 1.5rem',
-                          borderRadius: '0.75rem',
-                          fontSize: '0.875rem',
-                          cursor: 'pointer',
-                          fontWeight: '600'
-                        }}
-                      >
-                        Start Trading
-                      </button>
-                    }
-                  />
-                )}
-              </tbody>
-            </table>
+                              e.target.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.25)';
+                            }}
+                          >
+                            Close Position
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4rem 2rem',
+                textAlign: 'center',
+                minHeight: '300px',
+                background: 'var(--gradient-card)',
+                borderRadius: '1rem',
+                border: '1px solid var(--border-secondary)'
+              }}>
+                <div style={{
+                  fontSize: '4rem',
+                  marginBottom: '1.5rem',
+                  opacity: 0.4,
+                  animation: 'float 3s ease-in-out infinite'
+                }}>
+                  📊
+                </div>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  marginBottom: '1rem',
+                  color: 'var(--text-primary)'
+                }}>
+                  No Active Positions
+                </h3>
+                <p style={{
+                  fontSize: '1rem',
+                  color: 'var(--text-muted)',
+                  marginBottom: '2rem',
+                  lineHeight: 1.6,
+                  maxWidth: '400px'
+                }}>
+                  You haven't opened any positions yet. Use the swap interface above to enter your first trade.
+                </p>
+                <button 
+                  onClick={() => setActiveTab("Swap")}
+                  style={{
+                    background: 'var(--gradient-accent)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '1rem 2rem',
+                    borderRadius: '1rem',
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.025em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <span>🚀</span>
+                  Start Trading
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
