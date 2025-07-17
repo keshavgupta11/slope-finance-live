@@ -16,11 +16,11 @@ const getProvider = () => {
 
 export default function App() {
   const initialMarketSettings = {
-    "JitoSol": { apy: 7.9, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
-    "Lido stETH": { apy: 2.91, k: 0.000005, symbol: "stETH" },
-    "Aave ETH Lending": { apy: 1.92, k: 0.000005, symbol: "aETH" },
-    "Aave ETH Borrowing": { apy: 2.6, k: 0.000005, symbol: "aETHBorrow" },
-    "Rocketpool rETH": { apy: 2.59, k: 0.000005, symbol: "rETH" },
+    "JitoSol": { apy: 7.98, k: 0.00001, symbol: "JitoSOL" }, // Based on your 2025 projection
+    "Lido stETH": { apy: 2.88, k: 0.000005, symbol: "stETH" },
+    "Aave ETH Lending": { apy: 1.9, k: 0.000005, symbol: "aETH" },
+    "Aave ETH Borrowing": { apy: 2.62, k: 0.000005, symbol: "aETHBorrow" },
+    "Rocketpool rETH": { apy: 2.64, k: 0.000005, symbol: "rETH" },
   };
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
@@ -1637,21 +1637,21 @@ const calculateVammBreakdown = () => {
                 <div className="price-row">
                   <span>2025 realized APY:</span>
                   <span className="realized-apy">
-                    {market === "JitoSol" ? "4.03% / 8.39%" :
-                     market === "Lido stETH" ? "1.45% / 2.96%" :
-                     market === "Aave ETH Lending" ? "0.95% / 1.93%" :
-                     market === "Aave ETH Borrowing" ? "1.29% / 2.62%" : 
-                     market === "Rocketpool rETH" ? "1.35% / 2.69%" : "N/A"}
+                    {market === "JitoSol" ? "4.03% / 8.25%" :
+                     market === "Lido stETH" ? "1.44% / 2.92%" :
+                     market === "Aave ETH Lending" ? "0.95% / 1.9%" :
+                     market === "Aave ETH Borrowing" ? "1.29% / 2.63%" : 
+                     market === "Rocketpool rETH" ? "1.31% / 2.62%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
                   <span>2025 implied unrealized APY:</span>
                   <span className="unrealized-apy" style={{ color: '#f59e0b' }}>
-                    {market === "JitoSol" ? "7.36%" :
-                    market === "Lido stETH" ? "2.75%" :
-                    market === "Aave ETH Lending" ? "1.85%" :
-                    market === "Aave ETH Borrowing" ? "2.53%" :
-                    market === "Rocketpool rETH" ? "2.51%" : "N/A"}
+                    {market === "JitoSol" ? "7.72%" :
+                    market === "Lido stETH" ? "2.83%" :
+                    market === "Aave ETH Lending" ? "1.89%" :
+                    market === "Aave ETH Borrowing" ? "2.61%" :
+                    market === "Rocketpool rETH" ? "2.67%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
