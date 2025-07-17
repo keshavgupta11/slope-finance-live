@@ -2481,4 +2481,54 @@ select:focus-visible,
   .app::after {
     animation: none !important;
   }
+  
+}
+*:hover {
+  transition: all 0.25s ease;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.02); }
+}
+.live-price,
+.realized-apy,
+.global-day {
+  animation: subtlePulse 2.5s ease-in-out infinite;
+}
+
+/* Animated gradient for logo */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.logo {
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* Highlight active market */
+.market-select.active {
+  border: 2px solid #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Boost blur effect globally */
+.chart-container,
+.market-stats,
+.modal,
+.positions-section,
+.day-advancement-section,
+.closing-prices-section,
+.left-panel,
+.price-info,
+.trade-buttons,
+.market-setting {
+  backdrop-filter: blur(20px) !important;
+}
+
+/* Enhanced Enter Button Hover */
+.enter-btn:not(.disabled):hover {
+  box-shadow: 0 0 18px #10b981, 0 0 12px #10b981 inset;
 }
