@@ -6,6 +6,161 @@ import './App.css';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
+// Enhanced Toast Notification Component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+
+  return (
+    <div className={`notification slide-in ${type}`} style={{
+      position: 'fixed',
+      top: '1rem',
+      right: '1rem',
+      background: 'var(--gradient-card)',
+      border: `1px solid ${type === 'success' ? 'var(--text-accent)' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : 'var(--border-secondary)'}`,
+      borderRadius: '1rem',
+      padding: '1rem 1.5rem',
+      color: 'var(--text-primary)',
+      fontWeight: '500',
+      zIndex: 1000,
+      backdropFilter: 'blur(16px)',
+      boxShadow: 'var(--shadow-lg)',
+      maxWidth: '400px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      animation: 'slideInRight 0.5s ease-out'
+    }}>
+      <span style={{ fontSize: '1.25rem' }}>{icons[type]}</span>
+      <span style={{ flex: 1 }}>{message}</span>
+      <button
+        onClick={onClose}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-muted)',
+          cursor: 'pointer',
+          fontSize: '1.25rem',
+          padding: '0.25rem',
+          borderRadius: '0.25rem',
+          transition: 'color 0.2s ease'
+        }}
+      >
+        ×
+      </button>
+    </div>
+  );
+};
+
+// Enhanced Loading Spinner Component
+const LoadingSpinner = ({ size = 'md', color = 'var(--text-accent)' }) => {
+  const sizes = {
+    sm: '1rem',
+    md: '1.5rem',
+    lg: '2rem',
+    xl: '3rem'
+  };
+
+  return (
+    <div style={{
+      width: sizes[size],
+      height: sizes[size],
+      border: `2px solid transparent`,
+      borderTop: `2px solid ${color}`,
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      display: 'inline-block'
+    }} />
+  );
+};
+
+// Enhanced Animated Counter Component
+const AnimatedCounter = ({ value, duration = 1000, prefix = '', suffix = '' }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    const startValue = displayValue;
+    const endValue = value;
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const currentValue = startValue + (endValue - startValue) * easeOutExpo;
+      
+      setDisplayValue(currentValue);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [value, duration]);
+
+  const formatValue = (val) => {
+    if (Math.abs(val) >= 1000000) {
+      return (val / 1000000).toFixed(1) + 'M';
+    } else if (Math.abs(val) >= 1000) {
+      return (val / 1000).toFixed(1) + 'K';
+    }
+    return Math.round(val).toString();
+  };
+
+  return (
+    <span>
+      {prefix}{formatValue(displayValue)}{suffix}
+    </span>
+  );
+};
+
+// Enhanced Empty State Component
+const EmptyState = ({ icon, title, description, action }) => (
+  <div className="no-positions" style={{
+    textAlign: 'center',
+    padding: '4rem 2rem',
+    color: 'var(--text-subtle)',
+    position: 'relative'
+  }}>
+    <div style={{
+      fontSize: '4rem',
+      marginBottom: '1.5rem',
+      opacity: 0.6,
+      animation: 'float 3s ease-in-out infinite'
+    }}>
+      {icon}
+    </div>
+    <h3 style={{
+      fontSize: '1.5rem',
+      fontWeight: '600',
+      marginBottom: '0.75rem',
+      color: 'var(--text-secondary)'
+    }}>
+      {title}
+    </h3>
+    <p style={{
+      fontSize: '1rem',
+      color: 'var(--text-muted)',
+      marginBottom: action ? '2rem' : 0,
+      lineHeight: 1.6
+    }}>
+      {description}
+    </p>
+    {action && action}
+  </div>
+);
+
 // Phantom wallet detection
 const getProvider = () => {
   if ('phantom' in window) {
@@ -72,6 +227,11 @@ export default function App() {
 
   // Calculate current DV01 based on time to maturity- deleted
   
+  // Enhanced UI states
+  const [toasts, setToasts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [formErrors, setFormErrors] = useState({});
 
   // Helper function to round t/T ratio up to nearest 0.1
   const roundTimeRatioUp = (ratio) => {
@@ -99,6 +259,17 @@ export default function App() {
       // Round DOWN for receivers
       return Math.floor(cleanPrice * 1000) / 1000;
     }
+  };
+
+  // Enhanced Toast Management
+  const showToast = (message, type = 'info') => {
+    const id = Date.now() + Math.random();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   const currentDv01 = baseDv01; // For UI display only
@@ -206,7 +377,7 @@ export default function App() {
     try {
       const provider = getProvider();
       if (!provider) {
-        alert('Phantom wallet not found! Please install Phantom wallet.');
+        showToast('Phantom wallet not found! Please install Phantom wallet.', 'error');
         setConnecting(false);
         return;
       }
@@ -219,7 +390,7 @@ export default function App() {
       await fetchUSDCBalance(response.publicKey);
     } catch (error) {
       console.error('Error connecting to wallet:', error);
-      alert('Failed to connect wallet');
+      showToast('Failed to connect wallet. Please try again.', 'error');
     }
     setConnecting(false);
   };
@@ -371,7 +542,7 @@ export default function App() {
           }]);
           
           console.log(`Position liquidated: ${trade.type} ${trade.currentDV01} at ${liquidationPrice}%`);
-          alert(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`);
+          showToast(`LIQUIDATION: Your ${trade.type} fixed position of ${trade.currentDV01.toLocaleString()} in ${mkt} was liquidated at ${liquidationPrice}%. You lost your entire margin of ${trade.collateral.toLocaleString()}.`, 'error');
         });
       }
       
@@ -1005,13 +1176,13 @@ export default function App() {
     setSettlementPrices(pendingSettlement.prices);
     setIsSettlementMode(true);
     setPendingSettlement(null);
-    alert('Settlement mode activated! All positions now show settlement P&L.');
+    showToast('Settlement mode activated! All positions now show settlement P&L.', 'success');
   };
 
   const exitSettlementMode = () => {
    setIsSettlementMode(false);
     setSettlementPrices({});
-    alert('Exited settlement mode.');
+    showToast('Exited settlement mode successfully.', 'info');
   };
 
 
@@ -1061,7 +1232,7 @@ export default function App() {
     });
     
     setPendingDayAdvancement(null);
-    alert(`Advanced to Day ${toDay}. All live positions updated with new DV01s and daily P&L recalculated.`);
+    showToast(`Advanced to Day ${toDay}. All live positions updated with new DV01s and daily P&L recalculated.`, 'success');
   };
 
   // Unwind function
@@ -1196,7 +1367,7 @@ export default function App() {
     setUsdcBalance(prev => prev + parseFloat(netReturn));
     
     setPendingUnwind(null);
-    alert(`Position unwound successfully! Received: $${netReturn}`);
+    showToast(`Position unwound successfully! Received: $${netReturn}`, 'success');
   };
   const requestAddMargin = (tradeIndex) => {
     const trades = tradesByMarket[market] || [];
@@ -1216,7 +1387,7 @@ export default function App() {
   // Check wallet balance
     const simulatedUSDC = usdcBalance + 10000000;
     if (simulatedUSDC < additionalMargin) {
-      alert(`Insufficient USDC balance. Required: $${additionalMargin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+      showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
       return;
     }
 
@@ -1249,10 +1420,10 @@ export default function App() {
       setUsdcBalance(prev => prev - additionalMargin);
 
       setPendingMarginAdd(null);
-      alert(`Margin added successfully! New liquidation: ${newLiqPrice.toFixed(3)}%`);
+      showToast(`Margin added successfully! New liquidation: ${newLiqPrice.toFixed(3)}%`, 'success');
     } catch (error) {
       console.error('Add margin failed:', error);
-      alert('Add margin failed. Please try again.');
+      showToast('Add margin failed. Please try again.', 'error');
       setPendingMarginAdd(null);
     }
   };
@@ -1399,14 +1570,14 @@ const calculateVammBreakdown = () => {
 
     // Check if wallet is connected
     if (!wallet) {
-      alert('Please connect your Phantom wallet first!');
+      showToast('Please connect your Phantom wallet first!', 'error');
       return;
     }
 
     // Check simulated USDC balance
     const simulatedUSDC = usdcBalance + 10000000;
     if (simulatedUSDC < margin) {
-      alert(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`);
+      showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
       return;
     }
 
@@ -1416,12 +1587,12 @@ const calculateVammBreakdown = () => {
     const postTradeNetOI = currentNetOI + newTradeOI;
     
     if (type === 'pay' && postTradeNetOI > 50000) {
-      alert(`Cannot open new Pay Fixed positions. Protocol net OI is ${currentNetOI.toLocaleString()} (limit: 50k). Current protocol risk: Pay Fixed exposure too high.`);
+      showToast(`Cannot open new Pay Fixed positions. Protocol net OI is ${currentNetOI.toLocaleString()} (limit: 50k). Current protocol risk: Pay Fixed exposure too high.`, 'error');
       return;
     }
     
     if (type === 'receive' && postTradeNetOI < -50000) {
-      alert(`Cannot open new Receive Fixed positions. Protocol net OI is ${Math.abs(currentNetOI).toLocaleString()} Receive Fixed (limit: 50k). Current protocol risk: Receive Fixed exposure too high.`);
+      showToast(`Cannot open new Receive Fixed positions. Protocol net OI is ${Math.abs(currentNetOI).toLocaleString()} Receive Fixed (limit: 50k). Current protocol risk: Receive Fixed exposure too high.`, 'error');
       return;
     }
 
@@ -1515,7 +1686,7 @@ const calculateVammBreakdown = () => {
 
     const minMargin = currentDv01 * 50;
     if (margin < minMargin) {
-      alert('Margin too low!');
+      showToast('Margin too low!', 'error');
       setPendingTrade(null);
       return;
     }
@@ -1585,10 +1756,10 @@ const calculateVammBreakdown = () => {
 
       setPendingTrade(null);
       
-      alert(`Trade executed successfully! ${wallet ? `Tx: ${trade.txSignature}` : ''}`);
+      showToast(`Trade executed successfully! ${wallet ? `Tx: ${trade.txSignature}` : ''}`, 'success');
     } catch (error) {
       console.error('Transaction failed:', error);
-      alert('Transaction failed. Please try again.');
+      showToast('Transaction failed. Please try again.', 'error');
       setPendingTrade(null);
     }
   };
@@ -1613,11 +1784,21 @@ const calculateVammBreakdown = () => {
   
   setSettlementPrices(finalPrices);
   setIsSettlementMode(true);
-  alert('Settlement mode activated from Risk Management!');
+  showToast('Settlement mode activated! All positions now show settlement P&L.', 'success');
 };
     return (
-    <div className="app">
-      <header className="header">
+      <div className="app">
+        {/* Enhanced Toast Notifications */}
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+
+        <header className="header">
         <div className="header-left">
           <h1 className="logo">Slope</h1>
           <nav className="nav">
@@ -1635,19 +1816,31 @@ const calculateVammBreakdown = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
-              <div style={{ color: '#10b981', fontWeight: '600' }}>${(usdcBalance + 10000000).toLocaleString()}</div>
+              <div style={{ color: '#10b981', fontWeight: '600' }}>
+                $<AnimatedCounter value={usdcBalance + 5000000} />
+              </div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
               {formatAddress(wallet)}
             </button>
           </div>
         ) : (
-          <button className="wallet-btn" onClick={connectWallet} disabled={connecting}>
+          <button 
+            className="wallet-btn" 
+            onClick={connectWallet} 
+            disabled={connecting}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            {connecting && <LoadingSpinner size="sm" />}
             {connecting ? 'Connecting...' : 'Connect Phantom'}
           </button>
         )}
       </header>
-
+      
       {activeTab === "Swap" && (
         <>
         <div className="main-container">
@@ -1737,11 +1930,15 @@ const calculateVammBreakdown = () => {
             }}>
     <div>
       <span style={{ color: '#9ca3af' }}>Days Realized: </span>
-      <span style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
+      <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+        <AnimatedCounter value={globalDay} />
+      </span>
     </div>
     <div>
       <span style={{ color: '#9ca3af' }}>Days to Maturity: </span>
-      <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{365 - globalDay}</span>
+      <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+        <AnimatedCounter value={365 - globalDay} />
+      </span>
     </div>
   </div>
 </div>
@@ -1944,12 +2141,16 @@ const calculateVammBreakdown = () => {
               <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-label">Total Volume (24h)</div>
-                  <div className="stat-value">$2.4M</div>
+                  <div className="stat-value">
+                    $<AnimatedCounter value={2400000} />
+                  </div>
                   <div className="stat-change positive">+12.3%</div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-label">Active Positions</div>
-                  <div className="stat-value">147</div>
+                  <div className="stat-value">
+                    <AnimatedCounter value={147} />
+                  </div>
                   <div className="stat-change positive">+8</div>
                 </div>
                 <div className="stat-card">
@@ -1981,7 +2182,7 @@ const calculateVammBreakdown = () => {
                 <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setShowVammBreakdown(true)}>
                   <div className="stat-label">vAMM P&L</div>
                   <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
-                    {vammPL >= 0 ? '+' : ''}${Math.abs(vammPL).toLocaleString()}{vammPL < 0 ? '' : ''}
+                    {vammPL >= 0 ? '+' : ''}$<AnimatedCounter value={Math.abs(vammPL)} />{vammPL < 0 ? '' : ''}
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
                     Click to view breakdown
@@ -1990,7 +2191,7 @@ const calculateVammBreakdown = () => {
                 <div className="stat-card">
                   <div className="stat-label">Protocol P&L (Fees)</div>
                   <div className="stat-value" style={{ color: '#10b981' }}>
-                    +${protocolPL.toLocaleString()}
+                    +$<AnimatedCounter value={protocolPL} />
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
                     Fee revenue collected
@@ -1999,7 +2200,7 @@ const calculateVammBreakdown = () => {
                 <div className="stat-card">
                   <div className="stat-label">Protocol Risk</div>
                   <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
-                    {netOI >= 0 ? 'Received' : 'Paid'} ${Math.abs(netOI).toLocaleString()}
+                    {netOI >= 0 ? 'Received' : 'Paid'} $<AnimatedCounter value={Math.abs(netOI)} />
                   </div>
                   <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
                     Current DV01 based OI
@@ -2052,7 +2253,7 @@ const calculateVammBreakdown = () => {
                       <td>{trade.entryPrice.toFixed(3)}%</td>
                       <td>{trade.currentPrice.toFixed(3)}%</td>
                       <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
-                      <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
+                      <td>$<AnimatedCounter value={trade.collateral || 0} /></td>
                       <td>${(trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
                       <td>{trade.entryDay || 0}</td>
                       <td>{globalDay - (trade.entryDay || 0)}</td>
@@ -2149,9 +2350,28 @@ const calculateVammBreakdown = () => {
                     </tr>
                   );
                 }) : (
-                  <tr>
-                    <td colSpan="15" className="no-positions">No positions yet</td>
-                  </tr>
+                  <EmptyState
+                    icon="📊"
+                    title="No Active Positions"
+                    description="You haven't opened any positions yet. Use the swap interface above to enter your first trade."
+                    action={
+                      <button 
+                        onClick={() => setActiveTab("Swap")}
+                        style={{
+                          background: 'var(--gradient-accent)',
+                          color: 'white',
+                          border: 'none',
+                          padding: '0.75rem 1.5rem',
+                          borderRadius: '0.75rem',
+                          fontSize: '0.875rem',
+                          cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Start Trading
+                      </button>
+                    }
+                  />
                 )}
               </tbody>
             </table>
@@ -2284,7 +2504,9 @@ const calculateVammBreakdown = () => {
             <h3>Day Advancement</h3>
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                Current Global Day: <span style={{ color: '#10b981', fontWeight: 'bold' }}>{globalDay}</span>
+                Current Global Day: <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+                  <AnimatedCounter value={globalDay} />
+                </span>
               </div>
               <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
                 Advance one day forward and set closing prices for all markets. This will update all live positions with new DV01s and recalculate daily P&L.
@@ -2322,7 +2544,7 @@ const calculateVammBreakdown = () => {
                 }}
               >
                 <span style={{ fontSize: '1rem' }}>🚀</span>
-                Advance to Day {globalDay + 1}
+                Advance to Day <AnimatedCounter value={globalDay + 1} />
               </button>
           </div>
 
@@ -2376,7 +2598,7 @@ const calculateVammBreakdown = () => {
                     />
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
-                    <div>Days to Maturity: {daysToMaturity}</div>
+                    <div>Days to Maturity: <AnimatedCounter value={daysToMaturity} /></div>
                     <div>Time Ratio (t/T): {timeRatio.toFixed(3)} → {roundedTimeRatio.toFixed(1)}</div>
                     <div>Dynamic K = Base K × {roundedTimeRatio.toFixed(1)} = {currentDynamicK.toFixed(8)}</div>
                   </div>
@@ -3003,7 +3225,7 @@ const calculateVammBreakdown = () => {
                         color: '#e5e7eb',
                         fontSize: '0.875rem'
                       }}>
-                        ${(trade.entryDV01 || trade.baseDV01).toLocaleString()}
+                        $<AnimatedCounter value={trade.entryDV01 || trade.baseDV01 || 0} />
                       </td>
                       <td style={{ 
                         padding: '0.75rem', 
@@ -3579,6 +3801,33 @@ const calculateVammBreakdown = () => {
           </div>
         </div>
       )}
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes float {
+          0%, 100% { 
+            transform: translateY(0px);
+          }
+          50% { 
+            transform: translateY(-6px);
+          }
+        }
+      `}</style>
     </div>
   );
 }
