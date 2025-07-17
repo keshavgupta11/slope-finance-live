@@ -416,7 +416,7 @@ export default function App() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Set canvas size - simple approach
+    // Set canvas size - simple approach with forced refresh
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width;
@@ -426,15 +426,13 @@ export default function App() {
     // Multiple resize attempts to ensure proper sizing
     resizeCanvas();
     
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      resizeCanvas();
-    });
+    // Force immediate re-render
+    requestAnimationFrame(resizeCanvas);
     
-    // Backup resize after a delay
-    const timeoutId = setTimeout(() => {
-      resizeCanvas();
-    }, 50);
+    // Additional backup resizes
+    setTimeout(resizeCanvas, 50);
+    setTimeout(resizeCanvas, 150);
+    setTimeout(resizeCanvas, 300);
     
     let animationTime = 0;
     
@@ -1810,15 +1808,6 @@ const calculateVammBreakdown = () => {
                   setShow3DView(!show3DView);
                   setShowLegend(false);
                   setSelectedPosition(null);
-                  // Force a brief delay to let the DOM settle
-                  setTimeout(() => {
-                    if (canvasRef.current) {
-                      const canvas = canvasRef.current;
-                      const rect = canvas.getBoundingClientRect();
-                      canvas.width = rect.width;
-                      canvas.height = rect.height;
-                    }
-                  }, 100);
                 }}
                 style={{
                   background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
