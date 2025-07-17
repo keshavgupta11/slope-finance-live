@@ -416,24 +416,14 @@ export default function App() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Set canvas size with multiple attempts to ensure proper sizing
+    // Set canvas size - simple approach
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      const pixelRatio = window.devicePixelRatio || 1;
-      
-      // Set actual canvas size
-      canvas.width = rect.width * pixelRatio;
-      canvas.height = rect.height * pixelRatio;
-      
-      // Scale back down using CSS
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = rect.height + 'px';
-      
-      // Scale the context to match device pixel ratio
-      ctx.scale(pixelRatio, pixelRatio);
+      canvas.width = rect.width;
+      canvas.height = rect.height;
     };
     
-    // Force multiple resize attempts to ensure proper sizing
+    // Multiple resize attempts to ensure proper sizing
     resizeCanvas();
     
     // Use requestAnimationFrame to ensure DOM is ready
