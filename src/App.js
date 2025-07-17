@@ -57,6 +57,7 @@ export default function App() {
   //3d sphere
   const [show3DView, setShow3DView] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
+  const [showLegend, setShowLegend] = useState(false);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -380,6 +381,7 @@ export default function App() {
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
 
+  //3d sphere function
   const FloatingPositionSpheres = () => {
     const canvasRef = useRef(null);
     const animationRef = useRef(null);
@@ -423,17 +425,21 @@ export default function App() {
       
       let animationTime = 0;
       
-      // Create sphere positions
+      // Create sphere positions - fix positioning and sizing
       const spheres = allPositions.map((position, i) => {
         const angle = (i / Math.max(allPositions.length, 1)) * Math.PI * 2;
-        const radius = 80 + (i * 20); // Spread them out
+        const radius = 60 + ((i % 3) * 25); // Vary radius in rings
+        
+        // Size based on liquidation risk (bigger = closer to liquidation)
+        const liquidationDistance = Math.max(1, position.liquidationRisk);
+        const riskSize = Math.max(8, Math.min(35, 200 / liquidationDistance)); // Inverse relationship
         
         return {
           ...position,
           x: Math.cos(angle) * radius,
           y: Math.sin(angle) * radius,
-          z: Math.max(0, position.liquidationRisk / 10), // Height based on liquidation risk
-          size: Math.max(10, Math.min(50, position.dv01 / 2000)), // Size based on DV01
+          size: riskSize, // Size based on liquidation risk
+          baseSize: riskSize,
           angle,
           radius
         };
