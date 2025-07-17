@@ -605,14 +605,21 @@ export default function App() {
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
         
-        // Find clicked sphere - increased tolerance for single trades
+        console.log('Click at:', clickX, clickY); // Debug
+        console.log('Spheres:', spheres.map(s => ({ x: s.screenX, y: s.screenY, size: s.screenSize }))); // Debug
+        
+        // Find clicked sphere - improved detection
         const clickedSphere = spheres.find(sphere => {
           const distance = Math.sqrt(
             (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
           );
-          const tolerance = allPositions.length === 1 ? sphere.screenSize + 10 : sphere.screenSize;
+          // Increased tolerance, especially for single trades
+          const tolerance = sphere.screenSize + 15;
+          console.log(`Distance to sphere: ${distance}, tolerance: ${tolerance}`); // Debug
           return distance <= tolerance;
         });
+        
+        console.log('Clicked sphere:', clickedSphere); // Debug
         
         if (clickedSphere) {
           setSelectedPosition(clickedSphere);
