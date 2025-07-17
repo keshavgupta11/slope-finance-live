@@ -990,6 +990,7 @@ export default function App() {
         </div>
         
         {/* Selected position details */}
+        {/* Selected position details */}
         {selectedPosition && (
           <div style={{
             position: 'absolute',
@@ -1001,8 +1002,13 @@ export default function App() {
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
             minWidth: '250px',
+            maxWidth: '300px',
             backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            zIndex: 1000,
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
           }}>
             <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#fbbf24' }}>
               {selectedPosition.market} Position
@@ -1040,14 +1046,23 @@ export default function App() {
                 background: '#374151',
                 color: 'white',
                 border: 'none',
-                padding: '0.5rem 1rem',
+                padding: '0.75rem 1rem',
                 borderRadius: '0.375rem',
-                fontSize: '0.75rem',
+                fontSize: '0.875rem',
                 cursor: 'pointer',
-                width: '100%'
+                width: '100%',
+                fontWeight: '600',
+                transition: 'all 0.2s ease',
+                marginTop: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#4b5563';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#374151';
               }}
             >
-              Close
+              ✕ Close Details
             </button>
           </div>
         )}
