@@ -20,7 +20,7 @@ export default function App() {
     "Lido stETH": { apy: 2.91, k: 0.000005, symbol: "stETH" },
     "Aave ETH Lending": { apy: 1.92, k: 0.000005, symbol: "aETH" },
     "Aave ETH Borrowing": { apy: 2.6, k: 0.000005, symbol: "aETHBorrow" },
-    "Rocketpool rETH": { apy: 2.69, k: 0.000005, symbol: "rETH" },
+    "Rocketpool rETH": { apy: 2.59, k: 0.000005, symbol: "rETH" },
   };
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
