@@ -466,7 +466,10 @@ export default function App() {
       
       // Distance from center based on liquidation risk (closer to liquidation = closer to center)
       const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
-      const radiusFromCenter = Math.max(50, liquidationDistance * 2.5); // Increased minimum radius
+      
+      // Calculate max safe radius based on canvas size (assume minimum 300px canvas)
+      const maxSafeRadius = 120; // Keep spheres well within bounds
+      const radiusFromCenter = Math.min(maxSafeRadius, Math.max(60, liquidationDistance * 1.8)); // Reduced scaling and max radius
       
       // Always position on circumference - spread them out more
       const angle = (i / allPositions.length) * Math.PI * 2;
