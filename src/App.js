@@ -2298,36 +2298,61 @@ const calculateVammBreakdown = () => {
                           </span>
                         </td>
                         <td>
-                          <button 
-                            onClick={() => requestUnwind(i)}
-                            className="unwind-btn"
-                            style={{
-                              background: 'linear-gradient(45deg, #ef4444, #dc2626)',
-                              color: 'white',
-                              border: 'none',
-                              padding: '0.75rem 1.25rem',
-                              borderRadius: '0.75rem',
-                              fontSize: '0.875rem',
-                              cursor: 'pointer',
-                              fontWeight: '600',
-                              transition: 'all 0.3s ease',
-                              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.25)',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.025em'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
-                              e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.25)';
-                            }}
-                          >
-                            Close Position
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                            <button 
+                              onClick={() => requestAddMargin(i)}
+                              style={{
+                                background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '0.5rem',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.025em'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                                e.target.style.transform = 'translateY(-1px)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                                e.target.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              Add Margin
+                            </button>
+                            <button 
+                              onClick={() => requestUnwind(i)}
+                              className="unwind-btn"
+                              style={{
+                                background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '0.5rem',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.025em'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+                                e.target.style.transform = 'translateY(-1px)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                                e.target.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              Close Position
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
