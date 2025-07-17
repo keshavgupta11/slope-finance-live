@@ -990,12 +990,12 @@ export default function App() {
         </div>
         
         {/* Selected position details */}
-        {/* Selected position details */}
         {selectedPosition && (
           <div style={{
             position: 'absolute',
             top: '1rem',
             right: '1rem',
+            bottom: '1rem',
             background: 'rgba(0, 0, 0, 0.9)',
             color: 'white',
             padding: '1rem',
@@ -1006,7 +1006,7 @@ export default function App() {
             backdropFilter: 'blur(4px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             zIndex: 1000,
-            maxHeight: '80vh',
+            maxHeight: 'calc(100% - 2rem)',
             overflow: 'auto',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
           }}>
