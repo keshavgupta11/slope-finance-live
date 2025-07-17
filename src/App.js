@@ -490,6 +490,40 @@ export default function App() {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         
+        // Draw liquidation danger zone in center
+        const dangerZoneRadius = 25;
+        const dangerGradient = ctx.createRadialGradient(
+          centerX, centerY, 0,
+          centerX, centerY, dangerZoneRadius
+        );
+        dangerGradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+        dangerGradient.addColorStop(1, 'rgba(239, 68, 68, 0.1)');
+        ctx.fillStyle = dangerGradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, dangerZoneRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw liquidation center dot - bigger and more visible
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // White border around dot for visibility
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Pulsing effect for danger zone
+        const pulseRadius = dangerZoneRadius + Math.sin(animationTime * 4) * 3;
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
         // Draw spheres with improved rendering
         spheres.forEach((sphere, i) => {
           // Position with gentle floating
@@ -1816,7 +1850,7 @@ const calculateVammBreakdown = () => {
               </div>
               {show3DView && (
                 <div style={{ width: '50%' }}>
-                  <FloatingPositionSpheres key="galaxy-component" />
+                  <FloatingPositionSpheres key={`galaxy-${allPositions.length}`} />
                 </div>
               )}
             </div>
