@@ -1850,7 +1850,7 @@ const calculateVammBreakdown = () => {
               </div>
               {show3DView && (
                 <div style={{ width: '50%' }}>
-                  <FloatingPositionSpheres key={`galaxy-${allPositions.length}`} />
+                  <FloatingPositionSpheres key={`galaxy-${show3DView}-${Object.keys(tradesByMarket).length}`} />
                 </div>
               )}
             </div>
