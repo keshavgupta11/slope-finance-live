@@ -1641,7 +1641,7 @@ const calculateVammBreakdown = () => {
                      market === "Lido stETH" ? "1.44% / 2.92%" :
                      market === "Aave ETH Lending" ? "0.95% / 1.9%" :
                      market === "Aave ETH Borrowing" ? "1.29% / 2.63%" : 
-                     market === "Rocketpool rETH" ? "1.31% / 2.62%" : "N/A"}
+                     market === "Rocketpool rETH" ? "1.32% / 2.67%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
@@ -1651,7 +1651,7 @@ const calculateVammBreakdown = () => {
                     market === "Lido stETH" ? "2.83%" :
                     market === "Aave ETH Lending" ? "1.89%" :
                     market === "Aave ETH Borrowing" ? "2.61%" :
-                    market === "Rocketpool rETH" ? "2.67%" : "N/A"}
+                    market === "Rocketpool rETH" ? "2.62%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
