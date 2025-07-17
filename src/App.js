@@ -2645,20 +2645,61 @@ const calculateVammBreakdown = () => {
         </div>
       )}
 
+      {["Docs", "Stats"].map(tab => (
+        activeTab === tab && (
+          <div key={tab} className="tab-content">
+            <div style={{
+              textAlign: 'center',
+              padding: '4rem 2rem',
+              background: 'var(--gradient-card)',
+              borderRadius: '1.5rem',
+              border: '1px solid var(--border-secondary)',
+              backdropFilter: 'blur(16px)'
+            }}>
+              <div style={{
+                fontSize: '5rem',
+                marginBottom: '2rem',
+                opacity: 0.6,
+                animation: 'float 3s ease-in-out infinite'
+              }}>
+                {tab === "Docs" ? "📖" : "📊"}
+              </div>
+              <h2 style={{
+                fontSize: '2.5rem',
+                fontWeight: '800',
+                marginBottom: '1.5rem',
+                background: tab === "Docs" ? 'var(--gradient-secondary)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                {tab === "Docs" ? "Documentation Hub" : "Advanced Analytics"}
+              </h2>
+              <p style={{
+                fontSize: '1.25rem',
+                color: 'var(--text-muted)',
+                lineHeight: 1.6,
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                {tab === "Docs" ? "Complete technical documentation and integration guides" : "Deep market insights and comprehensive analytics"} coming soon...
+              </p>
+            </div>
+          </div>
+        )
+      ))}
+
       {activeTab === "Learn" && (
         <div className="tab-content" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{
             textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'var(--gradient-card)',
-            borderRadius: '1.5rem',
-            border: '1px solid var(--border-secondary)',
-            backdropFilter: 'blur(16px)'
+            padding: '2rem',
+            marginBottom: '3rem'
           }}>
             <div style={{
-              fontSize: '5rem',
-              marginBottom: '2rem',
-              opacity: 0.6,
+              fontSize: '4rem',
+              marginBottom: '1rem',
+              opacity: 0.8,
               animation: 'float 3s ease-in-out infinite'
             }}>
               📚
@@ -2666,7 +2707,7 @@ const calculateVammBreakdown = () => {
             <h2 style={{
               fontSize: '2.5rem',
               fontWeight: '800',
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
               background: 'var(--gradient-accent)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -2677,158 +2718,362 @@ const calculateVammBreakdown = () => {
             <p style={{
               fontSize: '1.25rem',
               color: 'var(--text-muted)',
-              marginBottom: '3rem',
               lineHeight: 1.6,
               maxWidth: '600px',
-              margin: '0 auto 3rem auto'
+              margin: '0 auto'
             }}>
-              Master the fundamentals of interest rate derivatives, risk management, and trading strategies with our comprehensive educational resources.
+              Master the fundamentals of interest rate derivatives and start trading with confidence
             </p>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '2rem',
-              marginTop: '3rem'
-            }}>
-              {[
-                { icon: '🎯', title: 'Basic Concepts', desc: 'Learn the fundamentals of interest rate swaps and fixed vs floating rates' },
-                { icon: '📊', title: 'Risk Management', desc: 'Understand liquidation, margin requirements, and position sizing' },
-                { icon: '⚡', title: 'Advanced Strategies', desc: 'Master complex trading techniques and portfolio optimization' },
-                { icon: '💡', title: 'Market Analysis', desc: 'Technical and fundamental analysis for rate movements' }
-              ].map((item, i) => (
-                <div key={i} style={{
-                  background: 'rgba(26, 31, 46, 0.8)',
-                  padding: '2rem',
-                  borderRadius: '1rem',
-                  border: '1px solid var(--border-secondary)',
-                  backdropFilter: 'blur(12px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = 'var(--border-accent)';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(16, 185, 129, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-secondary)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{item.icon}</div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                    {item.title}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: '3rem' }}>
-              <button style={{
-                background: 'var(--gradient-accent)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '1rem',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                fontWeight: '600',
-                transition: 'all 0.3s ease',
-                textTransform: 'uppercase',
-                letterSpacing: '0.025em'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
-              }}>
-                🚀 Start Learning
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+          
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            
+            {/* What are Interest Rate Swaps */}
+            <div className="glass-card" style={{ 
+              marginBottom: '2rem', 
+              padding: '2rem', 
+              border: '1px solid var(--border-secondary)', 
+              borderRadius: '1rem',
+              background: 'var(--gradient-card)',
+              backdropFilter: 'blur(16px)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#10b981';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(16, 185, 129, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-secondary)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}>
+              <h3 style={{ 
+                color: '#10b981', 
+                marginBottom: '1.5rem',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '2rem' }}>🔄</span>
+                What are Interest Rate Swaps?
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                Interest Rate Swaps (IRS) let you exchange variable yield exposure for fixed yield exposure. 
+                Instead of being subject to changing staking/lending rates, you can lock in a fixed rate or 
+                speculate on rate movements.
+              </p>
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(16, 185, 129, 0.1)',
+                borderRadius: '0.75rem',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}>
+                <p style={{ color: 'var(--text-primary)', lineHeight: '1.6', margin: 0 }}>
+                  <strong style={{ color: '#10b981' }}>Example:</strong> JitoSOL currently yields 7.9% but might change daily. You can 
+                  "pay fixed" at 7.9% to lock in that rate regardless of where JitoSOL yields go.
+                </p>
+              </div>
+            </div>
 
-      {activeTab === "Docs" && (
-        <div className="tab-content" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'var(--gradient-card)',
-            borderRadius: '1.5rem',
-            border: '1px solid var(--border-secondary)',
-            backdropFilter: 'blur(16px)'
-          }}>
-            <div style={{
-              fontSize: '5rem',
-              marginBottom: '2rem',
-              opacity: 0.6,
-              animation: 'float 3s ease-in-out infinite'
+            {/* Key Terms */}
+            <div className="glass-card" style={{ 
+              marginBottom: '2rem', 
+              padding: '2rem', 
+              border: '1px solid var(--border-secondary)', 
+              borderRadius: '1rem',
+              background: 'var(--gradient-card)',
+              backdropFilter: 'blur(16px)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#3b82f6';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(59, 130, 246, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-secondary)';
+              e.currentTarget.style.boxShadow = 'none';
             }}>
-              📖
-            </div>
-            <h2 style={{
-              fontSize: '2.5rem',
-              fontWeight: '800',
-              marginBottom: '1.5rem',
-              background: 'var(--gradient-secondary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              Documentation Hub
-            </h2>
-            <p style={{
-              fontSize: '1.25rem',
-              color: 'var(--text-muted)',
-              marginBottom: '3rem',
-              lineHeight: 1.6,
-              maxWidth: '600px',
-              margin: '0 auto 3rem auto'
-            }}>
-              Complete technical documentation, API references, and integration guides for developers and traders.
-            </p>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '2rem',
-              marginTop: '3rem'
-            }}>
-              {[
-                { icon: '🛠️', title: 'API Reference', desc: 'Complete REST and WebSocket API documentation with examples' },
-                { icon: '🔌', title: 'SDK Integration', desc: 'JavaScript, Python, and other language SDKs for easy integration' },
-                { icon: '📋', title: 'Smart Contracts', desc: 'Solana program documentation and contract interactions' }
-              ].map((item, i) => (
-                <div key={i} style={{
-                  background: 'rgba(26, 31, 46, 0.8)',
-                  padding: '2rem',
-                  borderRadius: '1rem',
-                  border: '1px solid var(--border-secondary)',
-                  backdropFilter: 'blur(12px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = '#06b6d4';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(6, 182, 212, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-secondary)';
-                  e.currentTarget.style.boxShadow = 'none';
+              <h3 style={{ 
+                color: '#3b82f6', 
+                marginBottom: '2rem',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '2rem' }}>📚</span>
+                Key Terms
+              </h3>
+              
+              <div style={{ display: 'grid', gap: '1.5rem' }}>
+                <div style={{
+                  padding: '1.5rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(245, 158, 11, 0.2)'
                 }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{item.icon}</div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                    {item.title}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
+                  <h4 style={{ color: '#f59e0b', marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>Pay Fixed</h4>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                    You lock in a fixed rate and profit if rates go <strong style={{ color: '#22c55e' }}>higher</strong>. You're betting that 
+                    yields will increase above your fixed rate.
+                  </p>
                 </div>
-              ))}
+
+                <div style={{
+                  padding: '1.5rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(245, 158, 11, 0.2)'
+                }}>
+                  <h4 style={{ color: '#f59e0b', marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>Receive Fixed</h4>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                    You receive a fixed rate and profit if rates go <strong style={{ color: '#22c55e' }}>lower</strong>. You're betting that 
+                    yields will decrease below your fixed rate.
+                  </p>
+                </div>
+
+                <div style={{
+                  padding: '1.5rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(245, 158, 11, 0.2)'
+                }}>
+                  <h4 style={{ color: '#f59e0b', marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>DV01 (Dollar Value of 1 Basis Point)</h4>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                    Your position size. <strong>$10K DV01</strong> means you gain/lose $10,000 for every 
+                    1 basis point (0.01%) the rate moves in your favor/against you.
+                  </p>
+                  <div style={{ 
+                    padding: '1.5rem', 
+                    background: 'rgba(26, 31, 46, 0.8)', 
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--border-secondary)',
+                    fontFamily: 'monospace',
+                    fontSize: '0.9rem'
+                  }}>
+                    <div style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '1rem', fontSize: '1rem' }}>
+                      DV01 Calculation:
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                      DV01 = Notional × 1bp × Time to Maturity
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                      DV01 = $10M × 0.0001 × 1 = $1,000/bp
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                      (Assuming $10M notional; Time to Maturity = 1 since we use full-year pricing regardless of entry day)
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '1.5rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(245, 158, 11, 0.2)'
+                }}>
+                  <h4 style={{ color: '#f59e0b', marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: '600' }}>Liquidation Price</h4>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
+                    The rate level where your losses equal your posted margin. Your position gets 
+                    automatically closed to prevent further losses.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Trading Examples */}
+            <div className="glass-card" style={{ 
+              marginBottom: '2rem', 
+              padding: '2rem', 
+              border: '1px solid var(--border-secondary)', 
+              borderRadius: '1rem',
+              background: 'var(--gradient-card)',
+              backdropFilter: 'blur(16px)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#ef4444';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(239, 68, 68, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-secondary)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}>
+              <h3 style={{ 
+                color: '#ef4444', 
+                marginBottom: '2rem',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '2rem' }}>💡</span>
+                Trading Examples
+              </h3>
+              
+              <div style={{ display: 'grid', gap: '1.5rem' }}>
+                <div style={{ 
+                  padding: '1.5rem', 
+                  background: 'rgba(34, 197, 94, 0.1)', 
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(34, 197, 94, 0.2)'
+                }}>
+                  <h4 style={{ color: '#22c55e', marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Example 1: Pay Fixed</h4>
+                  <div style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '1.05rem' }}>
+                    • You pay fixed 7.9% on $10K DV01 JitoSOL<br/>
+                    • JitoSOL yields rise to 8.4% (+50bp)<br/>
+                    • Your profit: 50bp × $10K/bp = <strong style={{ color: '#22c55e', fontSize: '1.1rem' }}>+$500,000</strong>
+                  </div>
+                </div>
+
+                <div style={{ 
+                  padding: '1.5rem', 
+                  background: 'rgba(34, 197, 94, 0.1)', 
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(34, 197, 94, 0.2)'
+                }}>
+                  <h4 style={{ color: '#22c55e', marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Example 2: Receive Fixed</h4>
+                  <div style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '1.05rem' }}>
+                    • You receive fixed 7.9% on $10K DV01 JitoSOL<br/>
+                    • JitoSOL yields fall to 7.4% (-50bp)<br/>
+                    • Your profit: 50bp × $10K/bp = <strong style={{ color: '#22c55e', fontSize: '1.1rem' }}>+$500,000</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing Model */}
+            <div className="glass-card" style={{ 
+              marginBottom: '2rem', 
+              padding: '2rem', 
+              border: '1px solid var(--border-secondary)', 
+              borderRadius: '1rem',
+              background: 'var(--gradient-card)',
+              backdropFilter: 'blur(16px)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#8b5cf6';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(139, 92, 246, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-secondary)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}>
+              <h3 style={{ 
+                color: '#8b5cf6', 
+                marginBottom: '1.5rem',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '2rem' }}>⚙️</span>
+                Our Pricing Model
+              </h3>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1.5rem', fontSize: '1.05rem' }}>
+                  <strong style={{ color: '#8b5cf6' }}>Full Year Pricing:</strong> All contracts are priced for the full 365-day period, 
+                  regardless of when you enter. Whether you trade on Day 0 or Day 90, you're getting 
+                  exposure to the full year's yield curve.
+                </p>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1rem', fontSize: '1.05rem' }}>
+                  <strong style={{ color: '#8b5cf6' }}>Dynamic Pricing:</strong> Prices adjust based on:
+                </p>
+              </div>
+              <ul style={{ 
+                color: 'var(--text-secondary)', 
+                lineHeight: '1.7', 
+                paddingLeft: '1.5rem',
+                fontSize: '1.05rem',
+                listStyle: 'none'
+              }}>
+                <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: '#8b5cf6' }}>•</span>
+                  Current protocol risk exposure
+                </li>
+                <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: '#8b5cf6' }}>•</span>
+                  Time remaining to maturity
+                </li>
+                <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: '#8b5cf6' }}>•</span>
+                  Correlation between markets
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: '#8b5cf6' }}>•</span>
+                  Trade size (larger trades pay more)
+                </li>
+              </ul>
+            </div>
+
+            {/* Risk Management */}
+            <div className="glass-card" style={{ 
+              padding: '2rem', 
+              border: '1px solid var(--border-secondary)', 
+              borderRadius: '1rem',
+              background: 'var(--gradient-card)',
+              backdropFilter: 'blur(16px)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#f59e0b';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(245, 158, 11, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-secondary)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}>
+              <h3 style={{ 
+                color: '#f59e0b', 
+                marginBottom: '1.5rem',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '2rem' }}>⚠️</span>
+                Risk Management
+              </h3>
+              <ul style={{ 
+                color: 'var(--text-secondary)', 
+                lineHeight: '1.7', 
+                paddingLeft: '1.5rem',
+                fontSize: '1.05rem',
+                listStyle: 'none'
+              }}>
+                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <span style={{ color: '#f59e0b', marginTop: '0.1rem' }}>•</span>
+                  <div>
+                    <strong style={{ color: '#f59e0b' }}>Liquidation Risk:</strong> Monitor your positions - rates can move quickly
+                  </div>
+                </li>
+                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <span style={{ color: '#f59e0b', marginTop: '0.1rem' }}>•</span>
+                  <div>
+                    <strong style={{ color: '#f59e0b' }}>Margin Requirements:</strong> Minimum 200:1 leverage (0.5% margin)
+                  </div>
+                </li>
+                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <span style={{ color: '#f59e0b', marginTop: '0.1rem' }}>•</span>
+                  <div>
+                    <strong style={{ color: '#f59e0b' }}>Add Margin:</strong> Improve your liquidation price by posting more collateral
+                  </div>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <span style={{ color: '#f59e0b', marginTop: '0.1rem' }}>•</span>
+                  <div>
+                    <strong style={{ color: '#f59e0b' }}>Settlement:</strong> All positions settle on last day of the year based on realized yields
+                  </div>
+                </li>
+              </ul>
+            </div>
+
           </div>
         </div>
       )}
@@ -2837,16 +3082,13 @@ const calculateVammBreakdown = () => {
         <div className="tab-content" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{
             textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'var(--gradient-card)',
-            borderRadius: '1.5rem',
-            border: '1px solid var(--border-secondary)',
-            backdropFilter: 'blur(16px)'
+            padding: '2rem',
+            marginBottom: '3rem'
           }}>
             <div style={{
-              fontSize: '5rem',
-              marginBottom: '2rem',
-              opacity: 0.6,
+              fontSize: '4rem',
+              marginBottom: '1rem',
+              opacity: 0.8,
               animation: 'float 3s ease-in-out infinite'
             }}>
               🏆
@@ -2854,7 +3096,7 @@ const calculateVammBreakdown = () => {
             <h2 style={{
               fontSize: '2.5rem',
               fontWeight: '800',
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
               background: 'var(--gradient-premium)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -2865,151 +3107,256 @@ const calculateVammBreakdown = () => {
             <p style={{
               fontSize: '1.25rem',
               color: 'var(--text-muted)',
-              marginBottom: '3rem',
               lineHeight: 1.6,
               maxWidth: '600px',
-              margin: '0 auto 3rem auto'
+              margin: '0 auto'
             }}>
-              Compete with the best traders and track your performance across different timeframes and markets.
+              Compete with the best traders and earn exclusive rewards through our points system
+            </p>
+          </div>
+
+          <div className="glass-card" style={{ 
+            padding: '2.5rem', 
+            border: '1px solid var(--border-secondary)', 
+            borderRadius: '1.5rem',
+            background: 'var(--gradient-card)',
+            backdropFilter: 'blur(16px)',
+            marginBottom: '2rem',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border-glow)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(16, 185, 129, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border-secondary)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}>
+            <h3 style={{ 
+              marginBottom: '2rem', 
+              color: 'var(--text-primary)',
+              fontSize: '2rem',
+              fontWeight: '700',
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1rem'
+            }}>
+              <span style={{ fontSize: '2.5rem' }}>🎯</span>
+              Slope Points System
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem' }}>
+        
+              <div style={{
+                padding: '2rem',
+                background: 'rgba(16, 185, 129, 0.1)',
+                borderRadius: '1rem',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}>
+                <h4 style={{ 
+                  color: '#10b981', 
+                  marginBottom: '1.5rem',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '1.75rem' }}>📈</span>
+                  How to Earn Points
+                </h4>
+                <ul style={{ 
+                  color: 'var(--text-secondary)', 
+                  lineHeight: '1.8', 
+                  paddingLeft: '0',
+                  listStyle: 'none',
+                  fontSize: '1.05rem'
+                }}>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>10 points per $1K DV01</strong> traded
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>2x multiplier</strong> for JitoSol trades
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>2 points</strong> for adding margin to positions
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>2x multiplier</strong> for risk-reducing trades
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>20 points</strong> for trading multiple markets
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>10 points</strong> for successful referrals
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>50 points</strong> for holding to settlement
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>•</span>
+                    <strong>2x multiplier</strong> for consecutive trading days
+                  </li>
+                </ul>
+              </div>
+        
+              <div>
+                <div style={{
+                  padding: '2rem',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '1rem',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  marginBottom: '1.5rem'
+                }}>
+                  <h4 style={{ 
+                    color: '#3b82f6', 
+                    marginBottom: '1.5rem',
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}>
+                    <span style={{ fontSize: '1.75rem' }}>💰</span>
+                    Fee Discounts
+                  </h4>
+                  <ul style={{ 
+                    color: 'var(--text-secondary)', 
+                    lineHeight: '1.8', 
+                    paddingLeft: '0',
+                    listStyle: 'none',
+                    fontSize: '1.05rem'
+                  }}>
+                    <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#cd7f32', fontSize: '1.2rem' }}>🥉</span>
+                      <strong>Bronze (50+ points):</strong> 5% fee discount
+                    </li>
+                    <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#c0c0c0', fontSize: '1.2rem' }}>🥈</span>
+                      <strong>Silver (100+ points):</strong> 10% fee discount
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#ffd700', fontSize: '1.2rem' }}>🥇</span>
+                      <strong>Gold (500+ points):</strong> 15% fee discount
+                    </li>
+                  </ul>
+                </div>
+          
+                <div style={{
+                  padding: '2rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '1rem',
+                  border: '1px solid rgba(245, 158, 11, 0.2)'
+                }}>
+                  <h4 style={{ 
+                    color: '#f59e0b', 
+                    marginBottom: '1.5rem',
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}>
+                    <span style={{ fontSize: '1.75rem' }}>🎁</span>
+                    Future Rewards
+                  </h4>
+                  <ul style={{ 
+                  color: 'var(--text-secondary)', 
+                  lineHeight: '1.8', 
+                  paddingLeft: '0',
+                  listStyle: 'none',
+                  fontSize: '1.05rem'
+                }}>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1.2rem' }}>•</span>
+                    Airdrop eligibility and allocation
+                  </li>
+                  <li style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1.2rem' }}>•</span>
+                    Exclusive features and early access
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1.2rem' }}>•</span>
+                    Governance participation rights
+                  </li>
+                </ul>
+              </div>
+            </div>
+      
+          </div>
+
+          <div style={{ 
+            marginTop: '2.5rem', 
+            padding: '2rem', 
+            background: 'rgba(26, 31, 46, 0.8)', 
+            borderRadius: '1rem',
+            border: '1px solid var(--border-secondary)',
+            textAlign: 'center'
+          }}>
+            <p style={{ 
+              color: 'var(--text-muted)', 
+              fontSize: '1.1rem', 
+              margin: '0 0 1rem 0',
+              fontWeight: '500'
+            }}>
+              <strong style={{ color: 'var(--text-accent)' }}>Current Season:</strong> Pre-Launch Phase - Get ready for points tracking!
             </p>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '2rem',
-              marginTop: '3rem'
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1.5rem',
+              background: 'var(--gradient-accent)',
+              borderRadius: '2rem',
+              color: 'white',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
             }}>
-              {[
-                { icon: '👑', title: 'Top Traders', rank: '#1', desc: 'All-time best performers' },
-                { icon: '📈', title: 'This Week', rank: '#7', desc: 'Weekly leaderboard rankings' },
-                { icon: '💎', title: 'This Month', rank: '#12', desc: 'Monthly performance tracking' },
-                { icon: '🚀', title: 'Rising Stars', rank: '↗️', desc: 'Fastest growing traders' }
-              ].map((item, i) => (
-                <div key={i} style={{
-                  background: 'rgba(26, 31, 46, 0.8)',
-                  padding: '2rem',
-                  borderRadius: '1rem',
-                  border: '1px solid var(--border-secondary)',
-                  backdropFilter: 'blur(12px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  position: 'relative'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = '#8b5cf6';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(139, 92, 246, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-secondary)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{item.icon}</div>
-                  <div style={{ 
-                    position: 'absolute', 
-                    top: '1rem', 
-                    right: '1rem', 
-                    background: 'var(--gradient-premium)', 
-                    color: 'white', 
-                    padding: '0.25rem 0.75rem', 
-                    borderRadius: '1rem', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '600' 
-                  }}>
-                    {item.rank}
-                  </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                    {item.title}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
-                </div>
-              ))}
+              <span style={{ fontSize: '1.2rem' }}>🚀</span>
+              Coming Soon
             </div>
           </div>
         </div>
+
+        <div style={{
+          textAlign: 'center',
+          padding: '3rem 2rem',
+          background: 'rgba(26, 31, 46, 0.6)',
+          borderRadius: '1rem',
+          border: '1px solid var(--border-secondary)',
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div style={{
+            fontSize: '3rem',
+            marginBottom: '1rem',
+            opacity: 0.6
+          }}>
+            📊
+          </div>
+          <p style={{ 
+            color: 'var(--text-muted)', 
+            fontSize: '1.1rem',
+            margin: 0,
+            fontWeight: '500'
+          }}>
+            Leaderboard and live points tracking coming soon...
+          </p>
+        </div>
+      </div>
       )}
 
-      {activeTab === "Stats" && (
-        <div className="tab-content" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'var(--gradient-card)',
-            borderRadius: '1.5rem',
-            border: '1px solid var(--border-secondary)',
-            backdropFilter: 'blur(16px)'
-          }}>
-            <div style={{
-              fontSize: '5rem',
-              marginBottom: '2rem',
-              opacity: 0.6,
-              animation: 'float 3s ease-in-out infinite'
-            }}>
-              📊
-            </div>
-            <h2 style={{
-              fontSize: '2.5rem',
-              fontWeight: '800',
-              marginBottom: '1.5rem',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              Advanced Analytics
-            </h2>
-            <p style={{
-              fontSize: '1.25rem',
-              color: 'var(--text-muted)',
-              marginBottom: '3rem',
-              lineHeight: 1.6,
-              maxWidth: '600px',
-              margin: '0 auto 3rem auto'
-            }}>
-              Deep market insights, trading analytics, and comprehensive performance metrics for data-driven decisions.
-            </p>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '2rem',
-              marginTop: '3rem'
-            }}>
-              {[
-                { icon: '📈', title: 'Market Analytics', desc: 'Real-time market depth, liquidity, and trading volume analysis' },
-                { icon: '💹', title: 'Portfolio Metrics', desc: 'Risk-adjusted returns, Sharpe ratio, and drawdown analysis' },
-                { icon: '🎯', title: 'Performance Tracking', desc: 'Detailed P&L breakdowns, win rates, and trade efficiency' },
-                { icon: '⚡', title: 'Risk Dashboard', desc: 'VaR calculations, stress testing, and scenario analysis' }
-              ].map((item, i) => (
-                <div key={i} style={{
-                  background: 'rgba(26, 31, 46, 0.8)',
-                  padding: '2rem',
-                  borderRadius: '1rem',
-                  border: '1px solid var(--border-secondary)',
-                  backdropFilter: 'blur(12px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = '#f59e0b';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(245, 158, 11, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-secondary)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{item.icon}</div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                    {item.title}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
     {activeTab === "Risk" && (
   <div className="risk-management-container">
