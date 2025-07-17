@@ -1794,7 +1794,7 @@ const calculateVammBreakdown = () => {
               </div>
               {show3DView && (
                 <div style={{ width: '50%' }}>
-                  <FloatingPositionSpheres />
+                  <FloatingPositionSpheres key="galaxy-view" />
                 </div>
               )}
             </div>
