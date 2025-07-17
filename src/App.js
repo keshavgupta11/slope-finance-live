@@ -1629,6 +1629,14 @@ const calculateVammBreakdown = () => {
           <div className="left-panel">
             <div className="swap-header">
               <h2>Swap</h2>
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: '#9ca3af', 
+                marginTop: '0.25rem',
+                fontWeight: '500'
+              }}>
+                Crypto Rate Swaps (CRS)
+              </div>
               <div className="price-info">
                 <div className="price-row">
                   <span>Live Price:</span>
