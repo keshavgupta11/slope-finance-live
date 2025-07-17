@@ -214,6 +214,8 @@ export default function App() {
   const [show3DView, setShow3DView] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [showLegend, setShowLegend] = useState(false);
+  //market dropdown
+  const [showMarketDropdown, setShowMarketDropdown] = useState(false);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -1922,11 +1924,173 @@ const calculateVammBreakdown = () => {
             </div>
 
             <div className="market-selector">
-              <select value={market} onChange={(e) => handleMarketChange(e.target.value)} className="market-select">
-                {Object.keys(marketSettings).map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
+              <div style={{ position: 'relative' }}>
+                <div 
+                  onClick={() => setShowMarketDropdown(!showMarketDropdown)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '1rem 1.5rem',
+                    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
+                    border: showMarketDropdown ? '1px solid #10b981' : '1px solid #374151',
+                    borderRadius: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(16px)',
+                    boxShadow: showMarketDropdown ? '0 8px 32px rgba(16, 185, 129, 0.15)' : '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img
+                      src={
+                        market === "JitoSol" ? "/jito.png" :
+                        market === "Lido stETH" ? "/lido.png" :
+                        market === "Aave ETH Lending" ? "/aave.png" :
+                        market === "Aave ETH Borrowing" ? "/aave.png" :
+                        market === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
+                      }
+                      alt={`${market} logo`}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        border: '2px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    />
+                    <div>
+                      <div style={{ 
+                        color: '#f1f5f9', 
+                        fontWeight: '700', 
+                        fontSize: '1.1rem',
+                        marginBottom: '0.25rem'
+                      }}>
+                        {market}
+                      </div>
+                      <div style={{ 
+                        color: '#10b981', 
+                        fontSize: '0.9rem',
+                        fontWeight: '600'
+                      }}>
+                        {marketSettings[market].apy.toFixed(3)}% APY
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ 
+                    color: '#9ca3af', 
+                    fontSize: '1.5rem',
+                    transform: showMarketDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    ▼
+                  </div>
+                </div>
+
+                {showMarketDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: '0.5rem',
+                    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)',
+                    border: '1px solid #10b981',
+                    borderRadius: '1rem',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                    zIndex: 1000,
+                    overflow: 'hidden'
+                  }}>
+                    {Object.keys(marketSettings).map((m, index) => (
+                      <div
+                        key={m}
+                        onClick={() => {
+                          handleMarketChange(m);
+                          setShowMarketDropdown(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '1rem',
+                          padding: '1rem 1.5rem',
+                          cursor: 'pointer',
+                          borderBottom: index < Object.keys(marketSettings).length - 1 ? '1px solid rgba(55, 65, 81, 0.3)' : 'none',
+                          transition: 'all 0.2s ease',
+                          background: market === m ? 'rgba(16, 185, 129, 0.1)' : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'rgba(16, 185, 129, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = market === m ? 'rgba(16, 185, 129, 0.1)' : 'transparent';
+                        }}
+                      >
+                        <img
+                          src={
+                            m === "JitoSol" ? "/jito.png" :
+                            m === "Lido stETH" ? "/lido.png" :
+                            m === "Aave ETH Lending" ? "/aave.png" :
+                            m === "Aave ETH Borrowing" ? "/aave.png" :
+                            m === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
+                          }
+                          alt={`${m} logo`}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            border: '1px solid rgba(255, 255, 255, 0.1)'
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ 
+                            color: '#f1f5f9', 
+                            fontWeight: '600', 
+                            fontSize: '1rem',
+                            marginBottom: '0.25rem'
+                          }}>
+                            {m}
+                          </div>
+                          <div style={{ 
+                            color: '#9ca3af', 
+                            fontSize: '0.85rem'
+                          }}>
+                            Current: {marketSettings[m].apy.toFixed(3)}%
+                          </div>
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: '0.25rem'
+                        }}>
+                          <div style={{ 
+                            color: '#10b981', 
+                            fontSize: '0.9rem',
+                            fontWeight: '600'
+                          }}>
+                            {(lastPriceByMarket[m] || marketSettings[m].apy).toFixed(3)}%
+                          </div>
+                          <div style={{ 
+                            color: '#6b7280', 
+                            fontSize: '0.75rem'
+                          }}>
+                            Live Price
+                          </div>
+                        </div>
+                        {market === m && (
+                          <div style={{
+                            color: '#10b981',
+                            fontSize: '1.2rem',
+                            marginLeft: '0.5rem'
+                          }}>
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="market-info">
                 <div>Notional / DV01: $10mm / $1k DV01</div>
                 <div>$1k DV01 means you gain/lose $1,000 per 1bp move</div>
