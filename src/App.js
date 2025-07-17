@@ -1817,7 +1817,7 @@ const calculateVammBreakdown = () => {
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
               <div style={{ color: '#10b981', fontWeight: '600' }}>
-                ${(usdcBalance + 10000000).toLocaleString()}
+                ${(usdcBalance + 1000000).toLocaleString()}
               </div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
@@ -3356,366 +3356,492 @@ const calculateVammBreakdown = () => {
       </div>
       )}
 
-    {activeTab === "Risk" && (
-      <div className="risk-management-container" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
-        <div style={{
-          textAlign: 'center',
-          padding: '2rem',
-          marginBottom: '3rem'
-        }}>
+      {activeTab === "Risk" && (
+        <div className="risk-management-container" style={{ padding: '2rem', maxWidth: '72rem', margin: '0 auto' }}>
           <div style={{
-            fontSize: '4rem',
-            marginBottom: '1rem',
-            opacity: 0.8,
-            animation: 'float 3s ease-in-out infinite'
+            textAlign: 'center',
+            padding: '2rem',
+            marginBottom: '3rem'
           }}>
-            ⚖️
-          </div>
-          <h2 style={{
-            fontSize: '2.5rem',
-            fontWeight: '800',
-            marginBottom: '1rem',
-            background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #10b981 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            Risk Management
-          </h2>
-          <p style={{
-            fontSize: '1.25rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            Monitor positions, manage settlements, and analyze portfolio risk across all markets
-          </p>
-        </div>
-        
-        {/* Enhanced Settlement Controls */}
-        <div className="settlement-controls" style={{ 
-          marginBottom: '3rem', 
-          padding: '2.5rem', 
-          border: '1px solid var(--border-secondary)', 
-          borderRadius: '1.5rem',
-          background: 'var(--gradient-card)',
-          backdropFilter: 'blur(16px)',
-          transition: 'all 0.3s ease',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: 'var(--gradient-accent)',
-            opacity: 0.8
-          }} />
-          
-          <h3 style={{ 
-            marginBottom: '2rem', 
-            color: 'var(--text-primary)',
-            fontSize: '1.75rem',
-            fontWeight: '700',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
-            <span style={{ 
-              fontSize: '2rem',
-              background: 'var(--gradient-accent)',
-              borderRadius: '50%',
-              width: '60px',
-              height: '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+            <div style={{
+              fontSize: '4rem',
+              marginBottom: '1rem',
+              opacity: 0.8,
+              animation: 'float 3s ease-in-out infinite'
             }}>
               ⚖️
-            </span>
-            Settlement Controls
-          </h3>
-          
-          {!isSettlementMode ? (
-            <div>
-              <div style={{ 
-                marginBottom: '2rem', 
-                padding: '1.5rem',
-                background: 'rgba(59, 130, 246, 0.1)',
-                borderRadius: '1rem',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
-              }}>
-                <div style={{ 
-                  color: 'var(--text-secondary)', 
-                  fontSize: '1.1rem',
-                  lineHeight: '1.6',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem'
-                }}>
-                  <span style={{ fontSize: '1.5rem', color: '#3b82f6' }}>ℹ️</span>
-                  Set settlement prices for all markets and calculate final P&L for all positions
-                </div>
-              </div>
-              
-              {/* Settlement Price Inputs */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-                gap: '1.5rem',
-                marginBottom: '2.5rem'
-              }}>
-                {Object.keys(marketSettings).map(mkt => (
-                  <div key={mkt} style={{ 
-                    padding: '1.5rem', 
-                    border: '1px solid var(--border-secondary)', 
-                    borderRadius: '1rem',
-                    background: 'rgba(26, 31, 46, 0.8)',
-                    backdropFilter: 'blur(12px)',
-                    transition: 'all 0.3s ease'
-                  }}>
-                    <label style={{ 
-                      display: 'block', 
-                      marginBottom: '1rem', 
-                      color: 'var(--text-primary)',
-                      fontSize: '1rem',
-                      fontWeight: '700'
-                    }}>
-                      <span style={{ 
-                        width: '8px', 
-                        height: '8px', 
-                        background: 'var(--gradient-accent)', 
-                        borderRadius: '50%',
-                        boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)',
-                        display: 'inline-block',
-                        marginRight: '0.5rem'
-                      }} />
-                      {mkt} Settlement Price
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                      <input
-                        type="number"
-                        step="0.001"
-                        placeholder={marketSettings[mkt].apy.toFixed(3)}
-                        value={tempSettlementPrices[mkt] || ''}
-                        onChange={(e) => {
-                          setTempSettlementPrices(prev => ({
-                            ...prev,
-                            [mkt]: e.target.value
-                          }));
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '0.75rem',
-                          borderRadius: '0.5rem',
-                          border: '1px solid var(--border-secondary)',
-                          background: 'var(--bg-input)',
-                          color: 'var(--text-primary)',
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          transition: 'all 0.3s ease'
-                        }}
-                      />
-                      <span style={{ 
-                        color: 'var(--text-accent)', 
-                        fontSize: '1rem',
-                        fontWeight: '600'
-                      }}>%</span>
-                    </div>
-                    <div style={{ 
-                      padding: '0.75rem',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      borderRadius: '0.5rem',
-                      border: '1px solid rgba(16, 185, 129, 0.2)'
-                    }}>
-                      <div style={{ 
-                        color: 'var(--text-muted)', 
-                        fontSize: '0.875rem',
-                        marginBottom: '0.25rem'
-                      }}>
-                        Current Live Price:
-                      </div>
-                      <div style={{
-                        color: 'var(--text-accent)',
-                        fontSize: '1.1rem',
-                        fontWeight: '700'
-                      }}>
-                        {(lastPriceByMarket[mkt] || marketSettings[mkt].apy).toFixed(3)}%
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div style={{ textAlign: 'center' }}>
-                <button
-                  onClick={handleRiskSettlement}
-                  style={{
-                    background: 'var(--gradient-accent)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '1rem 2.5rem',
-                    borderRadius: '1rem',
-                    fontSize: '1rem',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    transition: 'all 0.3s ease',
-                    boxShadow: 'var(--shadow-accent)'
-                  }}
-                >
-                  <span style={{ fontSize: '1.25rem' }}>⚖️</span>
-                  Apply Settlement Prices
-                </button>
-              </div>
             </div>
-          ) : (
-            <div>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+            <h2 style={{
+              fontSize: '2.5rem',
+              fontWeight: '800',
+              marginBottom: '1rem',
+              background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #10b981 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              Risk Management
+            </h2>
+            <p style={{
+              fontSize: '1.25rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.6,
+              maxWidth: '600px',
+              margin: '0 auto'
+            }}>
+              Monitor positions, manage settlements, and analyze portfolio risk across all markets
+            </p>
+          </div>
+          
+          {/* Enhanced Settlement Controls */}
+          <div className="settlement-controls" style={{ 
+            marginBottom: '3rem', 
+            padding: '2.5rem', 
+            border: '1px solid var(--border-secondary)', 
+            borderRadius: '1.5rem',
+            background: 'var(--gradient-card)',
+            backdropFilter: 'blur(16px)',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '3px',
+              background: 'var(--gradient-accent)',
+              opacity: 0.8
+            }} />
+            
+            <h3 style={{ 
+              marginBottom: '2rem', 
+              color: 'var(--text-primary)',
+              fontSize: '1.75rem',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <span style={{ 
+                fontSize: '2rem',
+                background: 'var(--gradient-accent)',
+                borderRadius: '50%',
+                width: '60px',
+                height: '60px',
+                display: 'flex',
                 alignItems: 'center',
-                marginBottom: '2rem',
-                padding: '1.5rem',
-                background: 'rgba(245, 158, 11, 0.1)',
-                borderRadius: '1rem',
-                border: '1px solid rgba(245, 158, 11, 0.3)'
+                justifyContent: 'center'
               }}>
-                <div>
+                ⚖️
+              </span>
+              Settlement Controls
+            </h3>
+            
+            {!isSettlementMode ? (
+              <div>
+                <div style={{ 
+                  marginBottom: '2rem', 
+                  padding: '1.5rem',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '1rem',
+                  border: '1px solid rgba(59, 130, 246, 0.2)'
+                }}>
                   <div style={{ 
-                    color: '#f59e0b', 
-                    fontWeight: '700', 
+                    color: 'var(--text-secondary)', 
                     fontSize: '1.1rem',
+                    lineHeight: '1.6',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem',
-                    marginBottom: '0.5rem'
+                    gap: '0.75rem'
                   }}>
-                    <span style={{ fontSize: '1.5rem' }}>🔒</span>
-                    Settlement Mode Active
-                  </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    All P&L calculations now using settlement prices
+                    <span style={{ fontSize: '1.5rem', color: '#3b82f6' }}>ℹ️</span>
+                    Set settlement prices for all markets and calculate final P&L for all positions
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setIsSettlementMode(false);
-                    setSettlementPrices({});
-                    setTempSettlementPrices({});
-                  }}
-                  style={{
-                    background: 'linear-gradient(45deg, #6b7280, #4b5563)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '0.75rem',
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.025em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <span>🚪</span>
-                  Exit Settlement
-                </button>
-              </div>
-              
-              {/* Current Settlement Prices */}
-              <div>
-                <h4 style={{
-                  color: 'var(--text-primary)',
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  marginBottom: '1.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>📊</span>
-                  Active Settlement Prices
-                </h4>
+                
+                {/* Settlement Price Inputs */}
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                  gap: '1rem'
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                  gap: '1.5rem',
+                  marginBottom: '2.5rem'
                 }}>
-                  {Object.keys(settlementPrices).map(mkt => (
+                  {Object.keys(marketSettings).map(mkt => (
                     <div key={mkt} style={{ 
-                      padding: '1.25rem', 
-                      background: 'rgba(245, 158, 11, 0.1)', 
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      padding: '1.5rem', 
+                      border: '1px solid var(--border-secondary)', 
+                      borderRadius: '1rem',
+                      background: 'rgba(26, 31, 46, 0.8)',
+                      backdropFilter: 'blur(12px)',
                       transition: 'all 0.3s ease'
                     }}>
-                      <div style={{ 
-                        fontSize: '0.875rem', 
-                        color: 'var(--text-muted)',
-                        marginBottom: '0.5rem',
-                        fontWeight: '500'
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '1rem', 
+                        color: 'var(--text-primary)',
+                        fontSize: '1rem',
+                        fontWeight: '700'
                       }}>
-                        {mkt}
+                        <span style={{ 
+                          width: '8px', 
+                          height: '8px', 
+                          background: 'var(--gradient-accent)', 
+                          borderRadius: '50%',
+                          boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)',
+                          display: 'inline-block',
+                          marginRight: '0.5rem'
+                        }} />
+                        {mkt} Settlement Price
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <input
+                          type="number"
+                          step="0.001"
+                          placeholder={marketSettings[mkt].apy.toFixed(3)}
+                          value={tempSettlementPrices[mkt] || ''}
+                          onChange={(e) => {
+                            setTempSettlementPrices(prev => ({
+                              ...prev,
+                              [mkt]: e.target.value
+                            }));
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '0.75rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid var(--border-secondary)',
+                            background: 'var(--bg-input)',
+                            color: 'var(--text-primary)',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            transition: 'all 0.3s ease'
+                          }}
+                        />
+                        <span style={{ 
+                          color: 'var(--text-accent)', 
+                          fontSize: '1rem',
+                          fontWeight: '600'
+                        }}>%</span>
                       </div>
                       <div style={{ 
-                        color: '#f59e0b', 
-                        fontWeight: '700',
-                        fontSize: '1.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
+                        padding: '0.75rem',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        borderRadius: '0.5rem',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
                       }}>
-                        {settlementPrices[mkt].toFixed(3)}
-                        <span style={{ fontSize: '1rem', opacity: 0.8 }}>%</span>
+                        <div style={{ 
+                          color: 'var(--text-muted)', 
+                          fontSize: '0.875rem',
+                          marginBottom: '0.25rem'
+                        }}>
+                          Current Live Price:
+                        </div>
+                        <div style={{
+                          color: 'var(--text-accent)',
+                          fontSize: '1.1rem',
+                          fontWeight: '700'
+                        }}>
+                          {(lastPriceByMarket[mkt] || marketSettings[mkt].apy).toFixed(3)}%
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+                
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    onClick={handleRiskSettlement}
+                    style={{
+                      background: 'var(--gradient-accent)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '1rem 2.5rem',
+                      borderRadius: '1rem',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      transition: 'all 0.3s ease',
+                      boxShadow: 'var(--shadow-accent)'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.25rem' }}>⚖️</span>
+                    Apply Settlement Prices
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '2rem',
+                  padding: '1.5rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '1rem',
+                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                }}>
+                  <div>
+                    <div style={{ 
+                      color: '#f59e0b', 
+                      fontWeight: '700', 
+                      fontSize: '1.1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      marginBottom: '0.5rem'
+                    }}>
+                      <span style={{ fontSize: '1.5rem' }}>🔒</span>
+                      Settlement Mode Active
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                      All P&L calculations now using settlement prices
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsSettlementMode(false);
+                      setSettlementPrices({});
+                      setTempSettlementPrices({});
+                    }}
+                    style={{
+                      background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '0.75rem',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.025em',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span>🚪</span>
+                    Exit Settlement
+                  </button>
+                </div>
+                
+                {/* Current Settlement Prices */}
+                <div>
+                  <h4 style={{
+                    color: 'var(--text-primary)',
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '1.5rem' }}>📊</span>
+                    Active Settlement Prices
+                  </h4>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                    gap: '1rem'
+                  }}>
+                    {Object.keys(settlementPrices).map(mkt => (
+                      <div key={mkt} style={{ 
+                        padding: '1.25rem', 
+                        background: 'rgba(245, 158, 11, 0.1)', 
+                        borderRadius: '0.75rem',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <div style={{ 
+                          fontSize: '0.875rem', 
+                          color: 'var(--text-muted)',
+                          marginBottom: '0.5rem',
+                          fontWeight: '500'
+                        }}>
+                          {mkt}
+                        </div>
+                        <div style={{ 
+                          color: '#f59e0b', 
+                          fontWeight: '700',
+                          fontSize: '1.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          {settlementPrices[mkt].toFixed(3)}
+                          <span style={{ fontSize: '1rem', opacity: 0.8 }}>%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-        {/* Positions by Market */}
-        {Object.keys(marketSettings).map(mkt => {
-          const marketTrades = tradesByMarket[mkt] || [];
-          if (marketTrades.length === 0) return null;
-          
-          const totalPL = marketTrades.reduce((sum, trade) => {
-            const pl = isSettlementMode ? 
-              calculateSettlementPL(trade) : 
-              calculateTotalPL(trade, lastPriceByMarket[mkt] || marketSettings[mkt].apy);
-            return sum + pl;
-          }, 0);
-          
-          return (
-            <div key={mkt} className="market-positions" style={{ 
-              marginBottom: '2.5rem', 
-              border: '1px solid var(--border-secondary)', 
-              borderRadius: '1.5rem',
-              background: 'var(--gradient-card)',
-              backdropFilter: 'blur(16px)',
-              overflow: 'hidden',
-              transition: 'all 0.3s ease'
+          {/* Enhanced Stress Testing */}
+          <div className="stress-testing-controls" style={{ 
+            marginBottom: '3rem', 
+            padding: '2.5rem', 
+            border: '1px solid var(--border-secondary)', 
+            borderRadius: '1.5rem',
+            background: 'var(--gradient-card)',
+            backdropFilter: 'blur(16px)',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '3px',
+              background: 'var(--gradient-secondary)',
+              opacity: 0.8
+            }} />
+            
+            <h3 style={{ 
+              marginBottom: '2rem', 
+              color: 'var(--text-primary)',
+              fontSize: '1.75rem',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <span style={{ 
+                fontSize: '2rem',
+                background: 'var(--gradient-secondary)',
+                borderRadius: '50%',
+                width: '60px',
+                height: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                📊
+              </span>
+              Stress Testing
+            </h3>
+            
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem',
+              background: 'rgba(6, 182, 212, 0.1)',
+              borderRadius: '1rem',
+              border: '1px solid rgba(6, 182, 212, 0.2)'
             }}>
               <div style={{ 
-                padding: '2rem', 
-                background: 'rgba(26, 31, 46, 0.8)',
-                borderBottom: '1px solid var(--border-secondary)',
+                color: 'var(--text-secondary)', 
+                fontSize: '1.1rem',
+                lineHeight: '1.6',
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                position: 'relative'
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.5rem', color: '#06b6d4' }}>⚡</span>
+                Test portfolio performance under extreme rate movements
+              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '1rem', 
+              marginBottom: '2rem' 
+            }}>
+              <button
+                onClick={() => calculateStressTest(1)} // +100bp
+                style={{
+                  background: 'var(--gradient-secondary)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 14px rgba(6, 182, 212, 0.25)'
+                }}
+              >
+                <span style={{ fontSize: '1.25rem' }}>📈</span>
+                Rates +100bp
+              </button>
+              
+              <button
+                onClick={() => calculateStressTest(-1)} // -100bp
+                style={{
+                  background: 'var(--gradient-secondary)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 14px rgba(6, 182, 212, 0.25)'
+                }}
+              >
+                <span style={{ fontSize: '1.25rem' }}>📉</span>
+                Rates -100bp
+              </button>
+              
+              <button
+                onClick={() => setStressTestResult(null)}
+                style={{
+                  background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 1.5rem',
+                  borderRadius: '1rem',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <span style={{ fontSize: '1.25rem' }}>🗑️</span>
+                Clear
+              </button>
+            </div>
+            
+            {stressTestResult && (
+              <div style={{ 
+                padding: '2rem', 
+                background: 'rgba(26, 31, 46, 0.8)', 
+                borderRadius: '1rem',
+                border: `2px solid ${stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'}`,
+                backdropFilter: 'blur(12px)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
                 <div style={{
                   position: 'absolute',
@@ -3723,159 +3849,249 @@ const calculateVammBreakdown = () => {
                   left: 0,
                   right: 0,
                   height: '2px',
-                  background: 'var(--gradient-accent)',
+                  background: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
                   opacity: 0.8
                 }} />
                 
-                <div>
-                  <h3 style={{ 
-                    margin: 0, 
-                    color: 'var(--text-primary)',
-                    fontSize: '1.75rem',
-                    fontWeight: '700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem'
-                  }}>
-                    <span style={{
-                      width: '12px',
-                      height: '12px',
-                      background: 'var(--gradient-accent)',
-                      borderRadius: '50%',
-                      boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)',
-                      animation: 'pulse 2s infinite'
-                    }} />
-                    {mkt} Positions
-                  </h3>
-                  <div style={{ 
-                    fontSize: '1rem', 
-                    color: 'var(--text-muted)',
-                    marginTop: '0.5rem',
-                    fontWeight: '500'
-                  }}>
-                    {marketTrades.length} active position{marketTrades.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                    Total P&L
-                  </div>
-                  <div style={{ 
-                    fontSize: '2rem', 
-                    fontWeight: '800',
-                    color: totalPL >= 0 ? '#22c55e' : '#ef4444',
-                    textShadow: totalPL >= 0 ? '0 0 10px rgba(34, 197, 94, 0.3)' : '0 0 10px rgba(239, 68, 68, 0.3)'
-                  }}>
-                    {totalPL >= 0 ? '+' : ''}${Math.abs(totalPL).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-              
-              <div style={{ overflow: 'auto' }}>
-                <table style={{ 
-                  width: '100%', 
-                  borderCollapse: 'collapse',
-                  background: 'rgba(15, 23, 42, 0.8)'
+                <h4 style={{ 
+                  margin: '0 0 1rem 0', 
+                  color: 'var(--text-primary)',
+                  fontSize: '1.25rem',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
                 }}>
-                  <thead>
-                    <tr style={{ background: 'rgba(26, 31, 46, 0.9)' }}>
-                      <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Direction</th>
-                      <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Entry Price</th>
-                      <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Liquidation Price</th>
-                      <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Entry DV01</th>
-                      <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Price</th>
-                      <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>P&L</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {marketTrades.map((trade, i) => {
-                      const currentPrice = isSettlementMode ? 
-                        settlementPrices[mkt] : 
-                        (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
-                      const pl = isSettlementMode ? 
-                        calculateSettlementPL(trade) : 
-                        calculateTotalPL(trade, currentPrice);
-                      
-                      return (
-                        <tr key={i} style={{ 
-                          borderBottom: '1px solid rgba(55, 65, 81, 0.3)',
-                          transition: 'all 0.3s ease'
-                        }}>
-                          <td style={{ padding: '1rem' }}>
-                            <span style={{ 
-                              color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                              fontWeight: '700',
-                              fontSize: '0.95rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem'
-                            }}>
-                              <span style={{
-                                width: '8px',
-                                height: '8px',
-                                background: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                                borderRadius: '50%',
-                                boxShadow: `0 0 8px ${trade.type === 'pay' ? '#3b82f6' : '#f59e0b'}`
-                              }} />
-                              {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                            </span>
-                          </td>
-                          <td style={{ 
-                            padding: '1rem', 
-                            textAlign: 'right',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.95rem',
-                            fontWeight: '600'
-                          }}>
-                            {trade.entryPrice.toFixed(3)}%
-                          </td>
-                          <td style={{ 
-                            padding: '1rem', 
-                            textAlign: 'right',
-                            color: '#ef4444',
-                            fontSize: '0.95rem',
-                            fontWeight: '600'
-                          }}>
-                            {parseFloat(trade.liquidationPrice).toFixed(3)}%
-                          </td>
-                          <td style={{ 
-                            padding: '1rem', 
-                            textAlign: 'right',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.95rem',
-                            fontWeight: '600'
-                          }}>
-                            ${(trade.entryDV01 || trade.baseDV01).toLocaleString()}
-                          </td>
-                          <td style={{ 
-                            padding: '1rem', 
-                            textAlign: 'right',
-                            color: 'var(--text-accent)',
-                            fontSize: '0.95rem',
-                            fontWeight: '700'
-                          }}>
-                            {currentPrice.toFixed(3)}%
-                          </td>
-                          <td style={{ 
-                            padding: '1rem', 
-                            textAlign: 'right',
-                            fontWeight: '700',
-                            fontSize: '1rem',
-                            color: pl >= 0 ? '#22c55e' : '#ef4444'
-                          }}>
-                            {pl >= 0 ? '+' : ''}${Math.abs(pl).toLocaleString()}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                  <span style={{
+                    width: '12px',
+                    height: '12px',
+                    background: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
+                    borderRadius: '50%',
+                    boxShadow: `0 0 12px ${stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'}`,
+                    animation: 'pulse 2s infinite'
+                  }} />
+                  Stress Test: {stressTestResult.scenario}
+                </h4>
+                <div style={{ 
+                  fontSize: '2rem', 
+                  fontWeight: '800',
+                  color: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
+                  marginBottom: '0.75rem',
+                  textShadow: `0 0 10px ${stressTestResult.totalPL >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                }}>
+                  Total P&L: {stressTestResult.totalPL >= 0 ? '+' : ''}${Math.abs(stressTestResult.totalPL).toLocaleString()}
+                </div>
+                <div style={{ 
+                  fontSize: '1rem', 
+                  color: 'var(--text-muted)',
+                  fontWeight: '500'
+                }}>
+                  Across {stressTestResult.positionCount} open position{stressTestResult.positionCount !== 1 ? 's' : ''}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    )}
+            )}
+          </div>
+
+          {/* Enhanced Positions by Market */}
+          {Object.keys(marketSettings).map(mkt => {
+            const marketTrades = tradesByMarket[mkt] || [];
+            if (marketTrades.length === 0) return null;
+            
+            const totalPL = marketTrades.reduce((sum, trade) => {
+              const pl = isSettlementMode ? 
+                calculateSettlementPL(trade) : 
+                calculateTotalPL(trade, lastPriceByMarket[mkt] || marketSettings[mkt].apy);
+              return sum + pl;
+            }, 0);
+            
+            return (
+              <div key={mkt} className="market-positions" style={{ 
+                marginBottom: '2.5rem', 
+                border: '1px solid var(--border-secondary)', 
+                borderRadius: '1.5rem',
+                background: 'var(--gradient-card)',
+                backdropFilter: 'blur(16px)',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease'
+              }}>
+                <div style={{ 
+                  padding: '2rem', 
+                  background: 'rgba(26, 31, 46, 0.8)',
+                  borderBottom: '1px solid var(--border-secondary)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: 'var(--gradient-accent)',
+                    opacity: 0.8
+                  }} />
+                  
+                  <div>
+                    <h3 style={{ 
+                      margin: 0, 
+                      color: 'var(--text-primary)',
+                      fontSize: '1.75rem',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem'
+                    }}>
+                      <span style={{
+                        width: '12px',
+                        height: '12px',
+                        background: 'var(--gradient-accent)',
+                        borderRadius: '50%',
+                        boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)',
+                        animation: 'pulse 2s infinite'
+                      }} />
+                      {mkt} Positions
+                    </h3>
+                    <div style={{ 
+                      fontSize: '1rem', 
+                      color: 'var(--text-muted)',
+                      marginTop: '0.5rem',
+                      fontWeight: '500'
+                    }}>
+                      {marketTrades.length} active position{marketTrades.length !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                      Total P&L
+                    </div>
+                    <div style={{ 
+                      fontSize: '2rem', 
+                      fontWeight: '800',
+                      color: totalPL >= 0 ? '#22c55e' : '#ef4444',
+                      textShadow: totalPL >= 0 ? '0 0 10px rgba(34, 197, 94, 0.3)' : '0 0 10px rgba(239, 68, 68, 0.3)'
+                    }}>
+                      {totalPL >= 0 ? '+' : ''}${Math.abs(totalPL).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ overflow: 'auto' }}>
+                  <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse',
+                    background: 'rgba(15, 23, 42, 0.8)'
+                  }}>
+                    <thead>
+                      <tr style={{ background: 'rgba(26, 31, 46, 0.9)' }}>
+                        <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Direction</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Entry Price</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Liquidation Price</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Entry DV01</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Price</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Entry Day</th>
+                        <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>P&L</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {marketTrades.map((trade, i) => {
+                        const currentPrice = isSettlementMode ? 
+                          settlementPrices[mkt] : 
+                          (lastPriceByMarket[mkt] || marketSettings[mkt].apy);
+                        const pl = isSettlementMode ? 
+                          calculateSettlementPL(trade) : 
+                          calculateTotalPL(trade, currentPrice);
+                        
+                        return (
+                          <tr key={i} style={{ 
+                            borderBottom: '1px solid rgba(55, 65, 81, 0.3)',
+                            transition: 'all 0.3s ease'
+                          }}>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{ 
+                                color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                                fontWeight: '700',
+                                fontSize: '0.95rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                              }}>
+                                <span style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  background: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                                  borderRadius: '50%',
+                                  boxShadow: `0 0 8px ${trade.type === 'pay' ? '#3b82f6' : '#f59e0b'}`
+                                }} />
+                                {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                              </span>
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.95rem',
+                              fontWeight: '600'
+                            }}>
+                              {trade.entryPrice.toFixed(3)}%
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              color: '#ef4444',
+                              fontSize: '0.95rem',
+                              fontWeight: '600'
+                            }}>
+                              {parseFloat(trade.liquidationPrice).toFixed(3)}%
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.95rem',
+                              fontWeight: '600'
+                            }}>
+                              ${(trade.entryDV01 || trade.baseDV01).toLocaleString()}
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              color: 'var(--text-accent)',
+                              fontSize: '0.95rem',
+                              fontWeight: '700'
+                            }}>
+                              {currentPrice.toFixed(3)}%
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.95rem',
+                              fontWeight: '600'
+                            }}>
+                              Day {trade.entryDay || 0}
+                            </td>
+                            <td style={{ 
+                              padding: '1rem', 
+                              textAlign: 'right',
+                              fontWeight: '700',
+                              fontSize: '1rem',
+                              color: pl >= 0 ? '#22c55e' : '#ef4444'
+                            }}>
+                              {pl >= 0 ? '+' : ''}${Math.abs(pl).toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {pendingTrade && (
         <div className="modal-overlay">
