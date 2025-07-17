@@ -530,21 +530,22 @@ export default function App() {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       
-      // Draw liquidation danger zone in center
-      const dangerZoneRadius = 25;
-      const dangerGradient = ctx.createRadialGradient(
+      // Draw liquidation blackhole in center
+      const blackholeRadius = 20;
+      const blackholeGradient = ctx.createRadialGradient(
         centerX, centerY, 0,
-        centerX, centerY, dangerZoneRadius
+        centerX, centerY, blackholeRadius
       );
-      dangerGradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
-      dangerGradient.addColorStop(1, 'rgba(239, 68, 68, 0.1)');
-      ctx.fillStyle = dangerGradient;
+      blackholeGradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+      blackholeGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.6)');
+      blackholeGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+      ctx.fillStyle = blackholeGradient;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, dangerZoneRadius, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, blackholeRadius, 0, Math.PI * 2);
       ctx.fill();
       
-      // Draw liquidation center dot - bigger and more visible
-      ctx.fillStyle = '#ef4444';
+      // Draw liquidation center dot - pure black
+      ctx.fillStyle = '#000000';
       ctx.beginPath();
       ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
       ctx.fill();
@@ -556,9 +557,9 @@ export default function App() {
       ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
       ctx.stroke();
       
-      // Pulsing effect for danger zone
-      const pulseRadius = dangerZoneRadius + Math.sin(animationTime * 4) * 3;
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      // Pulsing effect for blackhole - dark rings
+      const pulseRadius = blackholeRadius + Math.sin(animationTime * 4) * 5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
@@ -571,14 +572,14 @@ export default function App() {
         const screenX = centerX + sphere.x;
         const screenY = centerY + sphere.y + floatOffset;
         
-        // Base color for sphere (neutral)
-        const baseColor = '#374151';
-        const shadowColor = 'rgba(55, 65, 81, 0.4)';
-        
-        // Warning color for liquidation risk
-        let sphereColor = baseColor;
-        if (sphere.liquidationRisk <= 20 && sphere.liquidationRisk > 0) {
-          sphereColor = '#f59e0b'; // Keep yellow for at-risk positions
+        // Color based on P&L - simple red/green
+        let sphereColor, shadowColor;
+        if (sphere.pl >= 0) {
+          sphereColor = '#22c55e'; // Green for profit
+          shadowColor = 'rgba(34, 197, 94, 0.4)';
+        } else {
+          sphereColor = '#ef4444'; // Red for loss
+          shadowColor = 'rgba(239, 68, 68, 0.4)';
         }
         
         // Draw shadow with better quality
@@ -646,27 +647,7 @@ export default function App() {
         ctx.arc(screenX, screenY, sphere.size * 0.6, 0, Math.PI * 2);
         ctx.clip();
         
-        // Draw market logo (we'll simulate with colored circles for now since we can't load images in canvas easily)
-        let logoColor;
-        if (sphere.market === 'JitoSol') {
-          logoColor = '#9945ff'; // Jito purple
-        } else if (sphere.market === 'Lido stETH') {
-          logoColor = '#00a3ff'; // Lido blue
-        } else if (sphere.market === 'Rocketpool rETH') {
-          logoColor = '#ff6b35'; // Rocketpool orange
-        } else if (sphere.market.includes('Aave')) {
-          logoColor = '#b6509e'; // Aave purple
-        } else {
-          logoColor = '#10b981'; // Default green
-        }
-        
-        // Draw logo background circle
-        ctx.fillStyle = logoColor;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, sphere.size * 0.5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw market letter on logo
+        // Draw market letter directly on sphere
         ctx.fillStyle = 'white';
         ctx.font = `bold ${Math.max(12, sphere.size/2)}px -apple-system, system-ui, sans-serif`;
         ctx.textAlign = 'center';
