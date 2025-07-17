@@ -1664,7 +1664,8 @@ const calculateVammBreakdown = () => {
                       market === "JitoSol" ? "/jito.png" :
                       market === "Lido stETH" ? "/lido.png" :
                       market === "Aave ETH Lending" ? "/aave.png" :
-                      market === "Aave ETH Borrowing" ? "/aave.png" : "/default-logo.png"
+                      market === "Aave ETH Borrowing" ? "/aave.png" :
+                      market === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
                     }
                     alt={`${market} logo`}
                     style={{
