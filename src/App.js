@@ -425,30 +425,33 @@ export default function App() {
       
       let animationTime = 0;
       
-      // Create sphere positions - fix positioning and sizing
+      // Create sphere positions - DV01 for size, liquidation risk for distance from center
       const spheres = allPositions.map((position, i) => {
-        // For single trade, place it in center
+        // Size based on DV01 (bigger DV01 = bigger sphere)
+        const dv01Size = Math.max(12, Math.min(45, position.dv01 / 1000));
+        
+        // Distance from center based on liquidation risk (closer to liquidation = closer to center)
+        const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
+        const radiusFromCenter = Math.max(30, liquidationDistance * 2); // Scale liquidation risk to radius
+        
+        // For single trade, place it at center regardless of liquidation risk
         let x, y;
         if (allPositions.length === 1) {
           x = 0;
           y = 0;
         } else {
           const angle = (i / allPositions.length) * Math.PI * 2;
-          const radius = 60 + ((i % 3) * 25); // Vary radius in rings
-          x = Math.cos(angle) * radius;
-          y = Math.sin(angle) * radius;
+          x = Math.cos(angle) * radiusFromCenter;
+          y = Math.sin(angle) * radiusFromCenter;
         }
-        
-        // Size based on liquidation risk (bigger = closer to liquidation)
-        const liquidationDistance = Math.max(1, position.liquidationRisk);
-        const riskSize = Math.max(12, Math.min(40, 200 / liquidationDistance)); // Inverse relationship
         
         return {
           ...position,
           x,
           y,
-          size: riskSize, // Size based on liquidation risk
-          baseSize: riskSize
+          size: dv01Size,
+          baseSize: dv01Size,
+          radiusFromCenter
         };
       });
       
@@ -605,9 +608,6 @@ export default function App() {
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
         
-        console.log('Click at:', clickX, clickY); // Debug
-        console.log('Spheres:', spheres.map(s => ({ x: s.screenX, y: s.screenY, size: s.screenSize }))); // Debug
-        
         // Find clicked sphere - improved detection
         const clickedSphere = spheres.find(sphere => {
           const distance = Math.sqrt(
@@ -615,11 +615,8 @@ export default function App() {
           );
           // Increased tolerance, especially for single trades
           const tolerance = sphere.screenSize + 15;
-          console.log(`Distance to sphere: ${distance}, tolerance: ${tolerance}`); // Debug
           return distance <= tolerance;
         });
-        
-        console.log('Clicked sphere:', clickedSphere); // Debug
         
         if (clickedSphere) {
           setSelectedPosition(clickedSphere);
@@ -678,34 +675,53 @@ export default function App() {
           }}
         />
         
-        {/* Legend */}
-        <div style={{
-          position: 'absolute',
-          top: '1rem',
-          left: '1rem',
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: 'white',
-          padding: '0.75rem',
-          borderRadius: '0.5rem',
-          fontSize: '0.75rem',
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Position Galaxy</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <div style={{ width: '10px', height: '10px', backgroundColor: '#22c55e', borderRadius: '50%' }}></div>
-            <span>Profit</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <div style={{ width: '10px', height: '10px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
-            <span>Loss</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <div style={{ width: '10px', height: '10px', backgroundColor: '#fbbf24', borderRadius: '50%' }}></div>
-            <span>At Risk</span>
-          </div>
-          <div style={{ fontSize: '0.6rem', color: '#9ca3af', marginTop: '0.5rem' }}>
-            Size = DV01 • Click to zoom
-          </div>
+        {/* Legend - toggleable and improved */}
+        <div 
+          onClick={() => setShowLegend(!showLegend)}
+          style={{
+            position: 'absolute',
+            top: '0.75rem',
+            left: '0.75rem',
+            background: 'rgba(0, 0, 0, 0.85)',
+            color: 'white',
+            padding: showLegend ? '0.75rem' : '0.5rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.7rem',
+            backdropFilter: 'blur(8px)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            minWidth: showLegend ? '150px' : '60px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          {showLegend ? (
+            <div>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#f1f5f9' }}>Position Galaxy</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }}></div>
+                <span>Profit</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
+                <span>Loss</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#f59e0b', borderRadius: '50%' }}></div>
+                <span>At Risk</span>
+              </div>
+              <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
+                Size = DV01 Amount<br/>
+                Distance = Liquidation Risk<br/>
+                Click spheres for details
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontWeight: '600', textAlign: 'center', fontSize: '0.65rem' }}>
+              🌌<br/>
+              <span style={{ fontSize: '0.55rem', color: '#cbd5e1' }}>click</span>
+            </div>
+          )}
         </div>
         
         {/* Selected position details */}
@@ -1802,7 +1818,7 @@ const calculateVammBreakdown = () => {
               </div>
               {show3DView && (
                 <div style={{ width: '50%' }}>
-                  <FloatingPositionSpheres key="galaxy-view" />
+                  <FloatingPositionSpheres key={`galaxy-${show3DView}`} />
                 </div>
               )}
             </div>
