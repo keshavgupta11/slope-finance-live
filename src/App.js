@@ -427,21 +427,28 @@ export default function App() {
       
       // Create sphere positions - fix positioning and sizing
       const spheres = allPositions.map((position, i) => {
-        const angle = (i / Math.max(allPositions.length, 1)) * Math.PI * 2;
-        const radius = 60 + ((i % 3) * 25); // Vary radius in rings
+        // For single trade, place it in center
+        let x, y;
+        if (allPositions.length === 1) {
+          x = 0;
+          y = 0;
+        } else {
+          const angle = (i / allPositions.length) * Math.PI * 2;
+          const radius = 60 + ((i % 3) * 25); // Vary radius in rings
+          x = Math.cos(angle) * radius;
+          y = Math.sin(angle) * radius;
+        }
         
         // Size based on liquidation risk (bigger = closer to liquidation)
         const liquidationDistance = Math.max(1, position.liquidationRisk);
-        const riskSize = Math.max(8, Math.min(35, 200 / liquidationDistance)); // Inverse relationship
+        const riskSize = Math.max(12, Math.min(40, 200 / liquidationDistance)); // Inverse relationship
         
         return {
           ...position,
-          x: Math.cos(angle) * radius,
-          y: Math.sin(angle) * radius,
+          x,
+          y,
           size: riskSize, // Size based on liquidation risk
-          baseSize: riskSize,
-          angle,
-          radius
+          baseSize: riskSize
         };
       });
       
@@ -527,18 +534,19 @@ export default function App() {
       
       animate();
       
-      // Click handler
+      // Click handler - improved for single trades
       const handleClick = (e) => {
         const rect = canvas.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
         
-        // Find clicked sphere
+        // Find clicked sphere - increased tolerance for single trades
         const clickedSphere = spheres.find(sphere => {
           const distance = Math.sqrt(
             (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
           );
-          return distance <= sphere.screenSize;
+          const tolerance = allPositions.length === 1 ? sphere.screenSize + 10 : sphere.screenSize;
+          return distance <= tolerance;
         });
         
         if (clickedSphere) {
