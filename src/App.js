@@ -774,6 +774,7 @@ export default function App() {
     );
   };
 
+
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
     if (market === "JitoSol") {
