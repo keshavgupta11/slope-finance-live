@@ -1832,7 +1832,7 @@ const calculateVammBreakdown = () => {
             <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
               <div style={{ color: '#9ca3af' }}>USDC Balance</div>
               <div style={{ color: '#10b981', fontWeight: '600' }}>
-                ${(usdcBalance + 1000000).toLocaleString()}
+                ${(usdcBalance + 10000000).toLocaleString()}
               </div>
             </div>
             <button className="wallet-btn" onClick={disconnectWallet}>
