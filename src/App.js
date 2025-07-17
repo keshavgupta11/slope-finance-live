@@ -1972,7 +1972,7 @@ const calculateVammBreakdown = () => {
                         fontSize: '0.9rem',
                         fontWeight: '600'
                       }}>
-                        {marketSettings[market].apy.toFixed(3)}% APY
+                        {(lastPriceByMarket[market] || marketSettings[market].apy).toFixed(3)}%
                       </div>
                     </div>
                   </div>
@@ -2054,7 +2054,7 @@ const calculateVammBreakdown = () => {
                             color: '#9ca3af', 
                             fontSize: '0.85rem'
                           }}>
-                            Current: {marketSettings[m].apy.toFixed(3)}%
+                            Live: {(lastPriceByMarket[m] || marketSettings[m].apy).toFixed(3)}%
                           </div>
                         </div>
                         <div style={{
