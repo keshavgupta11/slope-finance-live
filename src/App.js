@@ -440,38 +440,42 @@ export default function App() {
     
     // Create sphere positions - DV01 for size, liquidation risk for distance from center
     const spheres = allPositions.map((position, i) => {
+      console.log(`Position ${i}:`, position.market, position.dv01, position.liquidationRisk); // Debug
+      
       // Size based on DV01 - more granular scaling every 5k
       const dv01 = position.dv01;
       let dv01Size;
       
       if (dv01 <= 5000) {
-        dv01Size = 15; // Base size for 5k and under
+        dv01Size = 18; // Base size for 5k and under (increased from 15)
       } else if (dv01 <= 10000) {
-        dv01Size = 18; // 10k
+        dv01Size = 22; // 10k (increased from 18)
       } else if (dv01 <= 15000) {
-        dv01Size = 21; // 15k
+        dv01Size = 26; // 15k (increased from 21)
       } else if (dv01 <= 20000) {
-        dv01Size = 24; // 20k
+        dv01Size = 30; // 20k (increased from 24)
       } else if (dv01 <= 25000) {
-        dv01Size = 27; // 25k
+        dv01Size = 34; // 25k (increased from 27)
       } else if (dv01 <= 30000) {
-        dv01Size = 30; // 30k
+        dv01Size = 38; // 30k (increased from 30)
       } else if (dv01 <= 40000) {
-        dv01Size = 34; // 40k
+        dv01Size = 42; // 40k (increased from 34)
       } else if (dv01 <= 50000) {
-        dv01Size = 38; // 50k
+        dv01Size = 46; // 50k (increased from 38)
       } else {
-        dv01Size = Math.min(45, 38 + ((dv01 - 50000) / 10000) * 2); // 50k+ scales gradually
+        dv01Size = Math.min(50, 46 + ((dv01 - 50000) / 10000) * 2); // 50k+ scales gradually (increased max)
       }
       
       // Distance from center based on liquidation risk (closer to liquidation = closer to center)
       const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
-      const radiusFromCenter = Math.max(40, liquidationDistance * 2); // Scale liquidation risk to radius
+      const radiusFromCenter = Math.max(50, liquidationDistance * 2.5); // Increased minimum radius
       
-      // Always position on circumference - no special case for single trade
+      // Always position on circumference - spread them out more
       const angle = (i / allPositions.length) * Math.PI * 2;
       const x = Math.cos(angle) * radiusFromCenter;
       const y = Math.sin(angle) * radiusFromCenter;
+      
+      console.log(`Sphere ${i} position:`, { x, y, size: dv01Size, radius: radiusFromCenter }); // Debug
       
       return {
         ...position,
@@ -1806,6 +1810,15 @@ const calculateVammBreakdown = () => {
                   setShow3DView(!show3DView);
                   setShowLegend(false);
                   setSelectedPosition(null);
+                  // Force a brief delay to let the DOM settle
+                  setTimeout(() => {
+                    if (canvasRef.current) {
+                      const canvas = canvasRef.current;
+                      const rect = canvas.getBoundingClientRect();
+                      canvas.width = rect.width;
+                      canvas.height = rect.height;
+                    }
+                  }, 100);
                 }}
                 style={{
                   background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
