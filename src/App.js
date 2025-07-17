@@ -698,9 +698,6 @@ export default function App() {
       }
       canvas.removeEventListener('click', handleClick);
       window.removeEventListener('resize', resizeCanvas);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
   }, [show3DView, allPositions, lastPriceByMarket]);
 
