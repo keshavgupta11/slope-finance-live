@@ -20,6 +20,7 @@ export default function App() {
     "Lido stETH": { apy: 2.91, k: 0.000005, symbol: "stETH" },
     "Aave ETH Lending": { apy: 1.92, k: 0.000005, symbol: "aETH" },
     "Aave ETH Borrowing": { apy: 2.6, k: 0.000005, symbol: "aETHBorrow" },
+    "Rocketpool rETH": { apy: 2.69, k: 0.000005, symbol: "rETH" },
   };
 
   const [marketSettings, setMarketSettings] = useState(initialMarketSettings);
@@ -635,6 +636,7 @@ export default function App() {
           
           const label = sphere.market === 'JitoSol' ? 'J' : 
                       sphere.market === 'Lido stETH' ? 'L' : 
+                      sphere.market === 'Rocketpool rETH' ? 'R' :
                       sphere.market.includes('Aave') ? 'A' : 'M';
           ctx.fillText(label, screenX, screenY);
           
@@ -861,28 +863,20 @@ export default function App() {
     // Use actual historical data for JitoSOL based on your Excel analysis
     if (market === "JitoSol") {
       return [
-        { date: "2023-Q1", apy: 7.04, year: 2023.0 },
-        { date: "2023-Q2", apy: 7.26, year: 2023.25 },
-        { date: "2023-Q3", apy: 7.48, year: 2023.5 },
-        { date: "2023-Q4", apy: 7.63, year: 2023.75 },
-        { date: "2024-Q1", apy: 7.85, year: 2024.0 },
-        { date: "2024-Q2", apy: 8.28, year: 2024.25 },
-        { date: "2024-Q3", apy: 8.26, year: 2024.5 },
-        { date: "2024-Q4", apy: 8.24, year: 2024.75 },
+        { date: "2024-Q1", apy: 7.04, year: 2024.0 },
+        { date: "2024-Q2", apy: 7.48, year: 2024.25 },
+        { date: "2024-Q3", apy: 7.85, year: 2024.5 },
+        { date: "2024-Q4", apy: 8.26, year: 2024.75 },
         { date: "2025-Q1", apy: 8.10, year: 2025.0 },
         { date: "2025-Q2", apy: 8.11, year: 2025.25 } // Your 2025 projection
       ];
     }
     if (market === "Lido stETH") {
       return [
-        { date: "2023-Q1", apy: 4.2, year: 2023.0 },
-        { date: "2023-Q2", apy: 4.0, year: 2023.25 },
-        { date: "2023-Q3", apy: 3.9, year: 2023.5 },
-        { date: "2023-Q4", apy: 3.6, year: 2023.75 },
-        { date: "2024-Q1", apy: 3.4, year: 2024.0 },
-        { date: "2024-Q2", apy: 3.3, year: 2024.25 },
-        { date: "2024-Q3", apy: 3.1, year: 2024.5 },
-        { date: "2024-Q4", apy: 3.0, year: 2024.75 },
+        { date: "2024-Q1", apy: 4.2, year: 2024.0 },
+        { date: "2024-Q2", apy: 3.9, year: 2024.25 },
+        { date: "2024-Q3", apy: 3.4, year: 2024.5 },
+        { date: "2024-Q4", apy: 3.1, year: 2024.75 },
         { date: "2025-Q1", apy: 2.95, year: 2025.0 },
         { date: "2025-Q2", apy: 2.9, year: 2025.25 }
       ];
@@ -890,12 +884,8 @@ export default function App() {
     
     if (market === "Aave ETH Lending") {
       return [
-        { date: "2023-Q1", apy: 1.65, year: 2023.0 },
-        { date: "2023-Q2", apy: 1.68, year: 2023.25 },
-        { date: "2023-Q3", apy: 1.72, year: 2023.5 },
-        { date: "2023-Q4", apy: 1.75, year: 2023.75 },
-        { date: "2024-Q1", apy: 1.76, year: 2024.0 },
-        { date: "2024-Q2", apy: 1.74, year: 2024.25 },
+        { date: "2024-Q1", apy: 1.65, year: 2024.0 },
+        { date: "2024-Q2", apy: 1.72, year: 2024.25 },
         { date: "2024-Q3", apy: 1.76, year: 2024.5 },
         { date: "2024-Q4", apy: 1.84, year: 2024.75 },
         { date: "2025-Q1", apy: 1.92, year: 2025.0 },
@@ -905,19 +895,25 @@ export default function App() {
 
     if (market === "Aave ETH Borrowing") {
       return [
-        { date: "2023-Q1", apy: 4.2, year: 2023.0 },
-        { date: "2023-Q2", apy: 4.0, year: 2023.25 },
-        { date: "2023-Q3", apy: 3.8, year: 2023.5 },
-        { date: "2023-Q4", apy: 3.6, year: 2023.75 },
-        { date: "2024-Q1", apy: 3.5, year: 2024.0 },
-        { date: "2024-Q2", apy: 3.1, year: 2024.25 },
-        { date: "2024-Q3", apy: 2.8, year: 2024.5 },
+        { date: "2024-Q1", apy: 4.2, year: 2024.0 },
+        { date: "2024-Q2", apy: 3.8, year: 2024.25 },
+        { date: "2024-Q3", apy: 3.1, year: 2024.5 },
         { date: "2024-Q4", apy: 2.7, year: 2024.75 },
         { date: "2025-Q1", apy: 2.6, year: 2025.0 },
        { date: "2025-Q2", apy: 2.6, year: 2025.25 }
       ];
     }
 
+    if (market === "Rocketpool rETH") {
+      return [
+        { date: "2024-Q1", apy: 3.8, year: 2024.0 },
+        { date: "2024-Q2", apy: 3.5, year: 2024.25 },
+        { date: "2024-Q3", apy: 3.2, year: 2024.5 },
+        { date: "2024-Q4", apy: 2.9, year: 2024.75 },
+        { date: "2025-Q1", apy: 2.7, year: 2025.0 },
+        { date: "2025-Q2", apy: 2.69, year: 2025.25 }
+      ];
+    }
     //this section not used anymore- was for adding charts
     // Keep original logic for other markets
     const data = [];
@@ -1644,7 +1640,8 @@ const calculateVammBreakdown = () => {
                     {market === "JitoSol" ? "4.03% / 8.39%" :
                      market === "Lido stETH" ? "1.45% / 2.96%" :
                      market === "Aave ETH Lending" ? "0.95% / 1.93%" :
-                     market === "Aave ETH Borrowing" ? "1.29% / 2.62%" : "N/A"}
+                     market === "Aave ETH Borrowing" ? "1.29% / 2.62%" : 
+                     market === "Rocketpool rETH" ? "1.35% / 2.69%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
@@ -1653,7 +1650,8 @@ const calculateVammBreakdown = () => {
                     {market === "JitoSol" ? "7.36%" :
                     market === "Lido stETH" ? "2.75%" :
                     market === "Aave ETH Lending" ? "1.85%" :
-                    market === "Aave ETH Borrowing" ? "2.53%" : "N/A"}
+                    market === "Aave ETH Borrowing" ? "2.53%" :
+                    market === "Rocketpool rETH" ? "2.51%" : "N/A"}
                   </span>
                 </div>
                 <div className="price-row">
@@ -1844,8 +1842,8 @@ const calculateVammBreakdown = () => {
                       tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
                       type="number"
                       scale="linear"
-                      domain={[2023, 2025]}
-                      ticks={[2023, 2024, 2025]}
+                      domain={[2024, 2025]}
+                      ticks={[2024, 2025]}
                     />
                     <YAxis 
                       axisLine={false}
@@ -1855,12 +1853,14 @@ const calculateVammBreakdown = () => {
                       market === "JitoSol" ? 6 :
                       market === "Lido stETH" ? 2 :
                       market === "Aave ETH Lending" ? 1 :
-                      market === "Aave ETH Borrowing" ? 2 : 6,
+                      market === "Aave ETH Borrowing" ? 2 : 
+                      market === "Rocketpool rETH" ? 2 : 6,
 
                       market === "JitoSol" ? 9 :
                       market === "Lido stETH" ? 5 :
                       market === "Aave ETH Lending" ? 3 :
-                      market === "Aave ETH Borrowing" ? 5 : 9
+                      market === "Aave ETH Borrowing" ? 5 :
+                      market === "Rocketpool rETH" ? 5 : 9
                       ]}
                       tickFormatter={(value) => `${value.toFixed(1)}%`}
                       scale="linear"
