@@ -1235,13 +1235,13 @@ export default function App() {
 
   const getCorrelationMultiplier = (market, tradeType, tradeDv01) => {
   // Only apply to correlated pair: Lido stETH and Aave ETH Lending
-  if (market !== "Lido stETH" && market !== "Aave ETH Lending") {
+  if (market !== "Lido stETH" && market !== "Rocketpool rETH") {
     return 1.0; // No adjustment for other markets
   }
   
   // Calculate combined exposure for the correlated pair
   const lidoTrades = tradesByMarket["Lido stETH"] || [];
-  const aaveLendingTrades = tradesByMarket["Aave ETH Lending"] || [];
+  const rocketpoolTrades = tradesByMarket["Rocketpool rETH"] || [];
   
   let combinedOI = 0;
   
@@ -1251,7 +1251,7 @@ export default function App() {
   });
   
   // Sum Aave Lending positions  
-  aaveLendingTrades.forEach(trade => {
+  rocketpoolTrades.forEach(trade => {
     combinedOI += trade.type === 'pay' ? trade.baseDV01 : -trade.baseDV01;
   });
   
