@@ -432,18 +432,12 @@ export default function App() {
         
         // Distance from center based on liquidation risk (closer to liquidation = closer to center)
         const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
-        const radiusFromCenter = Math.max(30, liquidationDistance * 2); // Scale liquidation risk to radius
+        const radiusFromCenter = Math.max(40, liquidationDistance * 2); // Scale liquidation risk to radius
         
-        // For single trade, place it at center regardless of liquidation risk
-        let x, y;
-        if (allPositions.length === 1) {
-          x = 0;
-          y = 0;
-        } else {
-          const angle = (i / allPositions.length) * Math.PI * 2;
-          x = Math.cos(angle) * radiusFromCenter;
-          y = Math.sin(angle) * radiusFromCenter;
-        }
+        // Always position on circumference - no special case for single trade
+        const angle = (i / allPositions.length) * Math.PI * 2;
+        const x = Math.cos(angle) * radiusFromCenter;
+        const y = Math.sin(angle) * radiusFromCenter;
         
         return {
           ...position,
@@ -1738,7 +1732,11 @@ const calculateVammBreakdown = () => {
             <div className="chart-header">
               <span>Running 365d APY</span>
               <button
-                onClick={() => setShow3DView(!show3DView)}
+                onClick={() => {
+                  setShow3DView(!show3DView);
+                  setShowLegend(false);
+                  setSelectedPosition(null);
+                }}
                 style={{
                   background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
                   color: 'white',
