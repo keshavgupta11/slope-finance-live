@@ -2122,64 +2122,215 @@ const calculateVammBreakdown = () => {
   </div>
 </div>
 
-            <div className="inputs">
-              <div className="input-group">
-                <label>
-                  <span> DV01 ($)</span>
-                  <span> Fixed for all calculations</span>
-                </label>
+            <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              {/* DV01 Input */}
+              <div style={{
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
+                border: '1px solid #374151',
+                borderRadius: '1rem',
+                backdropFilter: 'blur(12px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = '#10b981';
+                e.target.style.boxShadow = '0 4px 20px rgba(16, 185, 129, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = '#374151';
+                e.target.style.boxShadow = 'none';
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div>
+                    <div style={{ 
+                      color: '#e2e8f0', 
+                      fontWeight: '700', 
+                      fontSize: '1.1rem',
+                      marginBottom: '0.25rem'
+                    }}>
+                      DV01 Amount
+                    </div>
+                    <div style={{ 
+                      color: '#94a3b8', 
+                      fontSize: '0.875rem'
+                    }}>
+                      Fixed for all calculations
+                    </div>
+                  </div>
+                  <div style={{
+                    background: 'rgba(16, 185, 129, 0.2)',
+                    color: '#10b981',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
+                    $1k = $1,000/bp
+                  </div>
+                </div>
                 <div style={{ position: 'relative' }}>
                   <span style={{ 
-                   position: 'absolute', 
-                  left: '12px', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)', 
-                  color: '#ffffff', 
-                  fontSize: '1rem',
-                   pointerEvents: 'none'
-                }}>$</span>
-                <input
-                 type="text"
-                value={baseDv01 ? baseDv01.toLocaleString() : ''}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  setBaseDv01(value === '' ? 0 : Number(value));
-                }}
-                placeholder="10,000"
-                style={{ paddingLeft: '24px' }}
-              />
-           </div>
-        </div>
-
-      <div className="input-group">
-        <label>Margin (USDC)</label>
-        <div style={{ position: 'relative' }}>
-          <span style={{ 
-          position: 'absolute', 
-          left: '12px', 
-          top: '50%', 
-          transform: 'translateY(-50%)', 
-          color: '#ffffff', 
-          fontSize: '1rem',
-          pointerEvents: 'none'
-        }}>$</span>
-        <input
-          type="text"
-          value={margin ? margin.toLocaleString() : ''}
-          onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, '');
-            setMargin(value === '' ? 0 : Number(value));
-      }}
-      placeholder="500,000"
-      style={{ paddingLeft: '24px' }}
-      />
-    </div>
-  </div>
-
-              <div className="min-margin">
-                <div>Min margin required:</div>
-                <div className="min-margin-value">${(currentDv01 * 50).toLocaleString()}</div>
+                    position: 'absolute', 
+                    left: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#10b981', 
+                    fontSize: '1.2rem',
+                    fontWeight: '700',
+                    pointerEvents: 'none'
+                  }}>$</span>
+                  <input
+                    type="text"
+                    value={baseDv01 ? baseDv01.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setBaseDv01(value === '' ? 0 : Number(value));
+                    }}
+                    placeholder="10,000"
+                    style={{ 
+                      width: '100%',
+                      padding: '1rem 1rem 1rem 2.5rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid #4b5563',
+                      background: 'rgba(17, 24, 39, 0.8)',
+                      color: '#f1f5f9',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#10b981';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#4b5563';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
               </div>
+
+              {/* Margin Input */}
+              <div style={{
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
+                border: '1px solid #374151',
+                borderRadius: '1rem',
+                backdropFilter: 'blur(12px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = '#374151';
+                e.target.style.boxShadow = 'none';
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div>
+                    <div style={{ 
+                      color: '#e2e8f0', 
+                      fontWeight: '700', 
+                      fontSize: '1.1rem',
+                      marginBottom: '0.25rem'
+                    }}>
+                      Margin (USDC)
+                    </div>
+                    <div style={{ 
+                      color: '#94a3b8', 
+                      fontSize: '0.875rem'
+                    }}>
+                      Collateral to secure position
+                    </div>
+                  </div>
+                  <div style={{
+                    background: margin < currentDv01 * 50 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)',
+                    color: margin < currentDv01 * 50 ? '#ef4444' : '#22c55e',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
+                    {margin < currentDv01 * 50 ? 'Too Low' : 'Valid'}
+                  </div>
+                </div>
+                <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                  <span style={{ 
+                    position: 'absolute', 
+                    left: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#3b82f6', 
+                    fontSize: '1.2rem',
+                    fontWeight: '700',
+                    pointerEvents: 'none'
+                  }}>$</span>
+                  <input
+                    type="text"
+                    value={margin ? margin.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setMargin(value === '' ? 0 : Number(value));
+                    }}
+                    placeholder="500,000"
+                    style={{ 
+                      width: '100%',
+                      padding: '1rem 1rem 1rem 2.5rem',
+                      borderRadius: '0.75rem',
+                      border: `1px solid ${margin < currentDv01 * 50 ? '#ef4444' : '#4b5563'}`,
+                      background: 'rgba(17, 24, 39, 0.8)',
+                      color: '#f1f5f9',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = margin < currentDv01 * 50 ? '#ef4444' : '#4b5563';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                
+                {/* Min Margin Info */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '0.5rem',
+                  border: '1px solid rgba(59, 130, 246, 0.2)'
+                }}>
+                  <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
+                    Minimum required:
+                  </span>
+                  <span style={{ 
+                    color: '#3b82f6', 
+                    fontWeight: '700',
+                    fontSize: '1rem'
+                  }}>
+                    ${(currentDv01 * 50).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
 
               <div className="trade-buttons">
                 <button
