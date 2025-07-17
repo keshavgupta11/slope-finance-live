@@ -384,505 +384,505 @@ export default function App() {
 
   //3d sphere function
   const FloatingPositionSpheres = () => {
-  const canvasRef = useRef(null);
-  const animationRef = useRef(null);
-  
-  // Get all positions from all markets
-  const allPositions = [];
-  Object.keys(tradesByMarket).forEach(market => {
-    const trades = tradesByMarket[market] || [];
-    trades.forEach((trade, index) => {
-      const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
-      const pl = calculateTotalPL(trade, currentPrice);
-      const liquidationRisk = calculateLiquidationRisk(trade);
-      
-      allPositions.push({
-        id: `${market}-${index}`,
-        market,
-        trade,
-        pl,
-        liquidationRisk,
-        dv01: trade.baseDV01,
-        type: trade.type,
-        entryPrice: trade.entryPrice,
-        currentPrice,
-        collateral: trade.collateral
+    const canvasRef = useRef(null);
+    const animationRef = useRef(null);
+    
+    // Get all positions from all markets
+    const allPositions = [];
+    Object.keys(tradesByMarket).forEach(market => {
+      const trades = tradesByMarket[market] || [];
+      trades.forEach((trade, index) => {
+        const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+        const pl = calculateTotalPL(trade, currentPrice);
+        const liquidationRisk = calculateLiquidationRisk(trade);
+        
+        allPositions.push({
+          id: `${market}-${index}`,
+          market,
+          trade,
+          pl,
+          liquidationRisk,
+          dv01: trade.baseDV01,
+          type: trade.type,
+          entryPrice: trade.entryPrice,
+          currentPrice,
+          collateral: trade.collateral
+        });
       });
     });
-  });
 
-  useEffect(() => {
-    if (!canvasRef.current || !show3DView) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size - simple approach with forced refresh
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    };
-    
-    // Multiple resize attempts to ensure proper sizing
-    resizeCanvas();
-    
-    // Force immediate re-render
-    requestAnimationFrame(resizeCanvas);
-    
-    // Additional backup resizes
-    setTimeout(resizeCanvas, 50);
-    setTimeout(resizeCanvas, 150);
-    setTimeout(resizeCanvas, 300);
-    
-    let animationTime = 0;
-    
-    // Create sphere positions - DV01 for size, liquidation risk for distance from center
-    const spheres = allPositions.map((position, i) => {
-      console.log(`Position ${i}:`, position.market, position.dv01, position.liquidationRisk); // Debug
+    useEffect(() => {
+      if (!canvasRef.current || !show3DView) return;
       
-      // Size based on DV01 - more granular scaling every 5k
-      const dv01 = position.dv01;
-      let dv01Size;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
       
-      if (dv01 <= 5000) {
-        dv01Size = 18; // Base size for 5k and under (increased from 15)
-      } else if (dv01 <= 10000) {
-        dv01Size = 22; // 10k (increased from 18)
-      } else if (dv01 <= 15000) {
-        dv01Size = 26; // 15k (increased from 21)
-      } else if (dv01 <= 20000) {
-        dv01Size = 30; // 20k (increased from 24)
-      } else if (dv01 <= 25000) {
-        dv01Size = 34; // 25k (increased from 27)
-      } else if (dv01 <= 30000) {
-        dv01Size = 38; // 30k (increased from 30)
-      } else if (dv01 <= 40000) {
-        dv01Size = 42; // 40k (increased from 34)
-      } else if (dv01 <= 50000) {
-        dv01Size = 46; // 50k (increased from 38)
-      } else {
-        dv01Size = Math.min(50, 46 + ((dv01 - 50000) / 10000) * 2); // 50k+ scales gradually (increased max)
-      }
-      
-      // Distance from center based on liquidation risk (closer to liquidation = closer to center)
-      const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
-      
-      // Calculate max safe radius based on canvas size (assume minimum 300px canvas)
-      const maxSafeRadius = 120; // Keep spheres well within bounds
-      const radiusFromCenter = Math.min(maxSafeRadius, Math.max(60, liquidationDistance * 1.8)); // Reduced scaling and max radius
-      
-      // Always position on circumference - spread them out more
-      const angle = (i / allPositions.length) * Math.PI * 2;
-      const x = Math.cos(angle) * radiusFromCenter;
-      const y = Math.sin(angle) * radiusFromCenter;
-      
-      console.log(`Sphere ${i} position:`, { x, y, size: dv01Size, radius: radiusFromCenter }); // Debug
-      
-      return {
-        ...position,
-        x,
-        y,
-        size: dv01Size,
-        baseSize: dv01Size,
-        radiusFromCenter
+      // Set canvas size - simple approach with forced refresh
+      const resizeCanvas = () => {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
       };
-    });
-    
-    const animate = () => {
-      animationTime += 0.01;
       
-      // Clear canvas with gradient background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, '#0f172a');
-      gradient.addColorStop(0.5, '#1e293b');
-      gradient.addColorStop(1, '#0f172a');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Multiple resize attempts to ensure proper sizing
+      resizeCanvas();
       
-      // Draw subtle grid pattern
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
-      ctx.lineWidth = 1;
-      const gridSize = 30;
-      for (let x = 0; x < canvas.width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-      }
+      // Force immediate re-render
+      requestAnimationFrame(resizeCanvas);
       
-      // Draw floating particles for ambiance
-      ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
-      for (let i = 0; i < 12; i++) {
-        const particleX = (Math.sin(animationTime * 0.3 + i) * 100 + canvas.width / 2) % canvas.width;
-        const particleY = (Math.cos(animationTime * 0.2 + i) * 80 + canvas.height / 2) % canvas.height;
-        ctx.beginPath();
-        ctx.arc(particleX, particleY, 1, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // Additional backup resizes
+      setTimeout(resizeCanvas, 50);
+      setTimeout(resizeCanvas, 150);
+      setTimeout(resizeCanvas, 300);
       
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
+      let animationTime = 0;
       
-      // Draw liquidation blackhole in center
-      const blackholeRadius = 20;
-      const blackholeGradient = ctx.createRadialGradient(
-        centerX, centerY, 0,
-        centerX, centerY, blackholeRadius
-      );
-      blackholeGradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
-      blackholeGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.6)');
-      blackholeGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
-      ctx.fillStyle = blackholeGradient;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, blackholeRadius, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Draw liquidation center dot - pure black
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // White border around dot for visibility
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      // Pulsing effect for blackhole - dark rings
-      const pulseRadius = blackholeRadius + Math.sin(animationTime * 4) * 5;
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      // Draw spheres with improved rendering
-      spheres.forEach((sphere, i) => {
-        // Position with gentle floating
-        const floatOffset = Math.sin(animationTime * 2 + i) * 3;
-        const screenX = centerX + sphere.x;
-        const screenY = centerY + sphere.y + floatOffset;
+      // Create sphere positions - DV01 for size, liquidation risk for distance from center
+      const spheres = allPositions.map((position, i) => {
+        console.log(`Position ${i}:`, position.market, position.dv01, position.liquidationRisk); // Debug
         
-        // Color based on P&L - simple red/green
-        let sphereColor, shadowColor;
-        if (sphere.pl >= 0) {
-          sphereColor = '#22c55e'; // Green for profit
-          shadowColor = 'rgba(34, 197, 94, 0.4)';
+        // Size based on DV01 - more granular scaling every 5k
+        const dv01 = position.dv01;
+        let dv01Size;
+        
+        if (dv01 <= 5000) {
+          dv01Size = 18; // Base size for 5k and under (increased from 15)
+        } else if (dv01 <= 10000) {
+          dv01Size = 22; // 10k (increased from 18)
+        } else if (dv01 <= 15000) {
+          dv01Size = 26; // 15k (increased from 21)
+        } else if (dv01 <= 20000) {
+          dv01Size = 30; // 20k (increased from 24)
+        } else if (dv01 <= 25000) {
+          dv01Size = 34; // 25k (increased from 27)
+        } else if (dv01 <= 30000) {
+          dv01Size = 38; // 30k (increased from 30)
+        } else if (dv01 <= 40000) {
+          dv01Size = 42; // 40k (increased from 34)
+        } else if (dv01 <= 50000) {
+          dv01Size = 46; // 50k (increased from 38)
         } else {
-          sphereColor = '#ef4444'; // Red for loss
-          shadowColor = 'rgba(239, 68, 68, 0.4)';
+          dv01Size = Math.min(50, 46 + ((dv01 - 50000) / 10000) * 2); // 50k+ scales gradually (increased max)
         }
         
-        // Draw shadow with better quality
-        ctx.fillStyle = shadowColor;
-        ctx.beginPath();
-        ctx.arc(screenX + 3, screenY + 3, sphere.size, 0, Math.PI * 2);
-        ctx.fill();
+        // Distance from center based on liquidation risk (closer to liquidation = closer to center)
+        const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
         
-        // Draw outer glow with more gradient stops for smoother effect
-        const glowGradient = ctx.createRadialGradient(
-          screenX, screenY, sphere.size * 0.3,
-          screenX, screenY, sphere.size + 12
-        );
-        glowGradient.addColorStop(0, sphereColor + 'cc');
-        glowGradient.addColorStop(0.4, sphereColor + '80');
-        glowGradient.addColorStop(0.7, sphereColor + '40');
-        glowGradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = glowGradient;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, sphere.size + 12, 0, Math.PI * 2);
-        ctx.fill();
+        // Calculate max safe radius based on canvas size (assume minimum 300px canvas)
+        const maxSafeRadius = 120; // Keep spheres well within bounds
+        const radiusFromCenter = Math.min(maxSafeRadius, Math.max(60, liquidationDistance * 1.8)); // Reduced scaling and max radius
         
-        // Draw main sphere with multiple gradient layers for depth
-        const sphereGradient = ctx.createRadialGradient(
-          screenX - sphere.size/2.5, screenY - sphere.size/2.5, 0,
-          screenX, screenY, sphere.size
-        );
-        sphereGradient.addColorStop(0, sphereColor + 'ff');
-        sphereGradient.addColorStop(0.3, sphereColor + 'f0');
-        sphereGradient.addColorStop(0.7, sphereColor + 'cc');
-        sphereGradient.addColorStop(1, sphereColor + '99');
-        ctx.fillStyle = sphereGradient;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
-        ctx.fill();
+        // Always position on circumference - spread them out more
+        const angle = (i / allPositions.length) * Math.PI * 2;
+        const x = Math.cos(angle) * radiusFromCenter;
+        const y = Math.sin(angle) * radiusFromCenter;
         
-        // Add inner rim for more depth
-        const rimGradient = ctx.createRadialGradient(
-          screenX, screenY, sphere.size * 0.85,
-          screenX, screenY, sphere.size
-        );
-        rimGradient.addColorStop(0, 'transparent');
-        rimGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
-        ctx.fillStyle = rimGradient;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
-        ctx.fill();
+        console.log(`Sphere ${i} position:`, { x, y, size: dv01Size, radius: radiusFromCenter }); // Debug
         
-        // Draw multiple highlights for glass effect
-        // Main highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.beginPath();
-        ctx.arc(screenX - sphere.size/2.8, screenY - sphere.size/2.8, sphere.size/4, 0, Math.PI * 2);
-        ctx.fill();
+        return {
+          ...position,
+          x,
+          y,
+          size: dv01Size,
+          baseSize: dv01Size,
+          radiusFromCenter
+        };
+      });
+      
+      const animate = () => {
+        animationTime += 0.01;
         
-        // Secondary highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.beginPath();
-        ctx.arc(screenX - sphere.size/4, screenY - sphere.size/4, sphere.size/8, 0, Math.PI * 2);
-        ctx.fill();
+        // Clear canvas with gradient background
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#0f172a');
+        gradient.addColorStop(0.5, '#1e293b');
+        gradient.addColorStop(1, '#0f172a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Create a circular clip for the logo
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, sphere.size * 0.6, 0, Math.PI * 2);
-        ctx.clip();
-        
-        // Draw market letter directly on sphere
-        ctx.fillStyle = 'white';
-        ctx.font = `bold ${Math.max(12, sphere.size/2)}px -apple-system, system-ui, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
-        ctx.shadowBlur = 2;
-        
-        const label = sphere.market === 'JitoSol' ? 'J' : 
-                     sphere.market === 'Lido stETH' ? 'L' : 
-                     sphere.market === 'Rocketpool rETH' ? 'R' :
-                     sphere.market.includes('Aave') ? 'A' : 'M';
-        ctx.fillText(label, screenX, screenY);
-        
-        ctx.restore(); // Restore clip
-        
-        // Reset shadow for next elements
-        ctx.shadowColor = 'transparent';
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.shadowBlur = 0;
-        
-        // Position type indicator - more refined
-        const indicatorColor = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
-        ctx.fillStyle = indicatorColor;
-        ctx.beginPath();
-        ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Indicator border
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        // Draw subtle grid pattern
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
         ctx.lineWidth = 1;
+        const gridSize = 30;
+        for (let x = 0; x < canvas.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        
+        // Draw floating particles for ambiance
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
+        for (let i = 0; i < 12; i++) {
+          const particleX = (Math.sin(animationTime * 0.3 + i) * 100 + canvas.width / 2) % canvas.width;
+          const particleY = (Math.cos(animationTime * 0.2 + i) * 80 + canvas.height / 2) % canvas.height;
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Draw liquidation blackhole in center
+        const blackholeRadius = 20;
+        const blackholeGradient = ctx.createRadialGradient(
+          centerX, centerY, 0,
+          centerX, centerY, blackholeRadius
+        );
+        blackholeGradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+        blackholeGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.6)');
+        blackholeGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+        ctx.fillStyle = blackholeGradient;
         ctx.beginPath();
-        ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, blackholeRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw liquidation center dot - pure black
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // White border around dot for visibility
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
         ctx.stroke();
         
-        // Store screen position for click detection
-        sphere.screenX = screenX;
-        sphere.screenY = screenY;
-        sphere.screenSize = sphere.size;
-      });
+        // Pulsing effect for blackhole - dark rings
+        const pulseRadius = blackholeRadius + Math.sin(animationTime * 4) * 5;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw spheres with improved rendering
+        spheres.forEach((sphere, i) => {
+          // Position with gentle floating
+          const floatOffset = Math.sin(animationTime * 2 + i) * 3;
+          const screenX = centerX + sphere.x;
+          const screenY = centerY + sphere.y + floatOffset;
+          
+          // Color based on P&L - simple red/green
+          let sphereColor, shadowColor;
+          if (sphere.pl >= 0) {
+            sphereColor = '#22c55e'; // Green for profit
+            shadowColor = 'rgba(34, 197, 94, 0.4)';
+          } else {
+            sphereColor = '#ef4444'; // Red for loss
+            shadowColor = 'rgba(239, 68, 68, 0.4)';
+          }
+          
+          // Draw shadow with better quality
+          ctx.fillStyle = shadowColor;
+          ctx.beginPath();
+          ctx.arc(screenX + 3, screenY + 3, sphere.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw outer glow with more gradient stops for smoother effect
+          const glowGradient = ctx.createRadialGradient(
+            screenX, screenY, sphere.size * 0.3,
+            screenX, screenY, sphere.size + 12
+          );
+          glowGradient.addColorStop(0, sphereColor + 'cc');
+          glowGradient.addColorStop(0.4, sphereColor + '80');
+          glowGradient.addColorStop(0.7, sphereColor + '40');
+          glowGradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = glowGradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size + 12, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw main sphere with multiple gradient layers for depth
+          const sphereGradient = ctx.createRadialGradient(
+            screenX - sphere.size/2.5, screenY - sphere.size/2.5, 0,
+            screenX, screenY, sphere.size
+          );
+          sphereGradient.addColorStop(0, sphereColor + 'ff');
+          sphereGradient.addColorStop(0.3, sphereColor + 'f0');
+          sphereGradient.addColorStop(0.7, sphereColor + 'cc');
+          sphereGradient.addColorStop(1, sphereColor + '99');
+          ctx.fillStyle = sphereGradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Add inner rim for more depth
+          const rimGradient = ctx.createRadialGradient(
+            screenX, screenY, sphere.size * 0.85,
+            screenX, screenY, sphere.size
+          );
+          rimGradient.addColorStop(0, 'transparent');
+          rimGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+          ctx.fillStyle = rimGradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw multiple highlights for glass effect
+          // Main highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.beginPath();
+          ctx.arc(screenX - sphere.size/2.8, screenY - sphere.size/2.8, sphere.size/4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Secondary highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.beginPath();
+          ctx.arc(screenX - sphere.size/4, screenY - sphere.size/4, sphere.size/8, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Create a circular clip for the logo
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size * 0.6, 0, Math.PI * 2);
+          ctx.clip();
+          
+          // Draw market letter directly on sphere
+          ctx.fillStyle = 'white';
+          ctx.font = `bold ${Math.max(12, sphere.size/2)}px -apple-system, system-ui, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          ctx.shadowBlur = 2;
+          
+          const label = sphere.market === 'JitoSol' ? 'J' : 
+                      sphere.market === 'Lido stETH' ? 'L' : 
+                      sphere.market === 'Rocketpool rETH' ? 'R' :
+                      sphere.market.includes('Aave') ? 'A' : 'M';
+          ctx.fillText(label, screenX, screenY);
+          
+          ctx.restore(); // Restore clip
+          
+          // Reset shadow for next elements
+          ctx.shadowColor = 'transparent';
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.shadowBlur = 0;
+          
+          // Position type indicator - more refined
+          const indicatorColor = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
+          ctx.fillStyle = indicatorColor;
+          ctx.beginPath();
+          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Indicator border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Store screen position for click detection
+          sphere.screenX = screenX;
+          sphere.screenY = screenY;
+          sphere.screenSize = sphere.size;
+        });
+        
+        animationRef.current = requestAnimationFrame(animate);
+      };
       
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
-    
-    // Click handler - improved for single trades
-    const handleClick = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+      animate();
       
-      // Find clicked sphere - improved detection
-      const clickedSphere = spheres.find(sphere => {
-        const distance = Math.sqrt(
-          (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
-        );
-        // Increased tolerance, especially for single trades
-        const tolerance = sphere.screenSize + 15;
-        return distance <= tolerance;
-      });
+      // Click handler - improved for single trades
+      const handleClick = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Find clicked sphere - improved detection
+        const clickedSphere = spheres.find(sphere => {
+          const distance = Math.sqrt(
+            (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
+          );
+          // Increased tolerance, especially for single trades
+          const tolerance = sphere.screenSize + 15;
+          return distance <= tolerance;
+        });
+        
+        if (clickedSphere) {
+          setSelectedPosition(clickedSphere);
+        } else {
+          setSelectedPosition(null);
+        }
+      };
       
-      if (clickedSphere) {
-        setSelectedPosition(clickedSphere);
-      } else {
-        setSelectedPosition(null);
-      }
-    };
-    
-    canvas.addEventListener('click', handleClick);
-    window.addEventListener('resize', resizeCanvas);
-    
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      canvas.removeEventListener('click', handleClick);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, [show3DView, allPositions, lastPriceByMarket]);
+      canvas.addEventListener('click', handleClick);
+      window.addEventListener('resize', resizeCanvas);
+      
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+        canvas.removeEventListener('click', handleClick);
+        window.removeEventListener('resize', resizeCanvas);
+      };
+    }, [show3DView, allPositions, lastPriceByMarket]);
 
-  // No positions case
-  if (allPositions.length === 0) {
-    return (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: '1px solid #374151',
-        borderRadius: '0.75rem',
-        backgroundColor: '#111827',
-        color: '#9ca3af'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌌</div>
-          <div style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>No positions yet</div>
-          <div style={{ fontSize: '0.875rem' }}>Open some trades to see your portfolio galaxy</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <canvas
-        ref={canvasRef}
-        style={{
+    // No positions case
+    if (allPositions.length === 0) {
+      return (
+        <div style={{
           width: '100%',
           height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid #374151',
           borderRadius: '0.75rem',
-          border: '2px solid #334155',
-          backgroundColor: '#0f172a',
-          cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-        }}
-      />
-      
-      {/* Legend - toggleable and improved */}
-      <div 
-        onClick={() => setShowLegend(!showLegend)}
-        style={{
-          position: 'absolute',
-          top: '0.75rem',
-          left: '0.75rem',
-          background: 'rgba(0, 0, 0, 0.85)',
-          color: 'white',
-          padding: showLegend ? '0.75rem' : '0.5rem',
-          borderRadius: '0.5rem',
-          fontSize: '0.7rem',
-          backdropFilter: 'blur(8px)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          minWidth: showLegend ? '150px' : '60px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-        }}
-      >
-        {showLegend ? (
-          <div>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#f1f5f9' }}>Position Galaxy</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-              <div style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }}></div>
-              <span>Profit</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-              <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
-              <span>Loss</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-              <div style={{ width: '8px', height: '8px', backgroundColor: '#f59e0b', borderRadius: '50%' }}></div>
-              <span>At Risk</span>
-            </div>
-            <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
-              Size = DV01 Amount<br/>
-              Distance = Liquidation Risk<br/>
-              Click spheres for details
-            </div>
+          backgroundColor: '#111827',
+          color: '#9ca3af'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌌</div>
+            <div style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>No positions yet</div>
+            <div style={{ fontSize: '0.875rem' }}>Open some trades to see your portfolio galaxy</div>
           </div>
-        ) : (
-          <div style={{ fontWeight: '600', textAlign: 'center', fontSize: '0.65rem' }}>
-            🌌<br/>
-            <span style={{ fontSize: '0.55rem', color: '#cbd5e1' }}>click</span>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '0.75rem',
+            border: '2px solid #334155',
+            backgroundColor: '#0f172a',
+            cursor: 'pointer',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        />
+        
+        {/* Legend - toggleable and improved */}
+        <div 
+          onClick={() => setShowLegend(!showLegend)}
+          style={{
+            position: 'absolute',
+            top: '0.75rem',
+            left: '0.75rem',
+            background: 'rgba(0, 0, 0, 0.85)',
+            color: 'white',
+            padding: showLegend ? '0.75rem' : '0.5rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.7rem',
+            backdropFilter: 'blur(8px)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            minWidth: showLegend ? '150px' : '60px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          {showLegend ? (
+            <div>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#f1f5f9' }}>Position Galaxy</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }}></div>
+                <span>Profit</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
+                <span>Loss</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#f59e0b', borderRadius: '50%' }}></div>
+                <span>At Risk</span>
+              </div>
+              <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
+                Size = DV01 Amount<br/>
+                Distance = Liquidation Risk<br/>
+                Click spheres for details
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontWeight: '600', textAlign: 'center', fontSize: '0.65rem' }}>
+              🌌<br/>
+              <span style={{ fontSize: '0.55rem', color: '#cbd5e1' }}>click</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Selected position details */}
+        {selectedPosition && (
+          <div style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            minWidth: '250px',
+            backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#fbbf24' }}>
+              {selectedPosition.market} Position
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Direction:</strong> {selectedPosition.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>DV01:</strong> ${selectedPosition.dv01.toLocaleString()}
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Entry Price:</strong> {selectedPosition.entryPrice.toFixed(3)}%
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Current Price:</strong> {selectedPosition.currentPrice.toFixed(3)}%
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Margin:</strong> ${selectedPosition.collateral.toLocaleString()}
+            </div>
+            <div style={{ 
+              marginBottom: '0.5rem',
+              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444'
+            }}>
+              <strong>P&L:</strong> {selectedPosition.pl >= 0 ? '+' : ''}${selectedPosition.pl.toLocaleString()}
+            </div>
+            <div style={{ 
+              marginBottom: '0.75rem',
+              color: selectedPosition.liquidationRisk <= 20 ? '#fbbf24' : '#22c55e'
+            }}>
+              <strong>Liquidation Risk:</strong> {selectedPosition.liquidationRisk.toFixed(0)}bp away
+            </div>
+            <button
+              onClick={() => setSelectedPosition(null)}
+              style={{
+                background: '#374151',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              Close
+            </button>
           </div>
         )}
       </div>
-      
-      {/* Selected position details */}
-      {selectedPosition && (
-        <div style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          minWidth: '250px',
-          backdropFilter: 'blur(4px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
-        }}>
-          <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#fbbf24' }}>
-            {selectedPosition.market} Position
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>Direction:</strong> {selectedPosition.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>DV01:</strong> ${selectedPosition.dv01.toLocaleString()}
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>Entry Price:</strong> {selectedPosition.entryPrice.toFixed(3)}%
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>Current Price:</strong> {selectedPosition.currentPrice.toFixed(3)}%
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <strong>Margin:</strong> ${selectedPosition.collateral.toLocaleString()}
-          </div>
-          <div style={{ 
-            marginBottom: '0.5rem',
-            color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444'
-          }}>
-            <strong>P&L:</strong> {selectedPosition.pl >= 0 ? '+' : ''}${selectedPosition.pl.toLocaleString()}
-          </div>
-          <div style={{ 
-            marginBottom: '0.75rem',
-            color: selectedPosition.liquidationRisk <= 20 ? '#fbbf24' : '#22c55e'
-          }}>
-            <strong>Liquidation Risk:</strong> {selectedPosition.liquidationRisk.toFixed(0)}bp away
-          </div>
-          <button
-            onClick={() => setSelectedPosition(null)}
-            style={{
-              background: '#374151',
-              color: 'white',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              width: '100%'
-            }}
-          >
-            Close
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
