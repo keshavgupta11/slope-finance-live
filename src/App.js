@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -54,7 +54,9 @@ export default function App() {
   const [pendingMarginAdd, setPendingMarginAdd] = useState(null);
   const [additionalMargin, setAdditionalMargin] = useState(0);
   const [showVammBreakdown, setShowVammBreakdown] = useState(false);
-
+  //3d sphere
+  const [show3DView, setShow3DView] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState(null);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -377,6 +379,313 @@ export default function App() {
     // Update OI based on current DV01s
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
+
+  const FloatingPositionSpheres = () => {
+    const canvasRef = useRef(null);
+    const animationRef = useRef(null);
+    
+    // Get all positions from all markets
+    const allPositions = [];
+    Object.keys(tradesByMarket).forEach(market => {
+      const trades = tradesByMarket[market] || [];
+      trades.forEach((trade, index) => {
+        const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+        const pl = calculateTotalPL(trade, currentPrice);
+        const liquidationRisk = calculateLiquidationRisk(trade);
+        
+        allPositions.push({
+          id: `${market}-${index}`,
+          market,
+          trade,
+          pl,
+          liquidationRisk,
+          dv01: trade.baseDV01,
+          type: trade.type,
+          entryPrice: trade.entryPrice,
+          currentPrice,
+          collateral: trade.collateral
+        });
+      });
+    });
+
+    useEffect(() => {
+      if (!canvasRef.current || !show3DView) return;
+      
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      const resizeCanvas = () => {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      };
+      resizeCanvas();
+      
+      let animationTime = 0;
+      
+      // Create sphere positions
+      const spheres = allPositions.map((position, i) => {
+        const angle = (i / Math.max(allPositions.length, 1)) * Math.PI * 2;
+        const radius = 80 + (i * 20); // Spread them out
+        
+        return {
+          ...position,
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          z: Math.max(0, position.liquidationRisk / 10), // Height based on liquidation risk
+          size: Math.max(10, Math.min(50, position.dv01 / 2000)), // Size based on DV01
+          angle,
+          radius
+        };
+      });
+      
+      const animate = () => {
+        animationTime += 0.01;
+        
+        // Clear canvas
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Draw spheres
+        spheres.forEach((sphere, i) => {
+          // Position with gentle floating
+          const floatOffset = Math.sin(animationTime * 2 + i) * 3;
+          const screenX = centerX + sphere.x;
+          const screenY = centerY + sphere.y + floatOffset;
+          
+          // Color based on P&L
+          let color;
+          if (sphere.pl >= 0) {
+            color = '#22c55e'; // Green for profit
+          } else {
+            color = '#ef4444'; // Red for loss
+          }
+          
+          // Warning color for liquidation risk
+          if (sphere.liquidationRisk <= 20 && sphere.liquidationRisk > 0) {
+            color = '#fbbf24'; // Yellow for at-risk
+          }
+          
+          // Draw glow effect
+          const gradient = ctx.createRadialGradient(
+            screenX, screenY, 0,
+            screenX, screenY, sphere.size + 10
+          );
+          gradient.addColorStop(0, color);
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size + 10, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw main sphere
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, sphere.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.beginPath();
+          ctx.arc(screenX - sphere.size/3, screenY - sphere.size/3, sphere.size/4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Market label
+          ctx.fillStyle = 'white';
+          ctx.font = `bold ${Math.max(8, sphere.size/3)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          const label = sphere.market === 'JitoSol' ? 'J' : 
+                      sphere.market === 'Lido stETH' ? 'L' : 
+                      sphere.market.includes('Aave') ? 'A' : 'M';
+          ctx.fillText(label, screenX, screenY);
+          
+          // Position type indicator (small dot)
+          ctx.fillStyle = sphere.type === 'pay' ? '#3b82f6' : '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(screenX + sphere.size/2, screenY - sphere.size/2, 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Store screen position for click detection
+          sphere.screenX = screenX;
+          sphere.screenY = screenY;
+          sphere.screenSize = sphere.size;
+        });
+        
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      
+      animate();
+      
+      // Click handler
+      const handleClick = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Find clicked sphere
+        const clickedSphere = spheres.find(sphere => {
+          const distance = Math.sqrt(
+            (clickX - sphere.screenX) ** 2 + (clickY - sphere.screenY) ** 2
+          );
+          return distance <= sphere.screenSize;
+        });
+        
+        if (clickedSphere) {
+          setSelectedPosition(clickedSphere);
+        } else {
+          setSelectedPosition(null);
+        }
+      };
+      
+      canvas.addEventListener('click', handleClick);
+      window.addEventListener('resize', resizeCanvas);
+      
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+        canvas.removeEventListener('click', handleClick);
+        window.removeEventListener('resize', resizeCanvas);
+      };
+    }, [show3DView, allPositions, lastPriceByMarket]);
+
+    // No positions case
+    if (allPositions.length === 0) {
+      return (
+        <div style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid #374151',
+          borderRadius: '0.75rem',
+          backgroundColor: '#111827',
+          color: '#9ca3af'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌌</div>
+            <div style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>No positions yet</div>
+            <div style={{ fontSize: '0.875rem' }}>Open some trades to see your portfolio galaxy</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '0.75rem',
+            border: '1px solid #374151',
+            backgroundColor: '#111827',
+            cursor: 'pointer'
+          }}
+        />
+        
+        {/* Legend */}
+        <div style={{
+          position: 'absolute',
+          top: '1rem',
+          left: '1rem',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '0.75rem',
+          borderRadius: '0.5rem',
+          fontSize: '0.75rem',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Position Galaxy</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: '10px', height: '10px', backgroundColor: '#22c55e', borderRadius: '50%' }}></div>
+            <span>Profit</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: '10px', height: '10px', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
+            <span>Loss</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: '10px', height: '10px', backgroundColor: '#fbbf24', borderRadius: '50%' }}></div>
+            <span>At Risk</span>
+          </div>
+          <div style={{ fontSize: '0.6rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+            Size = DV01 • Click to zoom
+          </div>
+        </div>
+        
+        {/* Selected position details */}
+        {selectedPosition && (
+          <div style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            minWidth: '250px',
+            backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#fbbf24' }}>
+              {selectedPosition.market} Position
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Direction:</strong> {selectedPosition.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>DV01:</strong> ${selectedPosition.dv01.toLocaleString()}
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Entry Price:</strong> {selectedPosition.entryPrice.toFixed(3)}%
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Current Price:</strong> {selectedPosition.currentPrice.toFixed(3)}%
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Margin:</strong> ${selectedPosition.collateral.toLocaleString()}
+            </div>
+            <div style={{ 
+              marginBottom: '0.5rem',
+              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444'
+            }}>
+              <strong>P&L:</strong> {selectedPosition.pl >= 0 ? '+' : ''}${selectedPosition.pl.toLocaleString()}
+            </div>
+            <div style={{ 
+              marginBottom: '0.75rem',
+              color: selectedPosition.liquidationRisk <= 20 ? '#fbbf24' : '#22c55e'
+            }}>
+              <strong>Liquidation Risk:</strong> {selectedPosition.liquidationRisk.toFixed(0)}bp away
+            </div>
+            <button
+              onClick={() => setSelectedPosition(null)}
+              style={{
+                background: '#374151',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const generateChartData = () => {
     // Use actual historical data for JitoSOL based on your Excel analysis
@@ -1324,67 +1633,90 @@ const calculateVammBreakdown = () => {
           <div className="right-panel">
             <div className="chart-header">
               <span>Running 365d APY</span>
+              <button
+                onClick={() => setShow3DView(!show3DView)}
+                style={{
+                  background: show3DView ? '#6b7280' : 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  float: 'right'
+                }}
+              >
+                {show3DView ? 'Show Chart' : 'Show Galaxy'}
+              </button>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="year" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    type="number"
-                    scale="linear"
-                    domain={[2023, 2025]}
-                    ticks={[2023, 2024, 2025]}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
-                    domain={[
-                    market === "JitoSol" ? 6 :
-                    market === "Lido stETH" ? 2 :
-                    market === "Aave ETH Lending" ? 1 :
-                    market === "Aave ETH Borrowing" ? 2 : 6,
+            <div className="chart-container" style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ width: show3DView ? '50%' : '100%', transition: 'width 0.3s ease' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis 
+                      dataKey="year" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      type="number"
+                      scale="linear"
+                      domain={[2023, 2025]}
+                      ticks={[2023, 2024, 2025]}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                      domain={[
+                      market === "JitoSol" ? 6 :
+                      market === "Lido stETH" ? 2 :
+                      market === "Aave ETH Lending" ? 1 :
+                      market === "Aave ETH Borrowing" ? 2 : 6,
 
-                    market === "JitoSol" ? 9 :
-                    market === "Lido stETH" ? 5 :
-                    market === "Aave ETH Lending" ? 3 :
-                    market === "Aave ETH Borrowing" ? 5 : 9
-                    ]}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                    scale="linear"
-                  />
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="apy" 
-                    stroke="#10B981" 
-                    strokeWidth={4}
-                    dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
-                    activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
-                    fill="url(#chartGradient)"
-                    fillOpacity={0.3}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                      market === "JitoSol" ? 9 :
+                      market === "Lido stETH" ? 5 :
+                      market === "Aave ETH Lending" ? 3 :
+                      market === "Aave ETH Borrowing" ? 5 : 9
+                      ]}
+                      tickFormatter={(value) => `${value.toFixed(1)}%`}
+                      scale="linear"
+                    />
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(75, 85, 99, 0.1)" strokeWidth="1"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <Line 
+                      type="monotone" 
+                      dataKey="apy" 
+                      stroke="#10B981" 
+                      strokeWidth={4}
+                      dot={{ fill: '#10B981', strokeWidth: 3, r: 6, filter: 'url(#glow)' }}
+                      activeDot={{ r: 8, stroke: '#10B981', strokeWidth: 3, fill: '#000', filter: 'url(#glow)' }}
+                      fill="url(#chartGradient)"
+                      fillOpacity={0.3}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              {show3DView && (
+                <div style={{ width: '50%' }}>
+                  <FloatingPositionSpheres />
+                </div>
+              )}
             </div>
             <div className="chart-info">
               This chart shows realized APY over last 365 days
