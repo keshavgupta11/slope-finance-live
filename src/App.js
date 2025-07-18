@@ -4537,7 +4537,7 @@ const calculateVammBreakdown = () => {
       {pendingTrade && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Confirm Trade</h3>
+            <h3>Confirm CRS Trade</h3>
             
             {/* Hero section - most important info */}
             <div style={{
