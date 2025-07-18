@@ -2108,62 +2108,151 @@ const calculateVammBreakdown = () => {
 </div>
 
             <div className="inputs">
-              <div className="input-group">
-                <label>
-                  <span> DV01 ($)</span>
-                  <span> Fixed for all calculations</span>
-                </label>
+              <div style={{
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
+                border: '1px solid #374151',
+                borderRadius: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div>
+                    <div style={{ 
+                      color: '#e2e8f0', 
+                      fontWeight: '700', 
+                      fontSize: '1.1rem'
+                    }}>
+                      DV01 Amount
+                    </div>
+                    <div style={{ 
+                      color: '#94a3b8', 
+                      fontSize: '0.875rem'
+                    }}>
+                      Fixed for all calculations
+                    </div>
+                  </div>
+                </div>
                 <div style={{ position: 'relative' }}>
                   <span style={{ 
-                   position: 'absolute', 
-                  left: '12px', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)', 
-                  color: '#ffffff', 
-                  fontSize: '1rem',
-                   pointerEvents: 'none'
-                }}>$</span>
-                <input
-                 type="text"
-                value={baseDv01 ? baseDv01.toLocaleString() : ''}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  setBaseDv01(value === '' ? 0 : Number(value));
-                }}
-                placeholder="10,000"
-                style={{ paddingLeft: '24px' }}
-              />
-           </div>
-        </div>
+                    position: 'absolute', 
+                    left: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#10b981', 
+                    fontSize: '1.2rem',
+                    fontWeight: '700',
+                    pointerEvents: 'none'
+                  }}>$</span>
+                  <input
+                    type="text"
+                    value={baseDv01 ? baseDv01.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setBaseDv01(value === '' ? 0 : Number(value));
+                    }}
+                    placeholder="10,000"
+                    style={{ 
+                      width: '100%',
+                      padding: '1rem 1rem 1rem 2.5rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid #4b5563',
+                      background: 'rgba(17, 24, 39, 0.8)',
+                      color: '#f1f5f9',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
 
-      <div className="input-group">
-        <label>Margin (USDC)</label>
-        <div style={{ position: 'relative' }}>
-          <span style={{ 
-          position: 'absolute', 
-          left: '12px', 
-          top: '50%', 
-          transform: 'translateY(-50%)', 
-          color: '#ffffff', 
-          fontSize: '1rem',
-          pointerEvents: 'none'
-        }}>$</span>
-        <input
-          type="text"
-          value={margin ? margin.toLocaleString() : ''}
-          onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, '');
-            setMargin(value === '' ? 0 : Number(value));
-      }}
-      placeholder="500,000"
-      style={{ paddingLeft: '24px' }}
-      />
-    </div>
-  </div>
-
-              <div className="min-margin">
-                <div>Min margin required:</div>
-                <div className="min-margin-value">${(currentDv01 * 50).toLocaleString()}</div>
+              <div style={{
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
+                border: '1px solid #374151',
+                borderRadius: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div>
+                    <div style={{ 
+                      color: '#e2e8f0', 
+                      fontWeight: '700', 
+                      fontSize: '1.1rem'
+                    }}>
+                      Margin (USDC)
+                    </div>
+                    <div style={{ 
+                      color: '#94a3b8', 
+                      fontSize: '0.875rem'
+                    }}>
+                      Collateral to secure position
+                    </div>
+                  </div>
+                </div>
+                <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                  <span style={{ 
+                    position: 'absolute', 
+                    left: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#3b82f6', 
+                    fontSize: '1.2rem',
+                    fontWeight: '700',
+                    pointerEvents: 'none'
+                  }}>$</span>
+                  <input
+                    type="text"
+                    value={margin ? margin.toLocaleString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      setMargin(value === '' ? 0 : Number(value));
+                    }}
+                    placeholder="500,000"
+                    style={{ 
+                      width: '100%',
+                      padding: '1rem 1rem 1rem 2.5rem',
+                      borderRadius: '0.75rem',
+                      border: margin < currentDv01 * 50 ? '1px solid #ef4444' : '1px solid #4b5563',
+                      background: 'rgba(17, 24, 39, 0.8)',
+                      color: '#f1f5f9',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '0.5rem',
+                  border: '1px solid rgba(59, 130, 246, 0.2)'
+                }}>
+                  <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
+                    Minimum required:
+                  </span>
+                  <span style={{ 
+                    color: '#3b82f6', 
+                    fontWeight: '700',
+                    fontSize: '1rem'
+                  }}>
+                    ${(currentDv01 * 50).toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               <div className="trade-buttons">
