@@ -4553,7 +4553,7 @@ const calculateVammBreakdown = () => {
               background: 'rgba(55, 65, 81, 0.3)',
               borderRadius: '0.75rem',
               padding: '1rem',
-              marginBottom: '1.5rem'
+              marginBottom: '0'
             }}>
               <div className="trade-details">
                 <div className="detail-row">
