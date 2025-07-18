@@ -3028,7 +3028,7 @@ const calculateVammBreakdown = () => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              Learn Interest Rate Swaps
+              Learn Crypto Rate Swaps
             </h2>
             <p style={{
               fontSize: '1.25rem',
