@@ -2140,11 +2140,7 @@ const calculateVammBreakdown = () => {
                 </div>
               </div>
             </div>
-
-            <div className="input-group">
-              
-            </div>
-
+            
             <div className="inputs">
               <div style={{
                 padding: '0.8rem',
