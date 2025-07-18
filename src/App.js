@@ -4570,7 +4570,6 @@ const calculateVammBreakdown = () => {
                 </div>
               </div>
             </div>
-
             {/* DV01 Impact Explanation */}
             <div style={{
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
