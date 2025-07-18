@@ -342,12 +342,13 @@ body {
   display: flex;
   min-height: calc(100vh - 88px);
   position: relative;
+  padding: 1rem;
 }
 
 /* Enhanced Left Panel with premium effects */
 .left-panel {
   width: 420px;
-  padding: 2rem;
+  padding: 1rem;
   border-right: 1px solid var(--border-primary);
   background: var(--gradient-card);
   backdrop-filter: blur(16px) saturate(180%);
@@ -396,8 +397,8 @@ body {
 
 /* Enhanced Price Info with micro-animations */
 .price-info {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
   background: rgba(26, 31, 46, 0.8);
   border-radius: 1.25rem;
   border: 1px solid var(--border-secondary);
@@ -979,7 +980,7 @@ input[type="number"] {
 /* Enhanced Right Panel */
 .right-panel {
   flex: 1;
-  padding: 2rem;
+  padding: 1rem;
   min-height: calc(100vh - 88px);
   background: rgba(0, 0, 0, 0.1);
 }
@@ -1008,7 +1009,7 @@ input[type="number"] {
 }
 
 .chart-container {
-  height: 320px;
+  height: 250px;
   width: 100%;
   background: var(--gradient-card);
   border-radius: 1.25rem;
@@ -1054,7 +1055,7 @@ input[type="number"] {
 /* Enhanced Positions Section with Premium Styling */
 .positions-section {
   width: 100%;
-  padding: 2.5rem 2rem;
+  padding: 1.5rem 1rem;
   background: var(--gradient-card);
   border-top: 2px solid var(--border-primary);
   margin-top: 3rem;
@@ -1569,8 +1570,8 @@ input[type="number"] {
 /* Enhanced Market Stats Dashboard */
 .market-stats {
   margin-top: 1rem;
-  margin-bottom: 3rem;
-  padding: 2rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
   background: var(--gradient-card);
   border-radius: 1.25rem;
   border: 1px solid var(--border-secondary);
