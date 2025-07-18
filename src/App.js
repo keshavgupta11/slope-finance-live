@@ -2297,8 +2297,17 @@ const calculateVammBreakdown = () => {
                     ${(currentDv01 * 50).toLocaleString()}
                   </span>
                 </div>
+                <div style={{
+                  textAlign: 'center',
+                  padding: '0.75rem',
+                  fontSize: '0.8rem',
+                  color: '#10b981',
+                  fontWeight: '600',
+                  fontStyle: 'italic'
+                }}>
+                  Trading 2025 full-year APY (compounded)
+                </div>
               </div>
-
               <div className="trade-buttons">
                 <button
                   onClick={() => setTradeType('pay')}
