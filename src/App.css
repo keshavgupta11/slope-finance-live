@@ -70,11 +70,12 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  zoom:0.8;
+  zoom: 0.65; /* Reduced zoom for better fit */
+  font-size: 14px; /* Smaller base font size */
 }
 
 .app {
@@ -137,12 +138,12 @@ body {
   100% { transform: translate(60px, 60px); }
 }
 
-/* Enhanced Header with glassmorphism */
+/* Enhanced Header with glassmorphism - SMALLER */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 2rem;
+  padding: 0.8rem 1.5rem; /* Reduced padding */
   border-bottom: 1px solid var(--border-primary);
   background: rgba(26, 31, 46, 0.8);
   backdrop-filter: blur(20px) saturate(180%);
@@ -151,6 +152,7 @@ body {
   z-index: 100;
   box-shadow: var(--shadow-md), var(--shadow-inset);
   transition: all var(--transition-normal);
+  height: 60px; /* Fixed smaller height */
 }
 
 .header:hover {
@@ -161,19 +163,19 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 3rem;
+  gap: 2rem; /* Reduced gap */
 }
 
 .logo-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   position: relative;
-  padding: 0.5rem 0;
+  padding: 0.3rem 0;
 }
 
 .logo {
-  font-size: 1.75rem;
+  font-size: 1.4rem; /* Smaller logo */
   font-weight: 900;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
@@ -204,7 +206,7 @@ body {
 }
 
 .tagline {
-  font-size: 0.75rem;
+  font-size: 0.65rem; /* Smaller tagline */
   color: var(--text-muted);
   font-weight: 600;
   margin: 0;
@@ -233,7 +235,7 @@ body {
 
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem; /* Reduced gap */
 }
 
 .nav-item {
@@ -241,8 +243,8 @@ body {
   cursor: pointer;
   transition: all var(--transition-normal);
   font-weight: 500;
-  font-size: 0.95rem;
-  padding: 0.75rem 1rem;
+  font-size: 0.85rem; /* Smaller nav items */
+  padding: 0.5rem 0.8rem; /* Reduced padding */
   position: relative;
   border-radius: 0.5rem;
   overflow: hidden;
@@ -296,16 +298,16 @@ body {
 }
 
 .wallet-btn {
-  padding: 0.875rem 1.5rem;
+  padding: 0.6rem 1.2rem; /* Smaller padding */
   border: 1px solid var(--border-accent);
-  border-radius: 1rem;
+  border-radius: 0.8rem;
   background: rgba(26, 31, 46, 0.8);
   color: var(--text-accent);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
   backdrop-filter: blur(8px);
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller font */
   position: relative;
   overflow: hidden;
 }
@@ -337,24 +339,23 @@ body {
   transform: translateY(0);
 }
 
-/* Enhanced Main Container */
+/* Enhanced Main Container - OPTIMIZED */
 .main-container {
   display: flex;
-  min-height: calc(100vh - 88px);
+  min-height: calc(100vh - 60px); /* Adjusted for smaller header */
   position: relative;
-  padding: 1rem;
 }
 
-/* Enhanced Left Panel with premium effects */
+/* Enhanced Left Panel - SMALLER */
 .left-panel {
-  width: 420px;
-  padding: 1rem;
+  width: 340px; /* Reduced width */
+  padding: 1.5rem; /* Reduced padding */
   border-right: 1px solid var(--border-primary);
   background: var(--gradient-card);
   backdrop-filter: blur(16px) saturate(180%);
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 88px);
+  min-height: calc(100vh - 60px);
   box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
@@ -372,9 +373,9 @@ body {
 }
 
 .swap-header h2 {
-  font-size: 1.75rem;
+  font-size: 1.5rem; /* Smaller header */
   font-weight: 800;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -386,21 +387,21 @@ body {
 .swap-header h2::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -6px;
   left: 0;
-  width: 60px;
-  height: 3px;
+  width: 50px;
+  height: 2px;
   background: var(--gradient-accent);
   border-radius: 2px;
   animation: slideIn var(--transition-slow) ease-out;
 }
 
-/* Enhanced Price Info with micro-animations */
+/* Enhanced Price Info - SMALLER */
 .price-info {
-  margin-bottom: 1rem;
-  padding: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem; /* Reduced padding */
   background: rgba(26, 31, 46, 0.8);
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(12px) saturate(180%);
   position: relative;
@@ -434,8 +435,8 @@ body {
 .price-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.6rem; /* Reduced margin */
+  font-size: 0.8rem; /* Smaller font */
   align-items: center;
   transition: all var(--transition-fast);
 }
@@ -461,7 +462,7 @@ body {
 .live-price {
   color: var(--text-accent);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem; /* Smaller */
   position: relative;
 }
 
@@ -481,25 +482,25 @@ body {
 .realized-apy {
   color: #06b6d4;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
 }
 
 .global-day {
   color: var(--text-accent);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .indicator {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.85rem;
+  gap: 0.6rem;
+  font-size: 0.75rem; /* Smaller */
   color: var(--text-muted);
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
   border-top: 1px solid var(--border-secondary);
   transition: all var(--transition-normal);
 }
@@ -509,8 +510,8 @@ body {
 }
 
 .indicator-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   background: var(--gradient-accent);
   color: white;
@@ -518,7 +519,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   box-shadow: var(--shadow-accent);
   position: relative;
   animation: glow 3s ease-in-out infinite;
@@ -529,22 +530,22 @@ body {
   50% { box-shadow: var(--shadow-glow); }
 }
 
-/* Enhanced Market Selector */
+/* Enhanced Market Selector - SMALLER */
 .market-selector {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .market-select {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
+  border-radius: 0.8rem;
+  padding: 0.8rem 1rem; /* Reduced padding */
   color: var(--text-primary);
   cursor: pointer;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller font */
   transition: all var(--transition-normal);
   backdrop-filter: blur(8px);
   position: relative;
@@ -582,9 +583,9 @@ body {
 }
 
 .market-info {
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* Smaller */
   color: var(--text-subtle);
-  line-height: 1.6;
+  line-height: 1.5;
   transition: all var(--transition-normal);
 }
 
@@ -593,30 +594,30 @@ body {
 }
 
 .market-info div:first-child {
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .market-info div:last-child {
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
-/* Enhanced Input Styling with Premium Effects */
+/* Enhanced Input Styling - SMALLER */
 .inputs {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .input-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   position: relative;
 }
 
 .input-group label {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.8rem; /* Smaller */
   font-weight: 600;
   color: var(--text-secondary);
   transition: color var(--transition-fast);
@@ -630,12 +631,12 @@ body {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
+  border-radius: 0.8rem;
+  padding: 0.8rem 1rem; /* Reduced padding */
   color: var(--text-primary);
   backdrop-filter: blur(8px);
   transition: all var(--transition-normal);
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller font */
   font-weight: 500;
   position: relative;
 }
@@ -660,13 +661,13 @@ body {
   color: var(--text-muted);
 }
 
-/* Enhanced Range Input with Premium Styling */
+/* Enhanced Range Input - SMALLER */
 input[type="range"] {
-  height: 8px;
+  height: 6px; /* Smaller */
   padding: 0;
   background: linear-gradient(to right, var(--text-accent) 0%, var(--text-accent) 50%, var(--border-secondary) 50%, var(--border-secondary) 100%);
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
   outline: none;
   -webkit-appearance: none;
   position: relative;
@@ -675,8 +676,8 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--gradient-accent);
   cursor: pointer;
@@ -695,8 +696,8 @@ input[type="range"]:hover::-webkit-slider-thumb {
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--gradient-accent);
   cursor: pointer;
@@ -723,10 +724,10 @@ input[type="number"] {
 
 .min-margin {
   background: rgba(26, 31, 46, 0.8);
-  border-radius: 1rem;
-  padding: 1.25rem;
+  border-radius: 0.8rem;
+  padding: 1rem; /* Reduced padding */
   border: 1px solid var(--border-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   backdrop-filter: blur(12px);
   transition: all var(--transition-normal);
   position: relative;
@@ -754,33 +755,33 @@ input[type="number"] {
 }
 
 .min-margin div:first-child {
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Smaller */
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .min-margin-value {
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller */
   font-weight: 700;
   color: #f59e0b;
   text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
 }
 
-/* Enhanced Trade Buttons with Premium Animations */
+/* Enhanced Trade Buttons - SMALLER */
 .trade-buttons {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
 }
 
 .trade-btn {
   flex: 1;
-  padding: 1rem 1.25rem;
-  border-radius: 1rem;
-  font-size: 0.95rem;
+  padding: 0.8rem 1rem; /* Reduced padding */
+  border-radius: 0.8rem;
+  font-size: 0.85rem; /* Smaller font */
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -836,17 +837,17 @@ input[type="number"] {
   transform: translateY(-4px);
 }
 
-/* Enhanced Enter Button with Spectacular Effects */
+/* Enhanced Enter Button - SMALLER */
 .enter-btn {
   width: 100%;
-  padding: 1.25rem;
-  border-radius: 1rem;
+  padding: 1rem; /* Reduced padding */
+  border-radius: 0.8rem;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem; /* Smaller font */
   cursor: pointer;
   transition: all var(--transition-normal);
   border: none;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
@@ -893,13 +894,13 @@ input[type="number"] {
   border: 1px solid var(--border-secondary);
 }
 
-/* Enhanced Profit Info */
+/* Enhanced Profit Info - SMALLER */
 .profit-info {
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* Smaller */
   color: var(--text-subtle);
   background: rgba(26, 31, 46, 0.8);
-  padding: 1rem;
-  border-radius: 0.75rem;
+  padding: 0.8rem; /* Reduced padding */
+  border-radius: 0.6rem;
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(8px);
   transition: all var(--transition-normal);
@@ -932,8 +933,8 @@ input[type="number"] {
 .profit-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
   font-weight: 500;
   transition: all var(--transition-fast);
 }
@@ -948,8 +949,8 @@ input[type="number"] {
 }
 
 .profit-dot {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.6rem;
+  height: 0.6rem;
   border-radius: 50%;
   box-shadow: 0 0 12px currentColor;
   position: relative;
@@ -977,21 +978,21 @@ input[type="number"] {
   color: #06b6d4;
 }
 
-/* Enhanced Right Panel */
+/* Enhanced Right Panel - SMALLER */
 .right-panel {
   flex: 1;
-  padding: 1rem;
-  min-height: calc(100vh - 88px);
+  padding: 1.5rem; /* Reduced padding */
+  min-height: calc(100vh - 60px);
   background: rgba(0, 0, 0, 0.1);
 }
 
 .chart-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   position: relative;
 }
 
 .chart-header span {
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Smaller */
   font-weight: 600;
   color: var(--text-secondary);
   position: relative;
@@ -1000,24 +1001,24 @@ input[type="number"] {
 .chart-header span::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -4px;
   left: 0;
-  width: 40px;
+  width: 30px;
   height: 2px;
   background: var(--gradient-accent);
   border-radius: 1px;
 }
 
 .chart-container {
-  height: 250px;
+  height: 260px; /* Smaller height */
   width: 100%;
   background: var(--gradient-card);
-  border-radius: 1.25rem;
-  padding: 1.5rem;
+  border-radius: 1rem;
+  padding: 1.2rem; /* Reduced padding */
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(16px) saturate(180%);
   box-shadow: var(--shadow-md);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   position: relative;
   overflow: hidden;
   transition: all var(--transition-normal);
@@ -1041,9 +1042,9 @@ input[type="number"] {
 }
 
 .chart-info {
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* Smaller */
   color: var(--text-subtle);
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
   font-weight: 500;
   transition: color var(--transition-fast);
 }
@@ -1052,13 +1053,13 @@ input[type="number"] {
   color: var(--text-muted);
 }
 
-/* Enhanced Positions Section with Premium Styling */
+/* Enhanced Positions Section - SMALLER */
 .positions-section {
   width: 100%;
-  padding: 1.5rem 1rem;
+  padding: 2rem 1.5rem; /* Reduced padding */
   background: var(--gradient-card);
   border-top: 2px solid var(--border-primary);
-  margin-top: 3rem;
+  margin-top: 2rem;
   clear: both;
   backdrop-filter: blur(16px) saturate(180%);
   position: relative;
@@ -1077,9 +1078,9 @@ input[type="number"] {
 }
 
 .positions-section h3 {
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Smaller */
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   text-align: left;
   color: var(--text-primary);
   position: relative;
@@ -1088,10 +1089,10 @@ input[type="number"] {
 .positions-section h3::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -6px;
   left: 0;
-  width: 80px;
-  height: 3px;
+  width: 60px;
+  height: 2px;
   background: var(--gradient-accent);
   border-radius: 2px;
 }
@@ -1100,7 +1101,7 @@ input[type="number"] {
   overflow-x: auto;
   width: 100%;
   background: rgba(26, 31, 46, 0.8);
-  border-radius: 1rem;
+  border-radius: 0.8rem;
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-md);
@@ -1120,18 +1121,18 @@ input[type="number"] {
 
 .positions-table table {
   width: 100%;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller */
   border-collapse: collapse;
 }
 
 .positions-table th {
   text-align: left;
-  padding: 1rem 0.75rem;
+  padding: 0.8rem 0.6rem; /* Reduced padding */
   color: var(--text-muted);
   font-weight: 600;
   border-bottom: 1px solid var(--border-secondary);
   background: rgba(31, 41, 55, 0.5);
-  font-size: 0.85rem;
+  font-size: 0.75rem; /* Smaller */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
@@ -1144,7 +1145,7 @@ input[type="number"] {
 }
 
 .positions-table td {
-  padding: 1rem 0.75rem;
+  padding: 0.8rem 0.6rem; /* Reduced padding */
   border-bottom: 1px solid rgba(55, 65, 81, 0.3);
   font-weight: 500;
   transition: all var(--transition-fast);
@@ -1203,17 +1204,17 @@ input[type="number"] {
 .no-positions {
   text-align: center;
   color: var(--text-subtle);
-  padding: 3rem 1rem;
+  padding: 2.5rem 1rem; /* Reduced padding */
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller */
   position: relative;
 }
 
 .no-positions::before {
   content: '📊';
   display: block;
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2.5rem; /* Smaller */
+  margin-bottom: 0.8rem;
   opacity: 0.3;
   animation: float 3s ease-in-out infinite;
 }
@@ -1227,17 +1228,17 @@ input[type="number"] {
   }
 }
 
-/* Enhanced Settings with Premium Effects */
+/* Enhanced Settings - SMALLER */
 .settings-container, .tab-content {
-  padding: 2rem;
-  max-width: 72rem;
+  padding: 1.5rem; /* Reduced padding */
+  max-width: 68rem;
   margin: 0 auto;
 }
 
 .settings-container h2, .tab-content h2 {
-  font-size: 2rem;
+  font-size: 1.8rem; /* Smaller */
   font-weight: 700;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   color: var(--text-primary);
   background: var(--gradient-accent);
   -webkit-background-clip: text;
@@ -1249,27 +1250,27 @@ input[type="number"] {
 .settings-container h2::after, .tab-content h2::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -6px;
   left: 0;
-  width: 100px;
-  height: 3px;
+  width: 80px;
+  height: 2px;
   background: var(--gradient-accent);
   border-radius: 2px;
 }
 
 .settings-container h3 {
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Smaller */
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .market-setting {
   background: var(--gradient-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  border-radius: 0.8rem;
+  padding: 1.2rem; /* Reduced padding */
+  margin-bottom: 1.5rem;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
@@ -1301,9 +1302,9 @@ input[type="number"] {
 }
 
 .market-setting h4 {
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Smaller */
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   color: var(--text-primary);
   position: relative;
 }
@@ -1311,9 +1312,9 @@ input[type="number"] {
 .market-setting h4::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -4px;
   left: 0;
-  width: 50px;
+  width: 40px;
   height: 2px;
   background: var(--gradient-accent);
   border-radius: 1px;
@@ -1322,14 +1323,14 @@ input[type="number"] {
 .setting-inputs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
 .setting-inputs label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller */
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1344,12 +1345,13 @@ input[type="number"] {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.8rem; /* Reduced padding */
   color: var(--text-primary);
   font-weight: 500;
   transition: all var(--transition-normal);
   backdrop-filter: blur(8px);
+  font-size: 0.85rem; /* Smaller */
 }
 
 .setting-inputs input:focus {
@@ -1362,11 +1364,11 @@ input[type="number"] {
 
 .tab-content p {
   color: var(--text-muted);
-  line-height: 1.7;
-  font-size: 1rem;
+  line-height: 1.6;
+  font-size: 0.9rem; /* Smaller */
 }
 
-/* Enhanced Modal with Premium Glassmorphism */
+/* Enhanced Modal - SMALLER */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1387,9 +1389,9 @@ input[type="number"] {
 .modal {
   background: var(--gradient-card);
   border: 1px solid var(--border-primary);
-  border-radius: 1.25rem;
-  padding: 2rem;
-  max-width: 32rem;
+  border-radius: 1rem;
+  padding: 1.5rem; /* Reduced padding */
+  max-width: 28rem; /* Smaller */
   width: 100%;
   margin: 0 1rem;
   backdrop-filter: blur(20px) saturate(180%);
@@ -1422,9 +1424,9 @@ input[type="number"] {
 }
 
 .modal h3 {
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Smaller */
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   color: var(--text-primary);
   position: relative;
 }
@@ -1432,32 +1434,32 @@ input[type="number"] {
 .modal h3::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -6px;
   left: 0;
-  width: 60px;
+  width: 50px;
   height: 2px;
   background: var(--gradient-accent);
   border-radius: 1px;
 }
 
 .trade-details {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 0.4rem 0;
   border-bottom: 1px solid rgba(55, 65, 81, 0.2);
   transition: all var(--transition-fast);
 }
 
 .detail-row:hover {
   background: rgba(31, 41, 55, 0.2);
-  padding-left: 0.5rem;
-  border-radius: 0.5rem;
+  padding-left: 0.4rem;
+  border-radius: 0.4rem;
   border-bottom-color: transparent;
 }
 
@@ -1465,13 +1467,13 @@ input[type="number"] {
   color: var(--text-muted);
   font-weight: 500;
   text-transform: uppercase;
-  font-size: 0.85rem;
+  font-size: 0.75rem; /* Smaller */
   letter-spacing: 0.05em;
 }
 
 .detail-row span:last-child {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem; /* Smaller */
 }
 
 .trade-type {
@@ -1501,15 +1503,15 @@ input[type="number"] {
 
 .modal-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .confirm-btn {
   flex: 1;
   background: var(--gradient-accent);
   color: white;
-  padding: 1rem;
-  border-radius: 1rem;
+  padding: 0.8rem; /* Reduced padding */
+  border-radius: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   border: none;
@@ -1518,6 +1520,7 @@ input[type="number"] {
   letter-spacing: 0.05em;
   position: relative;
   overflow: hidden;
+  font-size: 0.85rem; /* Smaller */
 }
 
 .confirm-btn::before {
@@ -1550,14 +1553,15 @@ input[type="number"] {
   flex: 1;
   background: rgba(55, 65, 81, 0.6);
   color: var(--text-primary);
-  padding: 1rem;
-  border-radius: 1rem;
+  padding: 0.8rem; /* Reduced padding */
+  border-radius: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border-secondary);
   transition: all var(--transition-normal);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-size: 0.85rem; /* Smaller */
 }
 
 .cancel-btn:hover {
@@ -1567,13 +1571,13 @@ input[type="number"] {
   box-shadow: var(--shadow-sm);
 }
 
-/* Enhanced Market Stats Dashboard */
+/* Enhanced Market Stats - SMALLER */
 .market-stats {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
+  margin-top: 0.8rem;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem; /* Reduced padding */
   background: var(--gradient-card);
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(16px) saturate(180%);
   box-shadow: var(--shadow-md);
@@ -1593,9 +1597,9 @@ input[type="number"] {
 }
 
 .market-stats h4 {
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Smaller */
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   color: var(--text-primary);
   position: relative;
 }
@@ -1603,25 +1607,25 @@ input[type="number"] {
 .market-stats h4::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -6px;
   left: 0;
-  width: 80px;
-  height: 3px;
+  width: 60px;
+  height: 2px;
   background: var(--gradient-accent);
   border-radius: 2px;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Smaller cards */
+  gap: 0.8rem;
 }
 
 .stat-card {
   background: rgba(26, 31, 46, 0.8);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1.5rem;
+  border-radius: 0.8rem;
+  padding: 1.2rem; /* Reduced padding */
   transition: all var(--transition-normal);
   backdrop-filter: blur(12px);
   position: relative;
@@ -1652,9 +1656,9 @@ input[type="number"] {
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Smaller */
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1666,10 +1670,10 @@ input[type="number"] {
 }
 
 .stat-value {
-  font-size: 1.75rem;
+  font-size: 1.5rem; /* Smaller */
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   line-height: 1;
   transition: all var(--transition-fast);
 }
@@ -1680,11 +1684,11 @@ input[type="number"] {
 }
 
 .stat-change {
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Smaller */
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .stat-change.positive {
@@ -1693,7 +1697,7 @@ input[type="number"] {
 
 .stat-change.positive::before {
   content: '↗';
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .stat-change.negative {
@@ -1702,21 +1706,21 @@ input[type="number"] {
 
 .stat-change.negative::before {
   content: '↘';
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .stat-status {
-  font-size: 0.8rem;
+  font-size: 0.7rem; /* Smaller */
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .stat-status::before {
   content: '';
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   animation: statusPulse 2s ease-in-out infinite;
 }
@@ -1750,13 +1754,13 @@ input[type="number"] {
   color: #ef4444;
 }
 
-/* Enhanced Day Advancement Section */
+/* Enhanced Day Advancement Section - SMALLER */
 .day-advancement-section {
   background: var(--gradient-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 2rem;
-  margin-bottom: 2rem;
+  border-radius: 0.8rem;
+  padding: 1.5rem; /* Reduced padding */
+  margin-bottom: 1.5rem;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
@@ -1782,16 +1786,17 @@ input[type="number"] {
 
 .day-advancement-section h3 {
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   position: relative;
+  font-size: 1.1rem; /* Smaller */
 }
 
 .day-advancement-section h3::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -4px;
   left: 0;
-  width: 60px;
+  width: 50px;
   height: 2px;
   background: var(--gradient-secondary);
   border-radius: 1px;
@@ -1801,8 +1806,8 @@ input[type="number"] {
   background: var(--gradient-secondary);
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 1rem;
+  padding: 0.8rem 1.5rem; /* Reduced padding */
+  border-radius: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -1810,6 +1815,7 @@ input[type="number"] {
   letter-spacing: 0.05em;
   position: relative;
   overflow: hidden;
+  font-size: 0.85rem; /* Smaller */
 }
 
 .day-advancement-section button::before {
@@ -1833,13 +1839,13 @@ input[type="number"] {
   box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
 }
 
-/* Enhanced Closing Prices Section */
+/* Enhanced Closing Prices Section - SMALLER */
 .closing-prices-section {
   background: var(--gradient-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 2rem;
-  margin-top: 2rem;
+  border-radius: 0.8rem;
+  padding: 1.5rem; /* Reduced padding */
+  margin-top: 1.5rem;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
@@ -1865,16 +1871,17 @@ input[type="number"] {
 
 .closing-prices-section h3 {
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   position: relative;
+  font-size: 1.1rem; /* Smaller */
 }
 
 .closing-prices-section h3::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -4px;
   left: 0;
-  width: 60px;
+  width: 50px;
   height: 2px;
   background: var(--gradient-premium);
   border-radius: 1px;
@@ -1925,22 +1932,32 @@ input[type="number"] {
   animation: shimmer 1.5s infinite;
 }
 
-/* Enhanced Responsive Design */
+/* Enhanced Responsive Design - IMPROVED */
 @media (max-width: 768px) {
+  body {
+    zoom: 0.6; /* Even smaller zoom for mobile */
+  }
+  
   .header {
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem;
+    gap: 1rem;
+    padding: 1rem;
+    height: auto;
   }
   
   .header-left {
-    gap: 2rem;
+    gap: 1.5rem;
   }
   
   .nav {
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
     justify-content: center;
+  }
+  
+  .nav-item {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
   }
   
   .main-container {
@@ -1951,15 +1968,16 @@ input[type="number"] {
   .left-panel {
     width: 100%;
     min-height: auto;
+    padding: 1rem;
   }
   
   .right-panel {
-    padding: 1.5rem;
+    padding: 1rem;
   }
   
   .chart-container {
-    height: 280px;
-    padding: 1rem;
+    height: 220px;
+    padding: 0.8rem;
   }
   
   .setting-inputs {
@@ -1967,66 +1985,70 @@ input[type="number"] {
   }
   
   .positions-table {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
   
   .positions-table th,
   .positions-table td {
-    padding: 0.75rem 0.5rem;
+    padding: 0.5rem 0.4rem;
   }
   
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: 0.6rem;
   }
   
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
   
   .stat-card {
-    padding: 1rem;
+    padding: 0.8rem;
   }
   
   .modal {
-    margin: 1rem;
-    padding: 1.5rem;
+    margin: 0.8rem;
+    padding: 1.2rem;
   }
   
   .modal-buttons {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.6rem;
   }
   
   .trade-buttons {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
   
   .trade-btn {
-    padding: 0.875rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
+  body {
+    zoom: 0.55; /* Even smaller for very small screens */
+  }
+  
   .logo {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
   
   .tagline {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
   }
   
   .left-panel {
-    padding: 1.5rem;
+    padding: 0.8rem;
   }
   
   .right-panel {
-    padding: 1rem;
+    padding: 0.8rem;
   }
   
   .positions-section {
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.8rem;
   }
   
   .stats-grid {
@@ -2035,50 +2057,50 @@ input[type="number"] {
   
   .trade-buttons {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
   
   .modal {
-    padding: 1rem;
+    padding: 0.8rem;
   }
   
   .modal h3 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
   
   .stat-value {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
   
   .swap-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
   
   .price-info {
-    padding: 1rem;
+    padding: 0.8rem;
   }
   
   .chart-container {
-    height: 240px;
-    padding: 0.75rem;
+    height: 180px;
+    padding: 0.6rem;
   }
 }
 
-/* Premium Scrollbar Styling */
+/* Premium Scrollbar Styling - SMALLER */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--bg-secondary);
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid var(--border-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--gradient-accent);
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid var(--border-primary);
   transition: all var(--transition-normal);
 }
@@ -2092,7 +2114,7 @@ input[type="number"] {
   background: var(--bg-secondary);
 }
 
-/* Enhanced Focus States for Premium Accessibility */
+/* Enhanced Focus States */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -2117,13 +2139,13 @@ select:focus-visible,
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Premium Button Variants */
+/* Premium Button Variants - SMALLER */
 .btn-premium {
   background: var(--gradient-premium);
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 1rem;
+  padding: 0.8rem 1.5rem; /* Reduced padding */
+  border-radius: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -2132,6 +2154,7 @@ select:focus-visible,
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-premium);
+  font-size: 0.85rem; /* Smaller */
 }
 
 .btn-premium::before {
@@ -2154,13 +2177,13 @@ select:focus-visible,
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);
 }
 
-/* Enhanced Glass Cards */
+/* Enhanced Glass Cards - SMALLER */
 .glass-card {
   background: rgba(26, 31, 46, 0.7);
   backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1.5rem;
+  border-radius: 0.8rem;
+  padding: 1.2rem; /* Reduced padding */
   transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
@@ -2184,7 +2207,7 @@ select:focus-visible,
   box-shadow: var(--shadow-lg);
 }
 
-/* Enhanced Tooltips */
+/* Enhanced Tooltips - SMALLER */
 .tooltip {
   position: relative;
   cursor: help;
@@ -2198,9 +2221,9 @@ select:focus-visible,
   transform: translateX(-50%);
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 0.6rem; /* Reduced padding */
+  border-radius: 0.4rem;
+  font-size: 0.7rem; /* Smaller */
   font-weight: 500;
   white-space: nowrap;
   opacity: 0;
@@ -2232,22 +2255,23 @@ select:focus-visible,
   transform: translateX(-50%) translateY(-8px);
 }
 
-/* Enhanced Notification System */
+/* Enhanced Notification System - SMALLER */
 .notification {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: 0.8rem;
+  right: 0.8rem;
   background: var(--gradient-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 1rem;
-  padding: 1rem 1.5rem;
+  border-radius: 0.8rem;
+  padding: 0.8rem 1.2rem; /* Reduced padding */
   color: var(--text-primary);
   font-weight: 500;
   z-index: 1000;
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-lg);
   animation: slideInRight 0.5s ease-out;
-  max-width: 400px;
+  max-width: 320px; /* Smaller */
+  font-size: 0.85rem; /* Smaller */
 }
 
 @keyframes slideInRight {
@@ -2276,12 +2300,12 @@ select:focus-visible,
   background: linear-gradient(145deg, rgba(245, 158, 11, 0.1) 0%, var(--bg-card) 100%);
 }
 
-/* Enhanced Data Visualization Elements */
+/* Enhanced Data Visualization Elements - SMALLER */
 .progress-bar {
   width: 100%;
-  height: 8px;
+  height: 6px; /* Smaller */
   background: var(--border-secondary);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   position: relative;
 }
@@ -2293,7 +2317,7 @@ select:focus-visible,
   left: 0;
   height: 100%;
   background: var(--gradient-accent);
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width var(--transition-slow);
   width: var(--progress, 0%);
 }
@@ -2307,13 +2331,13 @@ select:focus-visible,
   to { width: var(--progress, 0%); }
 }
 
-/* Enhanced Status Indicators */
+/* Enhanced Status Indicators - SMALLER */
 .status-dot {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 10px; /* Smaller */
+  height: 10px;
   border-radius: 50%;
-  margin-right: 0.5rem;
+  margin-right: 0.4rem;
   position: relative;
 }
 
@@ -2368,7 +2392,7 @@ select:focus-visible,
   filter: brightness(1.1);
 }
 
-/* Enhanced Typography */
+/* Enhanced Typography - SMALLER */
 .text-gradient {
   background: var(--gradient-accent);
   -webkit-background-clip: text;
@@ -2482,8 +2506,9 @@ select:focus-visible,
   .app::after {
     animation: none !important;
   }
-  
 }
+
+/* Hover effects */
 *:hover {
   transition: all 0.25s ease;
 }
@@ -2492,6 +2517,7 @@ select:focus-visible,
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.95; transform: scale(1.02); }
 }
+
 .live-price,
 .realized-apy,
 .global-day {
@@ -2515,7 +2541,7 @@ select:focus-visible,
   background: rgba(16, 185, 129, 0.08);
 }
 
-/* Boost blur effect globally */
+/* Enhanced blur effects */
 .chart-container,
 .market-stats,
 .modal,
@@ -2532,4 +2558,40 @@ select:focus-visible,
 /* Enhanced Enter Button Hover */
 .enter-btn:not(.disabled):hover {
   box-shadow: 0 0 18px #10b981, 0 0 12px #10b981 inset;
+}
+
+/* COMPACT LAYOUT IMPROVEMENTS */
+.swap-header {
+  margin-bottom: 1rem; /* Reduced */
+}
+
+.swap-header div {
+  font-size: 0.75rem; /* Smaller subtitle */
+  margin-top: 0.2rem;
+}
+
+/* Make input groups more compact */
+.input-group {
+  margin-bottom: 1rem; /* Reduced from 1.2rem */
+}
+
+/* Make market info more compact */
+.market-info {
+  margin-bottom: 1rem; /* Reduced */
+}
+
+.market-info div {
+  margin-top: 0.4rem; /* Reduced */
+}
+
+/* Make buttons more compact */
+.enter-btn {
+  margin-bottom: 1rem; /* Reduced */
+}
+
+/* Smaller chart on mobile */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 200px; /* Even smaller on mobile */
+  }
 }
