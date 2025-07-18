@@ -2469,108 +2469,35 @@ const calculateVammBreakdown = () => {
             </div>
 
             <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-              <h4>Recent Trades - {market}</h4>
-              <div style={{
-                background: 'var(--gradient-card)',
-                borderRadius: '1rem',
-                border: '1px solid var(--border-secondary)',
-                overflow: 'hidden'
-              }}>
-                {(() => {
-                  // Combine open trades and closed trades
-                  const openTrades = (marketTrades || []).map(trade => ({
-                    ...trade,
-                    status: 'OPEN',
-                    tradePrice: trade.entryPrice,
-                    finalPL: trade.pnl,
-                    dv01: trade.baseDV01,
-                    direction: trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed',
-                    timestamp: trade.timestamp || new Date().toLocaleTimeString()
-                  }));
-                  
-                  const closedTrades = tradeHistory
-                    .filter(trade => trade.market === market)
-                    .map(trade => ({
-                      ...trade,
-                      status: trade.status,
-                      tradePrice: parseFloat(trade.exitPrice),
-                      finalPL: parseFloat(trade.finalPL),
-                      timestamp: trade.date
-                    }));
-                  
-                  // Combine and sort by most recent (you might want to add actual timestamps)
-                  const allTrades = [...openTrades, ...closedTrades]
-                    .slice(-5)
-                    .reverse();
-                  
-                  return allTrades.length > 0 ? (
-                    <div style={{ padding: '1rem' }}>
-                      {allTrades.map((trade, i) => (
-                        <div key={i} style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '0.75rem 0',
-                          borderBottom: i < allTrades.length - 1 ? '1px solid rgba(55, 65, 81, 0.3)' : 'none'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{
-                              padding: '0.25rem 0.75rem',
-                              borderRadius: '1rem',
-                              fontSize: '0.75rem',
-                              fontWeight: '600',
-                              background: trade.direction === 'Pay Fixed' || trade.type === 'pay' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                              color: trade.direction === 'Pay Fixed' || trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                              border: `1px solid ${trade.direction === 'Pay Fixed' || trade.type === 'pay' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
-                            }}>
-                              {(trade.direction === 'Pay Fixed' || trade.type === 'pay') ? 'PAY' : 'RCV'}
-                            </span>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                              {trade.tradePrice?.toFixed(3)}%
-                            </span>
-                            <span style={{
-                              padding: '0.125rem 0.5rem',
-                              borderRadius: '0.75rem',
-                              fontSize: '0.65rem',
-                              fontWeight: '600',
-                              background: trade.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 
-                                        trade.status === 'CLOSED' ? 'rgba(107, 114, 128, 0.2)' : 
-                                        'rgba(239, 68, 68, 0.2)',
-                              color: trade.status === 'OPEN' ? '#10b981' : 
-                                    trade.status === 'CLOSED' ? '#6b7280' : '#ef4444',
-                              border: `1px solid ${trade.status === 'OPEN' ? 'rgba(16, 185, 129, 0.3)' : 
-                                                  trade.status === 'CLOSED' ? 'rgba(107, 114, 128, 0.3)' : 
-                                                  'rgba(239, 68, 68, 0.3)'}`
-                            }}>
-                              {trade.status}
-                            </span>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                              ${trade.dv01?.toLocaleString()} DV01
-                            </div>
-                            <div style={{ 
-                              color: trade.finalPL >= 0 ? '#22c55e' : '#ef4444',
-                              fontSize: '0.75rem',
-                              fontWeight: '600'
-                            }}>
-                              {trade.finalPL >= 0 ? '+' : ''}${Math.abs(trade.finalPL).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{
-                      padding: '2rem',
-                      textAlign: 'center',
-                      color: 'var(--text-muted)'
-                    }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '0.5rem', opacity: 0.5 }}>📊</div>
-                      <div>No trades yet in {market}</div>
-                    </div>
-                  );
-                })()}
+              <h4>Protocol Metrics</h4>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setShowVammBreakdown(true)}>
+                  <div className="stat-label">vAMM P&L</div>
+                  <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
+                    {vammPL >= 0 ? '+' : ''}$<AnimatedCounter value={Math.abs(vammPL)} />{vammPL < 0 ? '' : ''}
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Click to view breakdown
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Protocol P&L (Fees)</div>
+                  <div className="stat-value" style={{ color: '#10b981' }}>
+                    +$<AnimatedCounter value={protocolPL} />
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Fee revenue collected
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Protocol Risk</div>
+                  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
+                    {netOI >= 0 ? 'Received' : 'Paid'} $<AnimatedCounter value={Math.abs(netOI)} />
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
+                    Current DV01 based OI
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -4636,6 +4563,10 @@ const calculateVammBreakdown = () => {
                 <div className="detail-row">
                   <span>Fee:</span>
                   <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
+                </div>
+                <div className="detail-row">
+                  <span>Margin:</span>
+                  <span>${margin.toLocaleString()}</span>
                 </div>
               </div>
             </div>
