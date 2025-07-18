@@ -2118,7 +2118,7 @@ const calculateVammBreakdown = () => {
                 }}>
                   <span style={{ color: '#9ca3af' }}>Notional:</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>$</span>
+                    <span style={{ color: '#ffffff', fontSize: '1.2rem' }}>$</span>
                     <input
                       type="text"
                       value={customNotional ? (customNotional / 1000000).toFixed(0) : ''}
