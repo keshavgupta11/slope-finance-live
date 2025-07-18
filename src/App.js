@@ -2140,7 +2140,7 @@ const calculateVammBreakdown = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="inputs">
               <div style={{
                 padding: '0.8rem',
@@ -3092,7 +3092,7 @@ const calculateVammBreakdown = () => {
               maxWidth: '600px',
               margin: '0 auto'
             }}>
-              Master the fundamentals of interest rate derivatives and start trading with confidence
+              Master the fundamentals of crypto rate derivatives and start trading with confidence
             </p>
           </div>
           
