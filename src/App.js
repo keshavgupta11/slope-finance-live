@@ -1906,11 +1906,13 @@ const calculateVammBreakdown = () => {
               <div className="price-info">
                 <div className="price-row">
                   <span>Live Price:</span>
-                  <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem' }}>{lastPrice.toFixed(3)}%</span>
+                  <span style={{ color: '#10b981', fontWeight: '700', fontSize: '1rem', position: 'relative' }}>
+                    <span style={{ marginRight: '8px' }}>•</span>{lastPrice.toFixed(3)}%
+                  </span>
                 </div>
                 <div className="price-row">
                   <span>2025 realized APY:</span>
-                  <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem' }}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
                     {market === "JitoSol" ? "4.03% / 8.25%" :
                      market === "Lido stETH" ? "1.44% / 2.92%" :
                      market === "Aave ETH Lending" ? "0.95% / 1.9%" :
@@ -1920,7 +1922,7 @@ const calculateVammBreakdown = () => {
                 </div>
                 <div className="price-row">
                   <span>2025 implied unrealized APY:</span>
-                  <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem' }}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
                     {market === "JitoSol" ? "7.72%" :
                     market === "Lido stETH" ? "2.83%" :
                     market === "Aave ETH Lending" ? "1.89%" :
@@ -1930,7 +1932,7 @@ const calculateVammBreakdown = () => {
                 </div>
                 <div className="price-row">
                   <span>Global Day:</span>
-                  <span style={{ color: '#ffffff', fontWeight: 'bold' }}>{globalDay}</span>
+                  <span style={{ color: '#9ca3af', fontWeight: '700' }}>{globalDay}</span>
                 </div>
                 <div className="indicator">
                   <img
