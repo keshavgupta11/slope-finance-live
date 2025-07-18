@@ -2163,7 +2163,7 @@ const calculateVammBreakdown = () => {
                 border: '1px solid #374151',
                 borderRadius: '1rem',
                 marginBottom: '1rem',
-                marginTop: '0rem'
+                marginTop: '-0.5rem'
               }}>
                 <div style={{ 
                   display: 'flex', 
