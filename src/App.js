@@ -3073,10 +3073,14 @@ const calculateVammBreakdown = () => {
                 <span style={{ fontSize: '2rem' }}>🔄</span>
                 What are Interest Rate Swaps?
               </h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1rem', fontSize: '1.1rem' }}>
                 Interest Rate Swaps (IRS) let you exchange variable yield exposure for fixed yield exposure. 
                 Instead of being subject to changing staking/lending rates, you can lock in a fixed rate or 
                 speculate on rate movements.
+              </p>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                <strong style={{ color: '#10b981' }}>Crypto Rate Swaps</strong> are interest rate swaps but for crypto native yields - 
+                like staking rewards, lending rates, and DeFi protocol yields.
               </p>
               <div style={{
                 padding: '1.5rem',
