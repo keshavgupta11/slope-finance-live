@@ -4372,49 +4372,9 @@ const calculateVammBreakdown = () => {
       {pendingTrade && (
         <div className="modal-overlay">
           <div className="modal">
-            {/* Header with market and direction */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '2rem',
-              paddingBottom: '1rem',
-              borderBottom: '1px solid #374151'
-            }}>
-              <img
-                src={
-                  market === "JitoSol" ? "/jito.png" :
-                  market === "Lido stETH" ? "/lido.png" :
-                  market === "Aave ETH Lending" ? "/aave.png" :
-                  market === "Aave ETH Borrowing" ? "/aave.png" :
-                  market === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
-                }
-                alt={`${market} logo`}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%'
-                }}
-              />
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.5rem', color: '#f1f5f9' }}>
-                  {market}
-                </h3>
-                <div style={{
-                  color: pendingTrade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>{pendingTrade.type === 'pay' ? '📈' : '📉'}</span>
-                  {pendingTrade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                </div>
-              </div>
-            </div>
-
-            {/* Hero section - execution price */}
+            <h3>Confirm Trade</h3>
+            
+            {/* Hero section - most important info */}
             <div style={{
               background: pendingTrade.type === 'pay' ? 
                 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%)' :
@@ -4434,17 +4394,24 @@ const calculateVammBreakdown = () => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}>
-                Execution Price
+                {pendingTrade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
               </div>
               
               <div style={{
                 fontSize: '3rem',
                 fontWeight: '800',
                 color: pendingTrade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                marginBottom: '0rem',
+                marginBottom: '0.5rem',
                 lineHeight: 1
               }}>
                 {pendingTrade.finalPrice}%
+              </div>
+              
+              <div style={{
+                fontSize: '1rem',
+                color: '#6b7280'
+              }}>
+                Execution Price
               </div>
             </div>
 
@@ -4503,6 +4470,12 @@ const calculateVammBreakdown = () => {
                   <span>Fee:</span>
                   <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
                 </div>
+                {wallet && (
+                  <div className="detail-row">
+                    <span>Wallet:</span>
+                    <span style={{ fontSize: '0.875rem', color: '#10b981' }}>{formatAddress(wallet)}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="modal-buttons">
