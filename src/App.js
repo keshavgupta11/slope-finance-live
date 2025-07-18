@@ -4373,110 +4373,42 @@ const calculateVammBreakdown = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Confirm Trade</h3>
-            
-            {/* Hero section - most important info */}
-            <div style={{
-              background: pendingTrade.type === 'pay' ? 
-                'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%)' :
-                'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%)',
-              border: pendingTrade.type === 'pay' ? 
-                '1px solid rgba(59, 130, 246, 0.3)' : 
-                '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '1rem',
-              padding: '2rem',
-              marginBottom: '1.5rem',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '0.875rem',
-                color: '#9ca3af',
-                marginBottom: '0.5rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}>
-                {pendingTrade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+            <div className="trade-details">
+              <div className="detail-row">
+                <span>Type:</span>
+                <span className="trade-type">{pendingTrade.type} Fixed</span>
               </div>
-              
-              <div style={{
-                fontSize: '3rem',
-                fontWeight: '800',
-                color: pendingTrade.type === 'pay' ? '#3b82f6' : '#f59e0b',
-                marginBottom: '0.5rem',
-                lineHeight: 1
-              }}>
-                {pendingTrade.finalPrice}%
+              <div className="detail-row">
+                <span>Execution Price:</span>
+                <span className="execution-price">{pendingTrade.finalPrice}%</span>
               </div>
-              
-              <div style={{
-                fontSize: '1rem',
-                color: '#6b7280'
-              }}>
-                Execution Price
+              <div className="detail-row">
+                <span>DV01:</span>
+                <span>${baseDv01.toLocaleString()}</span>
               </div>
-            </div>
-
-            {/* Key details grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '1rem',
-              marginBottom: '1.5rem'
-            }}>
-              <div style={{
-                background: 'rgba(17, 24, 39, 0.8)',
-                padding: '1rem',
-                borderRadius: '0.75rem',
-                border: '1px solid #374151'
-              }}>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                  Position Size
-                </div>
-                <div style={{ color: '#f1f5f9', fontSize: '1.25rem', fontWeight: '700' }}>
-                  ${baseDv01.toLocaleString()} DV01
-                </div>
+              <div className="detail-row">
+                <span>Entry Day:</span>
+                <span>{globalDay}</span>
               </div>
-              
-              <div style={{
-                background: 'rgba(17, 24, 39, 0.8)',
-                padding: '1rem',
-                borderRadius: '0.75rem',
-                border: '1px solid #374151'
-              }}>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                  Liquidation Price
-                </div>
-                <div style={{ color: '#ef4444', fontSize: '1.25rem', fontWeight: '700' }}>
+              <div className="detail-row">
+                <span>Liquidation Price:</span>
+                <span className="liq-price">
                   {(pendingTrade.type === 'pay' 
                     ? (parseFloat(pendingTrade.finalPrice) - ((margin / baseDv01) / 100))
                     : (parseFloat(pendingTrade.finalPrice) + ((margin / baseDv01 ) / 100))
                   ).toFixed(3)}%
-                </div>
+                </span>
               </div>
-            </div>
-
-            {/* Secondary details */}
-            <div style={{
-              background: 'rgba(55, 65, 81, 0.3)',
-              borderRadius: '0.75rem',
-              padding: '1rem',
-              marginBottom: '1.5rem'
-            }}>
-              <div className="trade-details">
-                <div className="detail-row">
-                  <span>Entry Day:</span>
-                  <span>{globalDay}</span>
-                </div>
-                <div className="detail-row">
-                  <span>Fee:</span>
-                  <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
-                </div>
-                {wallet && (
-                  <div className="detail-row">
-                    <span>Wallet:</span>
-                    <span style={{ fontSize: '0.875rem', color: '#10b981' }}>{formatAddress(wallet)}</span>
-                  </div>
-                )}
+              <div className="detail-row">
+                <span>Fee:</span>
+                <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
               </div>
+              {wallet && (
+                <div className="detail-row">
+                  <span>Wallet:</span>
+                  <span style={{ fontSize: '0.875rem', color: '#10b981' }}>{formatAddress(wallet)}</span>
+                </div>
+              )}
             </div>
             <div className="modal-buttons">
               <button 
