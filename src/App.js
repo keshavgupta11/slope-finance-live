@@ -217,22 +217,9 @@ export default function App() {
   //market dropdown
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
   const [customNotional, setCustomNotional] = useState(10000000); // Default $10M
-  //tips on swap page
-  const [currentTipIndex, setCurrentTipIndex] = useState(0);
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
-
-  const tradingTips = [
-  { icon: "💡", text: "Pay Fixed profits when rates go higher", category: "Strategy" },
-  { icon: "📊", text: "DV01 shows your P&L sensitivity per 1bp rate move", category: "Education" },
-  { icon: "⚡", text: "Risk-reducing trades get 2bp fees vs 5bp", category: "Pro Tip" },
-  { icon: "🎯", text: "Watch liquidation risk - add margin when close", category: "Risk" },
-  { icon: "📈", text: "Correlation trades: Lido/rETH often move together", category: "Advanced" },
-  { icon: "🔄", text: "Settlement P&L uses realized rates vs entry price", category: "Settlement" },
-  { icon: "⚖️", text: "Protocol risk = net difference between pay/receive", category: "Mechanics" },
-  { icon: "🚀", text: "Larger positions get worse pricing due to impact", category: "Trading" }
-]; 
   const [usdcBalance, setUsdcBalance] = useState(0);
 
   // Solana connection
@@ -243,8 +230,6 @@ export default function App() {
 
   // Calculate current DV01 based on time to maturity- deleted
   
-
-
   // Enhanced UI states
   const [toasts, setToasts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -570,14 +555,6 @@ export default function App() {
     // Update OI based on current DV01s
     setOiByMarket(calculateProtocolOI());
   }, [globalDay, lastPriceByMarket, marketSettings, dailyClosingPrices, isSettlementMode, settlementPrices]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTipIndex(prev => (prev + 1) % tradingTips.length);
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, []);
 
   //3d sphere function
   const FloatingPositionSpheres = () => {
@@ -2525,43 +2502,6 @@ const calculateVammBreakdown = () => {
             </div>
           </div>
         </div>
-          
-        {/* Trading Tips Section */}
-          <div style={{
-            margin: '2rem 0',
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '1rem',
-            transition: 'all 0.5s ease'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem'
-            }}>
-              <span style={{ fontSize: '1.5rem' }}>{tradingTips[currentTipIndex].icon}</span>
-              <div>
-                <div style={{ 
-                  fontSize: '1rem', 
-                  color: '#e2e8f0', 
-                  fontWeight: '600',
-                  marginBottom: '0.25rem'
-                }}>
-                  {tradingTips[currentTipIndex].text}
-                </div>
-                <div style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#10b981',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontWeight: '600'
-                }}>
-                  {tradingTips[currentTipIndex].category}
-                </div>
-              </div>
-            </div>
-          </div>
 
         <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
           <h3>Positions</h3>
