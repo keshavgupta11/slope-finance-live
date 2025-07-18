@@ -4069,59 +4069,64 @@ const calculateVammBreakdown = () => {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
               gap: '1rem', 
               marginBottom: '2rem' 
             }}>
-              <button
-                onClick={() => calculateStressTest(1)} // +100bp
-                style={{
-                  background: 'var(--gradient-secondary)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '1rem 1.5rem',
-                  borderRadius: '1rem',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.025em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.75rem',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 14px rgba(6, 182, 212, 0.25)'
-                }}
-              >
-                <span style={{ fontSize: '1.25rem' }}>📈</span>
-                Rates +100bp
-              </button>
-              
-              <button
-                onClick={() => calculateStressTest(-1)} // -100bp
-                style={{
-                  background: 'var(--gradient-secondary)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '1rem 1.5rem',
-                  borderRadius: '1rem',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.025em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.75rem',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 14px rgba(6, 182, 212, 0.25)'
-                }}
-              >
-                <span style={{ fontSize: '1.25rem' }}>📉</span>
-                Rates -100bp
-              </button>
+              {[10, 25, 50, 100, 200].map(bps => (
+                <button
+                  key={bps}
+                  onClick={() => {
+                    let totalPLUp = 0;
+                    let totalPLDown = 0;
+                    let positionCount = 0;
+                    
+                    Object.keys(tradesByMarket).forEach(market => {
+                      const trades = tradesByMarket[market] || [];
+                      trades.forEach(trade => {
+                        const currentPrice = lastPriceByMarket[market] || marketSettings[market].apy;
+                        const stressPriceUp = currentPrice + (bps / 100); // +bps
+                        const stressPriceDown = currentPrice - (bps / 100); // -bps
+                        
+                        const stressPLUp = calculateTotalPL(trade, stressPriceUp);
+                        const stressPLDown = calculateTotalPL(trade, stressPriceDown);
+                        totalPLUp += stressPLUp;
+                        totalPLDown += stressPLDown;
+                        positionCount++;
+                      });
+                    });
+                    
+                    setStressTestResult({
+                      scenario: `${bps}bp Rate Move`,
+                      totalPLUp: Math.round(totalPLUp),
+                      totalPLDown: Math.round(totalPLDown),
+                      positionCount,
+                      bps
+                    });
+                  }}
+                  style={{
+                    background: 'var(--gradient-secondary)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '1rem 1rem',
+                    borderRadius: '1rem',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.025em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 14px rgba(6, 182, 212, 0.25)'
+                  }}
+                >
+                  <span style={{ fontSize: '1rem' }}>📊</span>
+                  ±{bps}bp
+                </button>
+              ))}
               
               <button
                 onClick={() => setStressTestResult(null)}
@@ -4129,9 +4134,9 @@ const calculateVammBreakdown = () => {
                   background: 'linear-gradient(45deg, #6b7280, #4b5563)',
                   color: 'white',
                   border: 'none',
-                  padding: '1rem 1.5rem',
+                  padding: '1rem 1rem',
                   borderRadius: '1rem',
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   cursor: 'pointer',
                   fontWeight: '700',
                   textTransform: 'uppercase',
@@ -4139,11 +4144,11 @@ const calculateVammBreakdown = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.75rem',
+                  gap: '0.5rem',
                   transition: 'all 0.3s ease'
                 }}
               >
-                <span style={{ fontSize: '1.25rem' }}>🗑️</span>
+                <span style={{ fontSize: '1rem' }}>🗑️</span>
                 Clear
               </button>
             </div>
@@ -4153,7 +4158,7 @@ const calculateVammBreakdown = () => {
                 padding: '2rem', 
                 background: 'rgba(26, 31, 46, 0.8)', 
                 borderRadius: '1rem',
-                border: `2px solid ${stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'}`,
+                border: '2px solid #10b981',
                 backdropFilter: 'blur(12px)',
                 position: 'relative',
                 overflow: 'hidden'
@@ -4164,12 +4169,12 @@ const calculateVammBreakdown = () => {
                   left: 0,
                   right: 0,
                   height: '2px',
-                  background: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
+                  background: '#10b981',
                   opacity: 0.8
                 }} />
                 
                 <h4 style={{ 
-                  margin: '0 0 1rem 0', 
+                  margin: '0 0 1.5rem 0', 
                   color: 'var(--text-primary)',
                   fontSize: '1.25rem',
                   fontWeight: '700',
@@ -4180,26 +4185,72 @@ const calculateVammBreakdown = () => {
                   <span style={{
                     width: '12px',
                     height: '12px',
-                    background: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
+                    background: '#10b981',
                     borderRadius: '50%',
-                    boxShadow: `0 0 12px ${stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444'}`,
+                    boxShadow: '0 0 12px #10b981',
                     animation: 'pulse 2s infinite'
                   }} />
                   Stress Test: {stressTestResult.scenario}
                 </h4>
-                <div style={{ 
-                  fontSize: '2rem', 
-                  fontWeight: '800',
-                  color: stressTestResult.totalPL >= 0 ? '#22c55e' : '#ef4444',
-                  marginBottom: '0.75rem',
-                  textShadow: `0 0 10px ${stressTestResult.totalPL >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
-                }}>
-                  Total P&L: {stressTestResult.totalPL >= 0 ? '+' : ''}${Math.abs(stressTestResult.totalPL).toLocaleString()}
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  {/* Positive scenario */}
+                  <div style={{
+                    padding: '1.5rem',
+                    background: 'rgba(34, 197, 94, 0.1)',
+                    borderRadius: '0.75rem',
+                    border: '1px solid rgba(34, 197, 94, 0.3)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '1.5rem', 
+                      fontWeight: '800',
+                      color: stressTestResult.totalPLUp >= 0 ? '#22c55e' : '#ef4444',
+                      marginBottom: '0.5rem',
+                      textShadow: `0 0 10px ${stressTestResult.totalPLUp >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                    }}>
+                      +{stressTestResult.bps}bp: {stressTestResult.totalPLUp >= 0 ? '+' : ''}${Math.abs(stressTestResult.totalPLUp).toLocaleString()}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      color: stressTestResult.totalPLUp >= 0 ? '#22c55e' : '#ef4444',
+                      fontWeight: '600'
+                    }}>
+                      {stressTestResult.totalPLUp >= 0 ? 'Profit' : 'Loss'}
+                    </div>
+                  </div>
+                  
+                  {/* Negative scenario */}
+                  <div style={{
+                    padding: '1.5rem',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    borderRadius: '0.75rem',
+                    border: '1px solid rgba(239, 68, 68, 0.3)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '1.5rem', 
+                      fontWeight: '800',
+                      color: stressTestResult.totalPLDown >= 0 ? '#22c55e' : '#ef4444',
+                      marginBottom: '0.5rem',
+                      textShadow: `0 0 10px ${stressTestResult.totalPLDown >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                    }}>
+                      -{stressTestResult.bps}bp: {stressTestResult.totalPLDown >= 0 ? '+' : ''}${Math.abs(stressTestResult.totalPLDown).toLocaleString()}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      color: stressTestResult.totalPLDown >= 0 ? '#22c55e' : '#ef4444',
+                      fontWeight: '600'
+                    }}>
+                      {stressTestResult.totalPLDown >= 0 ? 'Profit' : 'Loss'}
+                    </div>
+                  </div>
                 </div>
+                
                 <div style={{ 
                   fontSize: '1rem', 
                   color: 'var(--text-muted)',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  marginTop: '1rem',
+                  textAlign: 'center'
                 }}>
                   Across {stressTestResult.positionCount} open position{stressTestResult.positionCount !== 1 ? 's' : ''}
                 </div>
