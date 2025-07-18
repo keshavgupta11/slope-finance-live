@@ -216,6 +216,7 @@ export default function App() {
   const [showLegend, setShowLegend] = useState(false);
   //market dropdown
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
+  const [customNotional, setCustomNotional] = useState(10000000); // Default $10M
   // Solana wallet state
   const [wallet, setWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -2077,8 +2078,46 @@ const calculateVammBreakdown = () => {
                 )}
               </div>
               <div className="market-info">
-                <div>Notional / DV01: $10mm = $1k DV01</div>
-                <div>$1k DV01 = $1,000 gain/lose per 1bp move</div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '1rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ color: '#9ca3af' }}>Notional:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ color: '#10b981', fontSize: '1.2rem' }}>$</span>
+                    <input
+                      type="text"
+                      value={customNotional ? (customNotional / 1000000).toFixed(0) : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        setCustomNotional(value === '' ? 0 : Number(value) * 1000000);
+                      }}
+                      placeholder="10"
+                      style={{
+                        width: '60px',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '0.375rem',
+                        border: '1px solid #4b5563',
+                        background: 'rgba(17, 24, 39, 0.8)',
+                        color: '#f1f5f9',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        textAlign: 'center',
+                        outline: 'none'
+                      }}
+                    />
+                    <span style={{ color: '#9ca3af' }}>MM =</span>
+                    <span style={{ color: '#10b981', fontWeight: '700' }}>
+                      ${(customNotional / 10000).toLocaleString()}
+                    </span>
+                    <span style={{ color: '#9ca3af' }}>DV01</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                  ${(customNotional / 10000).toLocaleString()} DV01 = ${(customNotional / 10000).toLocaleString()} gain/loss per 1bp move
+                </div>
               </div>
             </div>
 
