@@ -228,7 +228,7 @@ export default function App() {
     { icon: "📊", text: "DV01 shows your P&L sensitivity per 1bp rate move", category: "Education" },
     { icon: "⚡", text: "Risk-reducing trades get 2bp fees vs 5bp", category: "Pro Tip" },
     { icon: "🎯", text: "Watch liquidation risk - add margin when close", category: "Risk" },
-    { icon: "📈", text: "Correlation trades: Lido/rETH often move together", category: "Advanced" },
+    { icon: "📈", text: "Correlation trades: Lido steth/rETH often move together", category: "Advanced" },
     { icon: "🔄", text: "Settlement P&L uses realized rates vs entry price", category: "Settlement" },
     { icon: "⚖️", text: "Protocol risk = net difference between pay/receive", category: "Mechanics" },
     { icon: "🚀", text: "Larger positions get worse pricing due to impact", category: "Trading" }
@@ -2522,8 +2522,8 @@ const calculateVammBreakdown = () => {
             </div>
             {/* Trading Tips Section */}
             <div style={{
-              margin: '2rem 0',
-              padding: '1.5rem',
+              margin: '1rem 0',
+              padding: '1rem',
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '1rem',
@@ -2559,7 +2559,7 @@ const calculateVammBreakdown = () => {
           </div>
         </div>
         
-        <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
+        <div className="positions-section" style={{ marginTop: '1.5rem', clear: 'both' }}>
           <h3>Positions</h3>
           <div className="positions-table">
             {marketTrades.length > 0 ? (
@@ -3350,7 +3350,7 @@ const calculateVammBreakdown = () => {
                 <span style={{ fontSize: '2rem' }}>⚙️</span>
                 Our Pricing Model
               </h3>
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
                 <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '1.5rem', fontSize: '1.05rem' }}>
                   <strong style={{ color: '#8b5cf6' }}>Full Year Pricing:</strong> All contracts are priced for the full 365-day period, 
                   regardless of when you enter. Whether you trade on Day 0 or Day 90, you're getting 
