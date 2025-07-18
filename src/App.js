@@ -2142,29 +2142,8 @@ const calculateVammBreakdown = () => {
             </div>
 
             <div className="input-group">
-              <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              padding: '1rem', 
-              backgroundColor: '#374151', 
-              borderRadius: '0.5rem',
-              fontSize: '0.875rem',
-              color: '#e5e7eb'
-            }}>
-    <div>
-      <span style={{ color: '#9ca3af' }}>Days Realized: </span>
-      <span style={{ color: '#10b981', fontWeight: 'bold' }}>
-        <AnimatedCounter value={globalDay} />
-      </span>
-    </div>
-    <div>
-      <span style={{ color: '#9ca3af' }}>Days to Maturity: </span>
-      <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-        <AnimatedCounter value={365 - globalDay} />
-      </span>
-    </div>
-  </div>
-</div>
+              
+            </div>
 
             <div className="inputs">
               <div style={{
@@ -2336,6 +2315,30 @@ const calculateVammBreakdown = () => {
               >
                 {!wallet ? 'Connect Wallet' : margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Swap'}
               </button>
+
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                padding: '0.6rem', 
+                backgroundColor: '#374151', 
+                borderRadius: '0.4rem',
+                fontSize: '0.75rem',
+                color: '#e5e7eb',
+                marginBottom: '0.8rem'
+              }}>
+                <div>
+                  <span style={{ color: '#9ca3af' }}>Days Realized: </span>
+                  <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+                    <AnimatedCounter value={globalDay} />
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: '#9ca3af' }}>Days to Maturity: </span>
+                  <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
+                    <AnimatedCounter value={365 - globalDay} />
+                  </span>
+                </div>
+              </div>
 
               <div className="profit-info">
                 <div className="profit-row">
