@@ -2275,7 +2275,7 @@ const calculateVammBreakdown = () => {
                 disabled={!wallet || margin < baseDv01 * 50 || isSettlementMode}
                 className={`enter-btn ${!wallet || margin < baseDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Enter Position'}
+                {!wallet ? 'Connect Wallet' : margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Swap'}
               </button>
 
               <div className="profit-info">
