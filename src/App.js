@@ -4470,12 +4470,7 @@ const calculateVammBreakdown = () => {
                   <span>Fee:</span>
                   <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
                 </div>
-                {wallet && (
-                  <div className="detail-row">
-                    <span>Wallet:</span>
-                    <span style={{ fontSize: '0.875rem', color: '#10b981' }}>{formatAddress(wallet)}</span>
-                  </div>
-                )}
+                
               </div>
             </div>
             <div className="modal-buttons">
