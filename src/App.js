@@ -1818,62 +1818,15 @@ const calculateVammBreakdown = () => {
         <header className="header">
         <div className="header-left">
           <h1 className="logo">Slope</h1>
-          <nav style={{
-            display: 'flex',
-            gap: '0.5rem',
-            background: 'rgba(15, 23, 42, 0.8)',
-            padding: '0.5rem',
-            borderRadius: '1rem',
-            border: '1px solid #374151',
-            backdropFilter: 'blur(12px)'
-          }}>
-            {["Swap", "Learn", "Docs", "Leaderboard", "Stats", "Settings", "Risk"].map((tab) => (
-              <span
-                key={tab}
-                className={`nav-item ${activeTab === tab ? "active" : ""}`}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.75rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  background: activeTab === tab ? 
-                    'linear-gradient(45deg, #10b981, #059669)' : 
-                    'transparent',
-                  color: activeTab === tab ? '#ffffff' : '#94a3b8',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab) {
-                    e.target.style.background = 'rgba(148, 163, 184, 0.1)';
-                    e.target.style.color = '#e2e8f0';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab) {
-                    e.target.style.background = 'transparent';
-                    e.target.style.color = '#94a3b8';
-                  }
-                }}
-              >
-                {activeTab === tab && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '2px',
-                    background: 'linear-gradient(90deg, #34d399, #10b981, #059669)',
-                    borderRadius: '1px'
-                  }} />
-                )}
-                {tab}
-              </span>
-            ))}
-          </nav>
+          <nav className="nav">
+            <span className={`nav-item ${activeTab === "Swap" ? "active" : ""}`} onClick={() => setActiveTab("Swap")}>Swap</span>
+            <span className={`nav-item ${activeTab === "Learn" ? "active" : ""}`} onClick={() => setActiveTab("Learn")}>Learn</span>
+            <span className={`nav-item ${activeTab === "Docs" ? "active" : ""}`} onClick={() => setActiveTab("Docs")}>Docs</span>
+            <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
+            <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
+            <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
+            <span className={`nav-item ${activeTab === "Risk" ? "active" : ""}`} onClick={() => setActiveTab("Risk")}>Risk</span>
+           </nav>
         </div>
         
         {wallet ? (
