@@ -1843,11 +1843,11 @@ const calculateVammBreakdown = () => {
                 src="/slope-logo.png" 
                 alt="Slope Logo" 
                 style={{ 
-                  width: '32px', 
-                  height: '32px' 
+                  width: '36px', 
+                  height: '36px' 
                 }} 
               />
-              <h1 className="logo">Slope</h1>
+              <h1 className="logo" style={{ fontSize: '1.6rem' }}>Slope</h1>
             </div>
             <nav className="nav">
               <span className={`nav-item ${activeTab === "Swap" ? "active" : ""}`} onClick={() => setActiveTab("Swap")}>Swap</span>
