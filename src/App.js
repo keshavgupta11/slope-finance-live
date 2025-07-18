@@ -2141,7 +2141,7 @@ const calculateVammBreakdown = () => {
                       }}
                     />
                     <span style={{ color: '#9ca3af' }}>MM =</span>
-                    <span style={{ color: '#10b981', fontWeight: '700' }}>
+                    <span style={{ color: '#9ca3af', fontWeight: '700' }}>
                       ${(customNotional / 10000).toLocaleString()}
                     </span>
                     <span style={{ color: '#9ca3af' }}>DV01</span>
