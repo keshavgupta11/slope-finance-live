@@ -1906,7 +1906,7 @@ const calculateVammBreakdown = () => {
               <div className="price-info">
                 <div className="price-row">
                   <span>Live Price:</span>
-                  <span style={{ color: '#10b981', fontWeight: '700', fontSize: '1rem', position: 'relative' }}>
+                  <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem', position: 'relative' }}>
                     <span style={{ marginRight: '8px' }}>•</span>{lastPrice.toFixed(3)}%
                   </span>
                 </div>
