@@ -2147,7 +2147,7 @@ const calculateVammBreakdown = () => {
                     <span style={{ color: '#9ca3af' }}>DV01</span>
                   </div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.3rem', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.3rem', marginBottom: '0.3rem', fontStyle: 'italic' }}>
                   ${(customNotional / 10000).toLocaleString()} DV01 = ${(customNotional / 10000).toLocaleString()} gain/loss per 1bp move
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.3rem', fontStyle: 'italic' }}>
