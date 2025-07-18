@@ -2297,17 +2297,8 @@ const calculateVammBreakdown = () => {
                     ${(currentDv01 * 50).toLocaleString()}
                   </span>
                 </div>
-                <div style={{
-                  textAlign: 'center',
-                  padding: '0.75rem',
-                  fontSize: '0.8rem',
-                  color: '#10b981',
-                  fontWeight: '600',
-                  fontStyle: 'italic'
-                }}>
-                  Trading 2025 full-year APY (compounded)
-                </div>
               </div>
+
               <div className="trade-buttons">
                 <button
                   onClick={() => setTradeType('pay')}
@@ -4643,6 +4634,19 @@ const calculateVammBreakdown = () => {
                   <span>${margin.toLocaleString()}</span>
                 </div>
               </div>
+            </div>
+            <div style={{
+              textAlign: 'center',
+              padding: '0.6rem',
+              fontSize: '0.8rem',
+              color: '#10b981',
+              fontWeight: '600',
+              fontStyle: 'italic',
+              borderTop: '1px solid rgba(55, 65, 81, 0.2)',
+              marginTop: '1rem',
+              paddingTop: '1rem'
+            }}>
+              Trading 2025 full-year APY (compounded)
             </div>
             {/* DV01 Impact Explanation */}
             <div style={{
