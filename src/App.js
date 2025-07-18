@@ -2520,45 +2520,45 @@ const calculateVammBreakdown = () => {
                 </div>
               </div>
             </div>
-          </div>
-        {/* Trading Tips Section */}
-          <div style={{
-            margin: '2rem 0',
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '1rem',
-            transition: 'all 0.5s ease'
-          }}>
+            {/* Trading Tips Section */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem'
+              margin: '2rem 0',
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '1rem',
+              transition: 'all 0.5s ease'
             }}>
-              <span style={{ fontSize: '1.5rem' }}>{tradingTips[currentTipIndex].icon}</span>
-              <div>
-                <div style={{ 
-                  fontSize: '1rem', 
-                  color: '#e2e8f0', 
-                  fontWeight: '600',
-                  marginBottom: '0.25rem'
-                }}>
-                  {tradingTips[currentTipIndex].text}
-                </div>
-                <div style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#10b981',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontWeight: '600'
-                }}>
-                  {tradingTips[currentTipIndex].category}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>{tradingTips[currentTipIndex].icon}</span>
+                <div>
+                  <div style={{ 
+                    fontSize: '1rem', 
+                    color: '#e2e8f0', 
+                    fontWeight: '600',
+                    marginBottom: '0.25rem'
+                  }}>
+                    {tradingTips[currentTipIndex].text}
+                  </div>
+                  <div style={{ 
+                    fontSize: '0.75rem', 
+                    color: '#10b981',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontWeight: '600'
+                  }}>
+                    {tradingTips[currentTipIndex].category}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
+        
         <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
           <h3>Positions</h3>
           <div className="positions-table">
