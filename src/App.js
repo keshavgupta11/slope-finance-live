@@ -2296,7 +2296,7 @@ const calculateVammBreakdown = () => {
                     Minimum required:
                   </span>
                   <span style={{ 
-                    color: '#3b82f6', 
+                    color: '#f59e0b', 
                     fontWeight: '700',
                     fontSize: '1rem'
                   }}>
