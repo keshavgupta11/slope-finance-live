@@ -2168,7 +2168,7 @@ const calculateVammBreakdown = () => {
 
             <div className="inputs">
               <div style={{
-                padding: '1.5rem',
+                padding: '0.8rem',
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
                 border: '1px solid #374151',
                 borderRadius: '1rem',
@@ -2231,7 +2231,7 @@ const calculateVammBreakdown = () => {
               </div>
 
               <div style={{
-                padding: '1.5rem',
+                padding: '0.8em',
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)',
                 border: '1px solid #374151',
                 borderRadius: '1rem',
@@ -2296,7 +2296,7 @@ const calculateVammBreakdown = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.75rem 1rem',
+                  padding: '0.5rem 0.8rem',
                   background: 'rgba(59, 130, 246, 0.1)',
                   borderRadius: '0.5rem',
                   border: '1px solid rgba(59, 130, 246, 0.2)'
