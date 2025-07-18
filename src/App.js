@@ -2469,35 +2469,68 @@ const calculateVammBreakdown = () => {
             </div>
 
             <div className="market-stats" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-              <h4>Protocol Metrics</h4>
-              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setShowVammBreakdown(true)}>
-                  <div className="stat-label">vAMM P&L</div>
-                  <div className={`stat-value ${vammPL >= 0 ? '' : ''}`} style={{ color: vammPL >= 0 ? '#22c55e' : '#ef4444' }}>
-                    {vammPL >= 0 ? '+' : ''}$<AnimatedCounter value={Math.abs(vammPL)} />{vammPL < 0 ? '' : ''}
+              <h4>Recent Trades - {market}</h4>
+              <div style={{
+                background: 'var(--gradient-card)',
+                borderRadius: '1rem',
+                border: '1px solid var(--border-secondary)',
+                overflow: 'hidden'
+              }}>
+                {tradeHistory.length > 0 ? (
+                  <div style={{ padding: '1rem' }}>
+                    {tradeHistory
+                      .filter(trade => trade.market === market)
+                      .slice(-5)
+                      .reverse()
+                      .map((trade, i) => (
+                        <div key={i} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.75rem 0',
+                          borderBottom: i < 4 ? '1px solid rgba(55, 65, 81, 0.3)' : 'none'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span style={{
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '1rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              background: trade.direction === 'Pay Fixed' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                              color: trade.direction === 'Pay Fixed' ? '#3b82f6' : '#f59e0b',
+                              border: `1px solid ${trade.direction === 'Pay Fixed' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
+                            }}>
+                              {trade.direction === 'Pay Fixed' ? 'PAY' : 'RCV'}
+                            </span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
+                              {trade.exitPrice}%
+                            </span>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                              ${trade.dv01?.toLocaleString()} DV01
+                            </div>
+                            <div style={{ 
+                              color: parseFloat(trade.finalPL) >= 0 ? '#22c55e' : '#ef4444',
+                              fontSize: '0.75rem',
+                              fontWeight: '600'
+                            }}>
+                              {parseFloat(trade.finalPL) >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.finalPL)).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Click to view breakdown
+                ) : (
+                  <div style={{
+                    padding: '2rem',
+                    textAlign: 'center',
+                    color: 'var(--text-muted)'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem', opacity: 0.5 }}>📊</div>
+                    <div>No trades yet in {market}</div>
                   </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Protocol P&L (Fees)</div>
-                  <div className="stat-value" style={{ color: '#10b981' }}>
-                    +$<AnimatedCounter value={protocolPL} />
-                  </div>
-                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Fee revenue collected
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Protocol Risk</div>
-                  <div className="stat-value" style={{ color: netOI >= 0 ? '#06b6d4' : '#f59e0b' }}>
-                    {netOI >= 0 ? 'Received' : 'Paid'} $<AnimatedCounter value={Math.abs(netOI)} />
-                  </div>
-                  <div style={{ color: '#9ca3af', fontSize: '0.6rem' }}>
-                    Current DV01 based OI
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
