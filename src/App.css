@@ -396,12 +396,12 @@ body {
   animation: slideIn var(--transition-slow) ease-out;
 }
 
-/* Enhanced Price Info - SMALLER */
+/* Enhanced Price Info - MUCH MORE COMPACT */
 .price-info {
-  margin-bottom: 1.5rem;
-  padding: 1.2rem; /* Reduced padding */
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
+  padding: 0.8rem; /* Much smaller padding */
   background: rgba(26, 31, 46, 0.8);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--border-secondary);
   backdrop-filter: blur(12px) saturate(180%);
   position: relative;
@@ -435,7 +435,7 @@ body {
 .price-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.6rem; /* Reduced margin */
+  margin-bottom: 0.4rem; /* Much smaller margin */
   font-size: 0.8rem; /* Smaller font */
   align-items: center;
   transition: all var(--transition-fast);
@@ -530,20 +530,20 @@ body {
   50% { box-shadow: var(--shadow-glow); }
 }
 
-/* Enhanced Market Selector - SMALLER */
+/* Enhanced Market Selector - MORE COMPACT */
 .market-selector {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
 }
 
 .market-select {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 0.8rem;
-  padding: 0.8rem 1rem; /* Reduced padding */
+  border-radius: 0.5rem; /* Smaller border radius */
+  padding: 0.6rem 0.8rem; /* Much smaller padding */
   color: var(--text-primary);
   cursor: pointer;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem; /* Reduced */
   font-weight: 500;
   font-size: 0.9rem; /* Smaller font */
   transition: all var(--transition-normal);
@@ -583,9 +583,9 @@ body {
 }
 
 .market-info {
-  font-size: 0.75rem; /* Smaller */
+  font-size: 0.75rem; /* Smaller font */
   color: var(--text-subtle);
-  line-height: 1.5;
+  line-height: 1.4; /* Tighter line height */
   transition: all var(--transition-normal);
 }
 
@@ -603,21 +603,21 @@ body {
   margin-top: 0.4rem;
 }
 
-/* Enhanced Input Styling - BETTER SIZED */
+/* Enhanced Input Styling - MUCH MORE COMPACT */
 .inputs {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
 }
 
 .input-group {
-  margin-bottom: 1rem; /* Reduced spacing */
+  margin-bottom: 0.6rem; /* Much smaller spacing */
   position: relative;
 }
 
 .input-group label {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem; /* Reduced */
-  font-size: 0.85rem; /* Slightly bigger */
+  margin-bottom: 0.3rem; /* Much smaller */
+  font-size: 0.8rem; /* Smaller font */
   font-weight: 600;
   color: var(--text-secondary);
   transition: color var(--transition-fast);
@@ -631,12 +631,12 @@ body {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-secondary);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem; /* Better padding */
+  border-radius: 0.5rem; /* Smaller border radius */
+  padding: 0.5rem 0.8rem; /* Much smaller padding */
   color: var(--text-primary);
   backdrop-filter: blur(8px);
   transition: all var(--transition-normal);
-  font-size: 0.95rem; /* Slightly bigger */
+  font-size: 0.9rem; /* Smaller font */
   font-weight: 500;
   position: relative;
 }
@@ -770,18 +770,18 @@ input[type="number"] {
   text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
 }
 
-/* Enhanced Trade Buttons - SMALLER */
+/* Enhanced Trade Buttons - BETTER SIZED */
 .trade-buttons {
   display: flex;
-  gap: 0.6rem;
-  margin-bottom: 1.2rem;
+  gap: 0.75rem; /* Increased */
+  margin-bottom: 1.5rem;
 }
 
 .trade-btn {
   flex: 1;
-  padding: 0.8rem 1rem; /* Reduced padding */
-  border-radius: 0.8rem;
-  font-size: 0.85rem; /* Smaller font */
+  padding: 0.9rem 1.1rem; /* Increased padding */
+  border-radius: 0.75rem;
+  font-size: 0.9rem; /* Slightly bigger */
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -837,17 +837,17 @@ input[type="number"] {
   transform: translateY(-4px);
 }
 
-/* Enhanced Enter Button - SMALLER */
+/* Enhanced Enter Button - BETTER SIZED */
 .enter-btn {
   width: 100%;
-  padding: 1rem; /* Reduced padding */
-  border-radius: 0.8rem;
+  padding: 1.1rem; /* Increased padding */
+  border-radius: 0.75rem;
   font-weight: 700;
-  font-size: 0.95rem; /* Smaller font */
+  font-size: 1rem; /* Bigger font */
   cursor: pointer;
   transition: all var(--transition-normal);
   border: none;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
@@ -978,10 +978,10 @@ input[type="number"] {
   color: #06b6d4;
 }
 
-/* Enhanced Right Panel - SMALLER */
+/* Enhanced Right Panel - BETTER BALANCED */
 .right-panel {
   flex: 1;
-  padding: 1.5rem; /* Reduced padding */
+  padding: 1.8rem; /* Increased padding */
   min-height: calc(100vh - 60px);
   background: rgba(0, 0, 0, 0.1);
 }
@@ -1932,10 +1932,10 @@ input[type="number"] {
   animation: shimmer 1.5s infinite;
 }
 
-/* Enhanced Responsive Design - IMPROVED */
+/* Enhanced Responsive Design - BETTER BALANCED */
 @media (max-width: 768px) {
   body {
-    zoom: 0.6; /* Even smaller zoom for mobile */
+    zoom: 0.7; /* Better balance for mobile */
   }
   
   .header {
@@ -1968,11 +1968,11 @@ input[type="number"] {
   .left-panel {
     width: 100%;
     min-height: auto;
-    padding: 1rem;
+    padding: 1.2rem;
   }
   
   .right-panel {
-    padding: 1rem;
+    padding: 1.2rem;
   }
   
   .chart-container {
@@ -2028,7 +2028,7 @@ input[type="number"] {
 
 @media (max-width: 480px) {
   body {
-    zoom: 0.55; /* Even smaller for very small screens */
+    zoom: 0.65; /* Slightly smaller for very small screens */
   }
   
   .logo {
@@ -2040,11 +2040,11 @@ input[type="number"] {
   }
   
   .left-panel {
-    padding: 0.8rem;
+    padding: 1rem;
   }
   
   .right-panel {
-    padding: 0.8rem;
+    padding: 1rem;
   }
   
   .positions-section {
