@@ -1920,7 +1920,7 @@ const calculateVammBreakdown = () => {
                 </div>
                 <div className="price-row">
                   <span>2025 implied unrealized APY:</span>
-                  <span className="unrealized-apy" style={{ color: '#f59e0b' }}>
+                  <span className="realized-apy">
                     {market === "JitoSol" ? "7.72%" :
                     market === "Lido stETH" ? "2.83%" :
                     market === "Aave ETH Lending" ? "1.89%" :
