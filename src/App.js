@@ -2077,8 +2077,8 @@ const calculateVammBreakdown = () => {
                 )}
               </div>
               <div className="market-info">
-                <div>Notional / DV01: $10mm / $1k DV01</div>
-                <div>$1k DV01 means you gain/lose $1,000 per 1bp move</div>
+                <div>Notional / DV01: $10mm = $1k DV01</div>
+                <div>$1k DV01 = $1,000 gain/lose per 1bp move</div>
               </div>
             </div>
 
@@ -4470,7 +4470,94 @@ const calculateVammBreakdown = () => {
                   <span>Fee:</span>
                   <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
                 </div>
-                
+              </div>
+            </div>
+
+            {/* DV01 Impact Explanation */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>💡</span>
+                <span style={{ 
+                  color: '#10b981', 
+                  fontWeight: '700',
+                  fontSize: '0.95rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em'
+                }}>
+                  DV01 Impact
+                </span>
+              </div>
+              <div style={{ 
+                color: '#e2e8f0', 
+                fontSize: '1rem',
+                lineHeight: '1.5'
+              }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong style={{ color: '#10b981' }}>
+                    {pendingTrade.type === 'pay' ? '+' : '-'}${baseDv01.toLocaleString()} P&L per 1bp price increase
+                  </strong>
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                  {pendingTrade.type === 'pay' ? 
+                    'You profit when rates go higher' : 
+                    'You profit when rates go lower'
+                  }
+                </div>
+              </div>
+            </div>
+
+            {/* DV01 Impact Explanation */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>💡</span>
+                <span style={{ 
+                  color: '#10b981', 
+                  fontWeight: '700',
+                  fontSize: '0.95rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em'
+                }}>
+                  DV01 Impact
+                </span>
+              </div>
+              <div style={{ 
+                color: '#e2e8f0', 
+                fontSize: '1rem',
+                lineHeight: '1.5'
+              }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong style={{ color: '#10b981' }}>
+                    {pendingTrade.type === 'pay' ? '+' : '-'}${baseDv01.toLocaleString()} P&L per 1bp price increase
+                  </strong>
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                  {pendingTrade.type === 'pay' ? 
+                    'You profit when rates go higher' : 
+                    'You profit when rates go lower'
+                  }
+                </div>
               </div>
             </div>
             <div className="modal-buttons">
