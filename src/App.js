@@ -1838,7 +1838,7 @@ const calculateVammBreakdown = () => {
 
         <header className="header">
           <div className="header-left">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <img 
                 src="/slope-logo.png" 
                 alt="Slope Logo" 
