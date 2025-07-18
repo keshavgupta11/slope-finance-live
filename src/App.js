@@ -640,23 +640,23 @@ export default function App() {
         let dv01Size;
         
         if (dv01 <= 5000) {
-          dv01Size = 18; // Base size for 5k and under (increased from 15)
+          dv01Size = 14; // Base size for 5k and under (increased from 15)
         } else if (dv01 <= 10000) {
-          dv01Size = 22; // 10k (increased from 18)
+          dv01Size = 16; // 10k (increased from 18)
         } else if (dv01 <= 15000) {
-          dv01Size = 26; // 15k (increased from 21)
+          dv01Size = 18; // 15k (increased from 21)
         } else if (dv01 <= 20000) {
-          dv01Size = 30; // 20k (increased from 24)
+          dv01Size = 20; // 20k (increased from 24)
         } else if (dv01 <= 25000) {
-          dv01Size = 34; // 25k (increased from 27)
+          dv01Size = 22; // 25k (increased from 27)
         } else if (dv01 <= 30000) {
-          dv01Size = 38; // 30k (increased from 30)
+          dv01Size = 24; // 30k (increased from 30)
         } else if (dv01 <= 40000) {
-          dv01Size = 42; // 40k (increased from 34)
+          dv01Size = 26; // 40k (increased from 34)
         } else if (dv01 <= 50000) {
-          dv01Size = 46; // 50k (increased from 38)
+          dv01Size = 28; // 50k (increased from 38)
         } else {
-          dv01Size = Math.min(50, 46 + ((dv01 - 50000) / 10000) * 2); // 50k+ scales gradually (increased max)
+          dv01Size = Math.min(32, 29 + ((dv01 - 50000) / 10000) *1.5); // 50k+ scales gradually (increased max)
         }
         
         // Distance from center based on liquidation risk (closer to liquidation = closer to center)
