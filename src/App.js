@@ -1837,18 +1837,28 @@ const calculateVammBreakdown = () => {
         ))}
 
         <header className="header">
-        <div className="header-left">
-          <h1 className="logo">Slope</h1>
-          <nav className="nav">
-            <span className={`nav-item ${activeTab === "Swap" ? "active" : ""}`} onClick={() => setActiveTab("Swap")}>Swap</span>
-            <span className={`nav-item ${activeTab === "Learn" ? "active" : ""}`} onClick={() => setActiveTab("Learn")}>Learn</span>
-            <span className={`nav-item ${activeTab === "Docs" ? "active" : ""}`} onClick={() => setActiveTab("Docs")}>Docs</span>
-            <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
-            <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
-            <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
-            <span className={`nav-item ${activeTab === "Risk" ? "active" : ""}`} onClick={() => setActiveTab("Risk")}>Risk</span>
-           </nav>
-        </div>
+          <div className="header-left">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img 
+                src="/slope-logo.png" 
+                alt="Slope Logo" 
+                style={{ 
+                  width: '32px', 
+                  height: '32px' 
+                }} 
+              />
+              <h1 className="logo">Slope</h1>
+            </div>
+            <nav className="nav">
+              <span className={`nav-item ${activeTab === "Swap" ? "active" : ""}`} onClick={() => setActiveTab("Swap")}>Swap</span>
+              <span className={`nav-item ${activeTab === "Learn" ? "active" : ""}`} onClick={() => setActiveTab("Learn")}>Learn</span>
+              <span className={`nav-item ${activeTab === "Docs" ? "active" : ""}`} onClick={() => setActiveTab("Docs")}>Docs</span>
+              <span className={`nav-item ${activeTab === "Leaderboard" ? "active" : ""}`} onClick={() => setActiveTab("Leaderboard")}>Leaderboard</span>
+              <span className={`nav-item ${activeTab === "Stats" ? "active" : ""}`} onClick={() => setActiveTab("Stats")}>Stats</span>
+              <span className={`nav-item ${activeTab === "Settings" ? "active" : ""}`} onClick={() => setActiveTab("Settings")}>Settings</span>
+              <span className={`nav-item ${activeTab === "Risk" ? "active" : ""}`} onClick={() => setActiveTab("Risk")}>Risk</span>
+            </nav>
+          </div>
         
         {wallet ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
