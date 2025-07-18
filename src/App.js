@@ -2189,7 +2189,7 @@ const calculateVammBreakdown = () => {
                     left: '16px', 
                     top: '50%', 
                     transform: 'translateY(-50%)', 
-                    color: '#10b981', 
+                    color: '#ffffff', 
                     fontSize: '1.2rem',
                     fontWeight: '700',
                     pointerEvents: 'none'
@@ -2252,7 +2252,7 @@ const calculateVammBreakdown = () => {
                     left: '16px', 
                     top: '50%', 
                     transform: 'translateY(-50%)', 
-                    color: '#3b82f6', 
+                    color: '#ffffff', 
                     fontSize: '1.2rem',
                     fontWeight: '700',
                     pointerEvents: 'none'
