@@ -611,11 +611,19 @@ export default function App() {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       
-      // Set canvas size - simple approach with forced refresh
+      // Set canvas size - handle both galaxy tab and regular view
       const resizeCanvas = () => {
         const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        // For galaxy tab, use larger dimensions
+        const isGalaxyTab = canvas.closest('.galaxy-universe') !== null;
+        
+        if (isGalaxyTab) {
+          canvas.width = Math.max(rect.width, 800);
+          canvas.height = Math.max(rect.height, 600);
+        } else {
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+        }
       };
       
       // Multiple resize attempts to ensure proper sizing
@@ -666,12 +674,15 @@ export default function App() {
 
         if (liquidationDistance >= 70) {
           // SAFE ZONE: Move to left or right side
+          const canvasWidth = canvas.width || 800; // Use actual canvas width
+          const canvasHeight = canvas.height || 600; // Use actual canvas height
+          
           const isLeftSide = i % 2 === 0;
           
           if (isLeftSide) {
-            x = -160; // Left safe zone
+            x = -canvasWidth/2 + 80; // Adjusted for larger canvas
           } else {
-            x = 160;  // Right safe zone
+            x = canvasWidth/2 - 80;  // Adjusted for larger canvas
           }
           
           // Spread vertically
@@ -5237,7 +5248,8 @@ const calculateVammBreakdown = () => {
           <div style={{ 
             flex: 1, 
             position: 'relative',
-            background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, rgba(0, 5, 16, 0.95) 70%)'
+            background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, rgba(0, 5, 16, 0.95) 70%)',
+            minHeight: '600px' // Add minimum height
           }}>
             <FloatingPositionSpheres />
             
