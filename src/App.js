@@ -664,7 +664,22 @@ export default function App() {
         
         // Calculate max safe radius based on canvas size (assume minimum 300px canvas)
         const maxSafeRadius = 120; // Keep spheres well within bounds
-        const radiusFromCenter = Math.min(maxSafeRadius, Math.max(60, liquidationDistance * 1.8)); // Reduced scaling and max radius
+        const minRadius = 60;
+        // Use logarithmic scaling to prevent positions from going too far out
+        // This keeps very safe positions visible while still showing relative risk
+        let scaledDistance;
+        if (liquidationDistance <= 50) {
+          // Linear scaling for liquidation risk 0-50bp
+          scaledDistance = minRadius + (liquidationDistance * 0.8); // 0.8 scaling factor
+        } else {
+          // Logarithmic scaling for liquidation risk > 50bp to prevent going too far
+          const baseDistance = minRadius + (50 * 0.8); // Distance at 50bp
+          const excessDistance = liquidationDistance - 50;
+          const logScale = Math.log(1 + excessDistance / 50) * 20; // Logarithmic scaling
+          scaledDistance = baseDistance + logScale;
+        }
+
+        const radiusFromCenter = Math.min(maxSafeRadius, Math.max(minRadius, scaledDistance));
         
         // Always position on circumference - spread them out more
         const angle = (i / allPositions.length) * Math.PI * 2;
@@ -1001,6 +1016,7 @@ export default function App() {
               <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
                 Size = DV01 Amount<br/>
                 Distance = Liquidation Risk<br/>
+                (Safe positions stay in view)<br/>
                 Click spheres for details
               </div>
             </div>
