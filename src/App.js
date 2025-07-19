@@ -1943,7 +1943,7 @@ const calculateVammBreakdown = () => {
             <div className="swap-header">
               <h2>Swap</h2>
               <div style={{ 
-                fontSize: '0.85rem', 
+                fontSize: '0.88rem', 
                 color: '#ffffff', 
                 fontWeight: '500'
               }}>
@@ -1957,8 +1957,8 @@ const calculateVammBreakdown = () => {
                   </span>
                 </div>
                 <div className="price-row">
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>2025 realized APY:</span>
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.9rem' }}>2025 realized APY:</span>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.9rem' }}>
                     {market === "JitoSol" ? "4.03% / 8.25%" :
                      market === "Lido stETH" ? "1.44% / 2.92%" :
                      market === "Aave ETH Lending" ? "0.95% / 1.9%" :
@@ -1967,8 +1967,8 @@ const calculateVammBreakdown = () => {
                   </span>
                 </div>
                 <div className="price-row">
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>2025 implied unrealized APY:</span>
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.9rem' }}>2025 implied unrealized APY:</span>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.9rem' }}>
                     {market === "JitoSol" ? "7.72%" :
                     market === "Lido stETH" ? "2.83%" :
                     market === "Aave ETH Lending" ? "1.89%" :
