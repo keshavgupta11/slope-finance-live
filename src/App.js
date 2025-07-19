@@ -2724,6 +2724,15 @@ const calculateVammBreakdown = () => {
                         <td style={{ 
                           padding: '1rem 0.8rem', 
                           textAlign: 'right',
+                          fontSize: '0.95rem',
+                          fontWeight: '700',
+                          color: '#ef4444'
+                        }}>
+                          {parseFloat(trade.liquidationPrice).toFixed(3)}%
+                        </td>
+                        <td style={{ 
+                          padding: '1rem 0.8rem', 
+                          textAlign: 'right',
                           fontSize: '1.1rem',
                           fontWeight: '800'
                         }}>
