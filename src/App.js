@@ -711,7 +711,7 @@ export default function App() {
           y,
           size: dv01Size,
           baseSize: dv01Size,
-          radiusFromCenter
+          radiusFromCenter: Math.sqrt(x * x + y * y) // Calculate distance from center
         };
       });
       
