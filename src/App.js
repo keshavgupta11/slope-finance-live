@@ -2629,6 +2629,7 @@ const calculateVammBreakdown = () => {
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>DV01</th>
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Entry</th>
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Current</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Liquidation</th>
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>P&L</th>
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Risk</th>
                     <th style={{ padding: '1rem 0.8rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Actions</th>
