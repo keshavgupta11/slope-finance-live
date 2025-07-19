@@ -239,11 +239,11 @@ body {
 }
 
 .nav-item {
-  color: var(--text-muted);
+  color: #ffffff;
   cursor: pointer;
   transition: all var(--transition-normal);
   font-weight: 500;
-  font-size: 0.85rem; /* Smaller nav items */
+  font-size: 1rem; /* Smaller nav items */
   padding: 0.5rem 0.8rem; /* Reduced padding */
   position: relative;
   border-radius: 0.5rem;

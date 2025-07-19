@@ -1943,22 +1943,21 @@ const calculateVammBreakdown = () => {
             <div className="swap-header">
               <h2>Swap</h2>
               <div style={{ 
-                fontSize: '0.875rem', 
-                color: '#9ca3af', 
-                marginTop: '0.25rem',
+                fontSize: '1.1rem', 
+                color: '#ffffff', 
                 fontWeight: '500'
               }}>
                 Crypto Rate Swaps (CRS)<span style={{ marginLeft: '1rem' }}></span>1 Jan-31 Dec'25
               </div>
               <div className="price-info" style={{ marginBottom: '0.3rem' }}>
                 <div className="price-row">
-                  <span>Live Price:</span>
+                  <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem' }}>Live Price:</span> 
                   <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '1rem', position: 'relative' }}>
                     <span style={{ marginRight: '8px' }}>•</span>{lastPrice.toFixed(3)}%
                   </span>
                 </div>
                 <div className="price-row">
-                  <span>2025 realized APY:</span>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>2025 realized APY:</span>
                   <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
                     {market === "JitoSol" ? "4.03% / 8.25%" :
                      market === "Lido stETH" ? "1.44% / 2.92%" :
@@ -1968,7 +1967,7 @@ const calculateVammBreakdown = () => {
                   </span>
                 </div>
                 <div className="price-row">
-                  <span>2025 implied unrealized APY:</span>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>2025 implied unrealized APY:</span>
                   <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '1rem' }}>
                     {market === "JitoSol" ? "7.72%" :
                     market === "Lido stETH" ? "2.83%" :
