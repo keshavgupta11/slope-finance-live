@@ -1943,7 +1943,7 @@ const calculateVammBreakdown = () => {
             <div className="swap-header">
               <h2>Swap</h2>
               <div style={{ 
-                fontSize: '0.88rem', 
+                fontSize: '0.95rem', 
                 color: '#ffffff', 
                 fontWeight: '500'
               }}>
