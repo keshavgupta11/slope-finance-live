@@ -2621,125 +2621,175 @@ const calculateVammBreakdown = () => {
           <h3>Positions</h3>
           <div className="positions-table">
             {marketTrades.length > 0 ? (
-              <table>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>
-                    <th>Market</th>
-                    <th>Direction</th>
-                    <th>{isSettlementMode ? 'Settlement P&L' : 'Total P&L'}</th>
-                    <th>Today's P&L</th>
-                    <th>Entry Price</th>
-                    <th>Current Price</th>
-                    <th>Liquidation Price</th>
-                    <th>Margin Posted</th>
-                    <th>DV01</th>
-                    <th>Entry Day</th>
-                    <th>Days Held</th>
-                    <th>Tx Hash</th>
-                    <th>Liquidation Risk</th>
-                    <th>Actions</th>
+                  <tr style={{ background: 'rgba(31, 41, 55, 0.8)' }}>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Market</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Direction</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>DV01</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Entry</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Current</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>P&L</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Risk</th>
+                    <th style={{ padding: '1rem 0.8rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '700' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {marketTrades.map((trade, i) => {
                     const bpsFromLiquidation = calculateLiquidationRisk(trade);
-                    const isRisky = bpsFromLiquidation <= 5 && bpsFromLiquidation > 0;
+                    const isRisky = bpsFromLiquidation <= 20 && bpsFromLiquidation > 0;
+                    
+                    // Determine logo source
+                    let logoSrc = "/default-logo.png";
+                    if (trade.market === "JitoSol") logoSrc = "/jito.png";
+                    else if (trade.market === "Lido stETH") logoSrc = "/lido.png";
+                    else if (trade.market === "Aave ETH Lending") logoSrc = "/aave.png";
+                    else if (trade.market === "Aave ETH Borrowing") logoSrc = "/aave.png";
+                    else if (trade.market === "Rocketpool rETH") logoSrc = "/rocketpool.png";
                     
                     return (
-                      <tr key={i}>
-                        <td>{trade.market}</td>
-                        <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                          {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                      <tr 
+                        key={i} 
+                        style={{ 
+                          borderBottom: '1px solid rgba(55, 65, 81, 0.3)',
+                          transition: 'all 0.3s ease',
+                          background: 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(31, 41, 55, 0.4)';
+                          e.currentTarget.style.transform = 'translateX(4px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.transform = 'translateX(0)';
+                        }}
+                      >
+                        
+                        <td style={{ padding: '1rem 0.8rem', fontSize: '0.95rem', fontWeight: '600' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <img
+                              src={logoSrc}
+                              alt={trade.market + " logo"}
+                              style={{ width: '20px', height: '20px', borderRadius: '50%' }}
+                            />
+                            <span style={{ color: 'var(--text-primary)' }}>{trade.market}</span>
+                          </div>
                         </td>
-                        <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
-                          {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
-                        </td>
-                        <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                          {isSettlementMode ? '$0' : (trade.todaysPL >= 0 ? '+' : '') + '$' + Math.abs(trade.todaysPL).toLocaleString() + (trade.todaysPL < 0 ? '' : '')}
-                        </td>
-                        <td>{trade.entryPrice.toFixed(3)}%</td>
-                        <td>{trade.currentPrice.toFixed(3)}%</td>
-                        <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
-                        <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
-                        <td>${(trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
-                        <td>{trade.entryDay || 0}</td>
-                        <td>{globalDay - (trade.entryDay || 0)}</td>
-                        <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                          {trade.txSignature || 'Simulated'}
-                        </td>
-                        <td>
+                        
+                        <td style={{ padding: '1rem 0.8rem' }}>
                           <span style={{ 
-                            color: isRisky ? '#ef4444' : '#22c55e', 
-                            fontWeight: 'bold',
+                            color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                            fontWeight: '700',
+                            fontSize: '0.9rem',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '1rem',
+                            background: trade.type === 'pay' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                            border: trade.type === 'pay' ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
+                          }}>
+                            {trade.type === 'pay' ? 'Pay' : 'Receive'}
+                          </span>
+                        </td>
+                        
+                        <td style={{ 
+                          padding: '1rem 0.8rem', 
+                          textAlign: 'right',
+                          fontSize: '0.95rem',
+                          fontWeight: '600',
+                          color: 'var(--text-primary)'
+                        }}>
+                          ${(trade.baseDV01).toLocaleString()}
+                        </td>
+                        
+                        <td style={{ 
+                          padding: '1rem 0.8rem', 
+                          textAlign: 'right',
+                          fontSize: '0.95rem',
+                          fontWeight: '600',
+                          color: 'var(--text-secondary)'
+                        }}>
+                          {trade.entryPrice.toFixed(3)}%
+                        </td>
+                        
+                        <td style={{ 
+                          padding: '1rem 0.8rem', 
+                          textAlign: 'right',
+                          fontSize: '0.95rem',
+                          fontWeight: '700',
+                          color: '#10b981'
+                        }}>
+                          {trade.currentPrice.toFixed(3)}%
+                        </td>
+                        
+                        <td style={{ 
+                          padding: '1rem 0.8rem', 
+                          textAlign: 'right',
+                          fontSize: '1.1rem',
+                          fontWeight: '800'
+                        }}>
+                          <span style={{ 
+                            color: trade.pnl >= 0 ? '#22c55e' : '#ef4444',
+                            textShadow: trade.pnl >= 0 ? '0 0 8px rgba(34, 197, 94, 0.3)' : '0 0 8px rgba(239, 68, 68, 0.3)'
+                          }}>
+                            {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}
+                          </span>
+                        </td>
+                        
+                        <td style={{ padding: '1rem 0.8rem', textAlign: 'center' }}>
+                          <div style={{ 
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '0.5rem',
-                            padding: '0.25rem 0.75rem',
+                            padding: '0.4rem 0.8rem',
                             borderRadius: '1rem',
                             backgroundColor: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                            border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
-                            fontSize: '0.875rem'
+                            border: isRisky ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(34, 197, 94, 0.3)',
+                            fontSize: '0.8rem',
+                            fontWeight: '700'
                           }}>
-                            <span style={{ fontSize: '0.75rem' }}>
+                            <span style={{ fontSize: '0.9rem' }}>
                               {isRisky ? '⚠️' : '✅'}
                             </span>
-                            {isRisky ? 'RISKY' : 'Safe'}
-                          </span>
+                            <span style={{ color: isRisky ? '#ef4444' : '#22c55e' }}>
+                              {bpsFromLiquidation.toFixed(0)}bp
+                            </span>
+                          </div>
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                        
+                        <td style={{ padding: '1rem 0.8rem', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                             <button 
                               onClick={() => requestAddMargin(i)}
                               style={{
                                 background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
                                 color: 'white',
                                 border: 'none',
-                                padding: '0.5rem 1rem',
+                                padding: '0.5rem 0.8rem',
                                 borderRadius: '0.5rem',
-                                fontSize: '0.75rem',
+                                fontSize: '0.8rem',
                                 cursor: 'pointer',
                                 fontWeight: '600',
                                 transition: 'all 0.3s ease',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.025em'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
-                                e.target.style.transform = 'translateY(-1px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
-                                e.target.style.transform = 'translateY(0)';
+                                textTransform: 'uppercase'
                               }}
                             >
-                              Add Margin
+                              Margin
                             </button>
                             <button 
                               onClick={() => requestUnwind(i)}
-                              className="unwind-btn"
                               style={{
                                 background: 'linear-gradient(45deg, #ef4444, #dc2626)',
                                 color: 'white',
                                 border: 'none',
-                                padding: '0.5rem 1rem',
+                                padding: '0.5rem 0.8rem',
                                 borderRadius: '0.5rem',
-                                fontSize: '0.75rem',
+                                fontSize: '0.8rem',
                                 cursor: 'pointer',
                                 fontWeight: '600',
                                 transition: 'all 0.3s ease',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.025em'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
-                                e.target.style.transform = 'translateY(-1px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
-                                e.target.style.transform = 'translateY(0)';
+                                textTransform: 'uppercase'
                               }}
                             >
-                              Close Position
+                              Close
                             </button>
                           </div>
                         </td>
@@ -2764,8 +2814,7 @@ const calculateVammBreakdown = () => {
                 <div style={{
                   fontSize: '4rem',
                   marginBottom: '1.5rem',
-                  opacity: 0.4,
-                  animation: 'float 3s ease-in-out infinite'
+                  opacity: 0.4
                 }}>
                   📊
                 </div>
@@ -2796,24 +2845,9 @@ const calculateVammBreakdown = () => {
                     borderRadius: '1rem',
                     fontSize: '1rem',
                     cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.025em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
+                    fontWeight: '600'
                   }}
                 >
-                  <span>🚀</span>
                   Start Trading
                 </button>
               </div>
