@@ -348,8 +348,8 @@ body {
 
 /* Enhanced Left Panel - BETTER BALANCED */
 .left-panel {
-  width: 380px; /* Increased from 340px */
-  padding: 1.8rem; /* Increased padding */
+  width: 380px; 
+  padding: 0.8rem 1.8rem 1.8rem 1.8rem; /* Changed: smaller top padding */
   border-right: 1px solid var(--border-primary);
   background: var(--gradient-card);
   backdrop-filter: blur(16px) saturate(180%);
