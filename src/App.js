@@ -659,45 +659,38 @@ export default function App() {
           dv01Size = Math.min(32, 29 + ((dv01 - 50000) / 10000) *1.5); // 50k+ scales gradually (increased max)
         }
         
-        // Position based on liquidation risk
+        // Position based on liquidation risk - safe positions go to sides
         const liquidationDistance = Math.max(5, position.liquidationRisk);
 
-        let x, y;
+        let x, y, radiusFromCenter;
 
         if (liquidationDistance >= 70) {
-          // SAFE ZONE: Move to left or right side of canvas
-          const canvasWidth = 400; // Approximate canvas width
-          const canvasHeight = 300; // Approximate canvas height
-          
-          // Alternate between left and right sides based on index
+          // SAFE ZONE: Move to left or right side
           const isLeftSide = i % 2 === 0;
           
           if (isLeftSide) {
-            // Left safe zone
-            x = -canvasWidth/2 + 60; // 60px from left edge
+            x = -160; // Left safe zone
           } else {
-            // Right safe zone  
-            x = canvasWidth/2 - 60; // 60px from right edge
+            x = 160;  // Right safe zone
           }
           
-          // Spread them vertically in the safe zone
+          // Spread vertically
           const safePositions = allPositions.filter(p => p.liquidationRisk >= 70);
           const safeIndex = safePositions.findIndex(p => p.id === position.id);
-          const verticalSpacing = 80;
-          const startY = -(safePositions.length - 1) * verticalSpacing / 2;
-          y = startY + (safeIndex * verticalSpacing);
+          const spacing = 60;
+          y = (safeIndex - (safePositions.length - 1) / 2) * spacing;
+          
+          radiusFromCenter = Math.sqrt(x * x + y * y);
           
         } else {
-          // RISK ZONE: Keep in circular galaxy formation
-          const minRadius = 50;
+          // RISK ZONE: Circular formation around center
+          const minRadius = 60;
           const maxRadius = 120;
-          const cappedLiquidationDistance = Math.min(liquidationDistance, 70);
-          const radiusFromCenter = minRadius + (cappedLiquidationDistance / 70) * (maxRadius - minRadius);
+          radiusFromCenter = minRadius + (liquidationDistance / 70) * (maxRadius - minRadius);
           
-          // Circular positioning for risky positions
           const riskPositions = allPositions.filter(p => p.liquidationRisk < 70);
           const riskIndex = riskPositions.findIndex(p => p.id === position.id);
-          const angle = (riskIndex / riskPositions.length) * Math.PI * 2;
+          const angle = (riskIndex / Math.max(riskPositions.length, 1)) * Math.PI * 2;
           
           x = Math.cos(angle) * radiusFromCenter;
           y = Math.sin(angle) * radiusFromCenter;
@@ -711,7 +704,7 @@ export default function App() {
           y,
           size: dv01Size,
           baseSize: dv01Size,
-          radiusFromCenter: Math.sqrt(x * x + y * y) // Calculate distance from center
+          radiusFromCenter
         };
       });
       
@@ -798,16 +791,14 @@ export default function App() {
           const screenX = centerX + sphere.x;
           const screenY = centerY + sphere.y + floatOffset;
           
-          // Color and effects based on P&L and safety
+          // Color based on safety and P&L
           let sphereColor, shadowColor;
-          const isSafePosition = sphere.liquidationRisk >= 70;
+          const isSafe = sphere.liquidationRisk >= 70;
 
-          if (isSafePosition) {
-            // Safe positions get special blue/cyan coloring regardless of P&L
-            sphereColor = sphere.pl >= 0 ? '#06b6d4' : '#0891b2'; // Cyan variants
+          if (isSafe) {
+            sphereColor = '#06b6d4'; // Cyan for safe positions
             shadowColor = 'rgba(6, 182, 212, 0.4)';
           } else {
-            // Risky positions use normal green/red P&L coloring
             if (sphere.pl >= 0) {
               sphereColor = '#22c55e'; // Green for profit
               shadowColor = 'rgba(34, 197, 94, 0.4)';
@@ -1040,6 +1031,7 @@ export default function App() {
                 <span>At Risk</span>
               </div>
               <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
+                 Size = DV01 Amount<br/>
                 Center = High Risk (&lt;70bp)<br/>
                 Sides = Safe Zone (70bp+)<br/>
                 Click spheres for details
