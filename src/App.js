@@ -2619,207 +2619,407 @@ const calculateVammBreakdown = () => {
         
         <div className="positions-section" style={{ marginTop: '3rem', clear: 'both' }}>
           <h3>Positions</h3>
-          <div className="positions-table">
-            {marketTrades.length > 0 ? (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Market</th>
-                    <th>Direction</th>
-                    <th>{isSettlementMode ? 'Settlement P&L' : 'Total P&L'}</th>
-                    <th>Today's P&L</th>
-                    <th>Entry Price</th>
-                    <th>Current Price</th>
-                    <th>Liquidation Price</th>
-                    <th>Margin Posted</th>
-                    <th>DV01</th>
-                    <th>Entry Day</th>
-                    <th>Days Held</th>
-                    <th>Tx Hash</th>
-                    <th>Liquidation Risk</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {marketTrades.map((trade, i) => {
-                    const bpsFromLiquidation = calculateLiquidationRisk(trade);
-                    const isRisky = bpsFromLiquidation <= 5 && bpsFromLiquidation > 0;
-                    
-                    return (
-                      <tr key={i}>
-                        <td>{trade.market}</td>
-                        <td className={trade.type === 'pay' ? 'pay-fixed' : 'receive-fixed'}>
-                          {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-                        </td>
-                        <td className={trade.pnl >= 0 ? 'profit' : 'loss'}>
-                          {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}{trade.pnl < 0 ? '' : ''}
-                        </td>
-                        <td className={trade.todaysPL >= 0 ? 'profit' : 'loss'}>
-                          {isSettlementMode ? '$0' : (trade.todaysPL >= 0 ? '+' : '') + '$' + Math.abs(trade.todaysPL).toLocaleString() + (trade.todaysPL < 0 ? '' : '')}
-                        </td>
-                        <td>{trade.entryPrice.toFixed(3)}%</td>
-                        <td>{trade.currentPrice.toFixed(3)}%</td>
-                        <td>{parseFloat(trade.liquidationPrice).toFixed(3)}%</td>
-                        <td>${trade.collateral?.toLocaleString() || 'N/A'}</td>
-                        <td>${(trade.baseDV01)?.toLocaleString() || 'N/A'}</td>
-                        <td>{trade.entryDay || 0}</td>
-                        <td>{globalDay - (trade.entryDay || 0)}</td>
-                        <td style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                          {trade.txSignature || 'Simulated'}
-                        </td>
-                        <td>
+          
+          {Object.values(tradesByMarket).flat().length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+              gap: '1.5rem',
+              marginTop: '1.5rem'
+            }}>
+              {Object.keys(tradesByMarket).map(mkt => 
+                (tradesByMarket[mkt] || []).map((trade, i) => {
+                  const bpsFromLiquidation = calculateLiquidationRisk(trade);
+                  const isRisky = bpsFromLiquidation <= 20 && bpsFromLiquidation > 0;
+                  
+                  return (
+                    <div
+                      key={`${mkt}-${i}`}
+                      style={{
+                        background: 'var(--gradient-card)',
+                        border: `1px solid ${isRisky ? '#ef4444' : 'var(--border-secondary)'}`,
+                        borderRadius: '1rem',
+                        padding: '1.5rem',
+                        backdropFilter: 'blur(16px)',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.3)';
+                        e.currentTarget.style.borderColor = isRisky ? '#ef4444' : '#10b981';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.borderColor = isRisky ? '#ef4444' : 'var(--border-secondary)';
+                      }}
+                    >
+                      {/* Top border indicator */}
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: trade.type === 'pay' ? 
+                          'linear-gradient(90deg, #3b82f6, #1d4ed8)' : 
+                          'linear-gradient(90deg, #f59e0b, #d97706)'
+                      }} />
+                      
+                      {/* Header Row */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem'
+                        }}>
+                          <img
+                            src={
+                              mkt === "JitoSol" ? "/jito.png" :
+                              mkt === "Lido stETH" ? "/lido.png" :
+                              mkt === "Aave ETH Lending" ? "/aave.png" :
+                              mkt === "Aave ETH Borrowing" ? "/aave.png" :
+                              mkt === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
+                            }
+                            alt={`${mkt} logo`}
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '50%'
+                            }}
+                          />
+                          <div>
+                            <div style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '700',
+                              color: 'var(--text-primary)'
+                            }}>
+                              {mkt}
+                            </div>
+                            <div style={{
+                              fontSize: '0.85rem',
+                              color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                              fontWeight: '600'
+                            }}>
+                              {trade.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Risk Indicator */}
+                        <div style={{
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '1rem',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          background: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                          color: isRisky ? '#ef4444' : '#22c55e',
+                          border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`
+                        }}>
+                          {isRisky ? 'HIGH RISK' : 'SAFE'}
+                        </div>
+                      </div>
+                      
+                      {/* Main Metrics Grid */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '1rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.25rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}>
+                            P&L
+                          </div>
+                          <div style={{
+                            fontSize: '1.5rem',
+                            fontWeight: '800',
+                            color: trade.pnl >= 0 ? '#22c55e' : '#ef4444',
+                            textShadow: trade.pnl >= 0 ? 
+                              '0 0 10px rgba(34, 197, 94, 0.3)' : 
+                              '0 0 10px rgba(239, 68, 68, 0.3)'
+                          }}>
+                            {trade.pnl >= 0 ? '+' : ''}${Math.abs(parseFloat(trade.pl)).toLocaleString()}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.25rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}>
+                            DV01
+                          </div>
+                          <div style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '700',
+                            color: 'var(--text-primary)'
+                          }}>
+                            ${(trade.baseDV01).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Price Info */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr 1fr',
+                        gap: '0.75rem',
+                        marginBottom: '1rem',
+                        padding: '0.75rem',
+                        background: 'rgba(31, 41, 55, 0.4)',
+                        borderRadius: '0.5rem'
+                      }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.25rem'
+                          }}>
+                            Entry
+                          </div>
+                          <div style={{
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            color: 'var(--text-secondary)'
+                          }}>
+                            {trade.entryPrice.toFixed(3)}%
+                          </div>
+                        </div>
+                        
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.25rem'
+                          }}>
+                            Current
+                          </div>
+                          <div style={{
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            color: '#10b981'
+                          }}>
+                            {trade.currentPrice.toFixed(3)}%
+                          </div>
+                        </div>
+                        
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.25rem'
+                          }}>
+                            Liquidation
+                          </div>
+                          <div style={{
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            color: '#ef4444'
+                          }}>
+                            {parseFloat(trade.liquidationPrice).toFixed(3)}%
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Secondary Info */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr 1fr',
+                        gap: '0.75rem',
+                        marginBottom: '1.5rem',
+                        fontSize: '0.8rem',
+                        color: 'var(--text-muted)'
+                      }}>
+                        <div>
+                          <span>Margin: </span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            ${trade.collateral?.toLocaleString() || 'N/A'}
+                          </span>
+                        </div>
+                        <div>
+                          <span>Day: </span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {trade.entryDay || 0}
+                          </span>
+                        </div>
+                        <div>
+                          <span>Risk: </span>
                           <span style={{ 
                             color: isRisky ? '#ef4444' : '#22c55e', 
-                            fontWeight: 'bold',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '1rem',
-                            backgroundColor: isRisky ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                            border: `1px solid ${isRisky ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
-                            fontSize: '0.875rem'
+                            fontWeight: '600'
                           }}>
-                            <span style={{ fontSize: '0.75rem' }}>
-                              {isRisky ? '⚠️' : '✅'}
-                            </span>
-                            {isRisky ? 'RISKY' : 'Safe'}
+                            {bpsFromLiquidation.toFixed(0)}bp
                           </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                            <button 
-                              onClick={() => requestAddMargin(i)}
-                              style={{
-                                background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '0.5rem',
-                                fontSize: '0.75rem',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                transition: 'all 0.3s ease',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.025em'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
-                                e.target.style.transform = 'translateY(-1px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
-                                e.target.style.transform = 'translateY(0)';
-                              }}
-                            >
-                              Add Margin
-                            </button>
-                            <button 
-                              onClick={() => requestUnwind(i)}
-                              className="unwind-btn"
-                              style={{
-                                background: 'linear-gradient(45deg, #ef4444, #dc2626)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '0.5rem',
-                                fontSize: '0.75rem',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                transition: 'all 0.3s ease',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.025em'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
-                                e.target.style.transform = 'translateY(-1px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
-                                e.target.style.transform = 'translateY(0)';
-                              }}
-                            >
-                              Close Position
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '0.75rem'
+                      }}>
+                        <button
+                          onClick={() => requestAddMargin(Object.values(tradesByMarket).flat().findIndex(t => t === trade))}
+                          style={{
+                            background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1rem',
+                            borderRadius: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.025em'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8)';
+                            e.target.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #3b82f6, #2563eb)';
+                            e.target.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          Add Margin
+                        </button>
+                        
+                        <button
+                          onClick={() => requestUnwind(Object.values(tradesByMarket).flat().findIndex(t => t === trade))}
+                          style={{
+                            background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1rem',
+                            borderRadius: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.025em'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+                            e.target.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                            e.target.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          Close Position
+                        </button>
+                      </div>
+                      
+                      {/* TX Hash - Subtle */}
+                      {trade.txSignature && (
+                        <div style={{
+                          marginTop: '0.75rem',
+                          fontSize: '0.7rem',
+                          color: 'var(--text-subtle)',
+                          textAlign: 'center'
+                        }}>
+                          Tx: {trade.txSignature}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            /* Keep your existing empty state */
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4rem 2rem',
+              textAlign: 'center',
+              minHeight: '300px',
+              background: 'var(--gradient-card)',
+              borderRadius: '1rem',
+              border: '1px solid var(--border-secondary)'
+            }}>
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4rem 2rem',
-                textAlign: 'center',
-                minHeight: '300px',
-                background: 'var(--gradient-card)',
-                borderRadius: '1rem',
-                border: '1px solid var(--border-secondary)'
+                fontSize: '4rem',
+                marginBottom: '1.5rem',
+                opacity: 0.4,
+                animation: 'float 3s ease-in-out infinite'
               }}>
-                <div style={{
-                  fontSize: '4rem',
-                  marginBottom: '1.5rem',
-                  opacity: 0.4,
-                  animation: 'float 3s ease-in-out infinite'
-                }}>
-                  📊
-                </div>
-                <h3 style={{
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  marginBottom: '1rem',
-                  color: 'var(--text-primary)'
-                }}>
-                  No Active Positions
-                </h3>
-                <p style={{
-                  fontSize: '1rem',
-                  color: 'var(--text-muted)',
-                  marginBottom: '2rem',
-                  lineHeight: 1.6,
-                  maxWidth: '400px'
-                }}>
-                  You haven't opened any positions yet. Use the swap interface above to enter your first trade.
-                </p>
-                <button 
-                  onClick={() => setActiveTab("Swap")}
-                  style={{
-                    background: 'var(--gradient-accent)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '1rem 2rem',
-                    borderRadius: '1rem',
-                    fontSize: '1rem',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.025em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  <span>🚀</span>
-                  Start Trading
-                </button>
+                📊
               </div>
-            )}
-          </div>
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                No Active Positions
+              </h3>
+              <p style={{
+                fontSize: '1rem',
+                color: 'var(--text-muted)',
+                marginBottom: '2rem',
+                lineHeight: 1.6,
+                maxWidth: '400px'
+              }}>
+                You haven't opened any positions yet. Use the swap interface above to enter your first trade.
+              </p>
+              <button 
+                onClick={() => setActiveTab("Swap")}
+                style={{
+                  background: 'var(--gradient-accent)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 2rem',
+                  borderRadius: '1rem',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                <span>🚀</span>
+                Start Trading
+              </button>
+            </div>
+          )}
         </div>
+        
 
         <div className="positions-section" style={{ marginTop: '2rem' }}>
           <h3>Trade History</h3>
