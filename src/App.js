@@ -5009,400 +5009,192 @@ const calculateVammBreakdown = () => {
 )}
 
 {activeTab === "Galaxy" && (
-  <div className="galaxy-universe" style={{ 
+  <div style={{ 
     minHeight: 'calc(100vh - 60px)',
-    background: 'linear-gradient(180deg, #000510 0%, #0f172a 30%, #1e293b 70%, #000510 100%)',
-    position: 'relative',
-    overflow: 'hidden'
+    background: 'linear-gradient(180deg, #000510 0%, #0f172a 50%, #000510 100%)',
+    padding: '2rem',
+    position: 'relative'
   }}>
     
-    {/* Animated Starfield Background */}
+    {/* Header */}
     <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: `
-        radial-gradient(2px 2px at 20% 30%, white, transparent),
-        radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.8), transparent),
-        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.9), transparent)
-      `,
-      backgroundSize: '200px 100px, 80px 60px, 300px 200px, 150px 100px, 250px 150px',
-      animation: 'twinkle 20s ease-in-out infinite alternate'
-    }} />
-
-    {/* Main Galaxy Container */}
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      position: 'relative',
-      zIndex: 1
+      textAlign: 'center',
+      marginBottom: '2rem'
     }}>
-      
-      {/* Galaxy Header with Lore */}
-      <div style={{
-        textAlign: 'center',
-        padding: '2rem',
-        background: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(16, 185, 129, 0.3)'
+      <h1 style={{
+        fontSize: '2.5rem',
+        fontWeight: '900',
+        background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        marginBottom: '1rem'
       }}>
-        <h1 style={{
-          fontSize: '3rem',
-          fontWeight: '900',
-          background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          marginBottom: '1rem',
-          textShadow: '0 0 30px rgba(16, 185, 129, 0.5)'
-        }}>
-          🌌 The Portfolio Galaxy
-        </h1>
-        <p style={{
-          fontSize: '1.2rem',
-          color: '#e2e8f0',
-          maxWidth: '800px',
-          margin: '0 auto',
-          lineHeight: 1.6,
-          fontWeight: '500'
-        }}>
-          Welcome to the <strong style={{ color: '#10b981' }}>Slope Universe</strong>, where each of your positions exists as a celestial body. 
-          Navigate the cosmic risks of the <strong style={{ color: '#ef4444' }}>Liquidation Singularity</strong> at the center, 
-          while your positions orbit in the safety of the outer realms.
-        </p>
-      </div>
-
-      {/* Galaxy Viewport */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        position: 'relative'
-      }}>
-        
-        {/* Left Side - Market Planets */}
-        <div style={{
-          width: '300px',
-          padding: '2rem',
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(10px)',
-          borderRight: '1px solid rgba(16, 185, 129, 0.2)'
-        }}>
-          <h3 style={{
-            color: '#10b981',
-            marginBottom: '1.5rem',
-            fontSize: '1.5rem',
-            fontWeight: '700',
-            textAlign: 'center'
-          }}>
-            🪐 Market Planets
-          </h3>
-          
-          {Object.keys(marketSettings).map(mkt => {
-            const positions = tradesByMarket[mkt] || [];
-            const totalValue = positions.reduce((sum, pos) => sum + pos.baseDV01, 0);
-            const hasPositions = positions.length > 0;
-            
-            return (
-              <div
-                key={mkt}
-                style={{
-                  padding: '1rem',
-                  marginBottom: '1rem',
-                  background: hasPositions ? 
-                    'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)' :
-                    'rgba(55, 65, 81, 0.3)',
-                  border: hasPositions ? 
-                    '1px solid rgba(16, 185, 129, 0.3)' : 
-                    '1px solid rgba(75, 85, 99, 0.3)',
-                  borderRadius: '1rem',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = hasPositions ? 
-                    '0 8px 32px rgba(16, 185, 129, 0.2)' : 
-                    '0 8px 32px rgba(75, 85, 99, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                  <img
-                    src={
-                      mkt === "JitoSol" ? "/jito.png" :
-                      mkt === "Lido stETH" ? "/lido.png" :
-                      mkt === "Aave ETH Lending" ? "/aave.png" :
-                      mkt === "Aave ETH Borrowing" ? "/aave.png" :
-                      mkt === "Rocketpool rETH" ? "/rocketpool.png" : "/default-logo.png"
-                    }
-                    alt={`${mkt} planet`}
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      border: hasPositions ? '2px solid #10b981' : '2px solid #6b7280',
-                      boxShadow: hasPositions ? '0 0 16px rgba(16, 185, 129, 0.4)' : 'none'
-                    }}
-                  />
-                  <div>
-                    <div style={{ 
-                      color: hasPositions ? '#10b981' : '#9ca3af', 
-                      fontWeight: '700',
-                      fontSize: '1rem'
-                    }}>
-                      {mkt}
-                    </div>
-                    <div style={{ 
-                      color: '#6b7280', 
-                      fontSize: '0.8rem'
-                    }}>
-                      Planet {mkt.split(' ')[0]}
-                    </div>
-                  </div>
-                </div>
-                
-                {hasPositions ? (
-                  <div>
-                    <div style={{ fontSize: '0.85rem', color: '#e2e8f0', marginBottom: '0.25rem' }}>
-                      <strong>{positions.length}</strong> active position{positions.length !== 1 ? 's' : ''}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: '600' }}>
-                      Total DV01: ${totalValue.toLocaleString()}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '0.8rem', color: '#6b7280', fontStyle: 'italic' }}>
-                    Unexplored territory - no positions
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Center - Main Galaxy View */}
-        <div style={{
-          flex: 1,
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          
-          {/* Galaxy Controls */}
-          <div style={{
-            padding: '1rem 2rem',
-            background: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid rgba(16, 185, 129, 0.2)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{
-              color: '#e2e8f0',
-              fontSize: '1.1rem',
-              fontWeight: '600'
-            }}>
-              🚀 Portfolio Universe Navigation
-            </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{
-                padding: '0.5rem 1rem',
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                borderRadius: '2rem',
-                color: '#10b981',
-                fontSize: '0.9rem',
-                fontWeight: '600'
-              }}>
-                Total Positions: {Object.values(tradesByMarket).flat().length}
-              </div>
-              
-              <button
-                onClick={() => setShowLegend(!showLegend)}
-                style={{
-                  background: 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '2rem',
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}
-              >
-                📖 Galaxy Guide
-              </button>
-            </div>
-          </div>
-
-          {/* Main Galaxy Canvas */}
-          <div style={{ 
-            flex: 1, 
-            position: 'relative',
-            background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, rgba(0, 5, 16, 0.95) 70%)',
-            minHeight: '600px' // Add minimum height
-          }}>
-            <FloatingPositionSpheres />
-            
-            {/* Galaxy Lore Overlay */}
-            {Object.values(tradesByMarket).flat().length === 0 && (
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center',
-                color: '#e2e8f0',
-                zIndex: 10
-              }}>
-                <div style={{ fontSize: '6rem', marginBottom: '1rem', opacity: 0.3 }}>🌌</div>
-                <h2 style={{ 
-                  fontSize: '2rem', 
-                  marginBottom: '1rem',
-                  background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  The Universe Awaits
-                </h2>
-                <p style={{ 
-                  fontSize: '1.2rem', 
-                  color: '#9ca3af',
-                  maxWidth: '500px',
-                  lineHeight: 1.6
-                }}>
-                  Your trading positions will appear as celestial bodies in this cosmic space. 
-                  Start trading to populate your personal galaxy!
-                </p>
-                <button
-                  onClick={() => setActiveTab("Swap")}
-                  style={{
-                    marginTop: '2rem',
-                    background: 'linear-gradient(45deg, #10b981, #059669)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '1rem 2rem',
-                    borderRadius: '2rem',
-                    fontSize: '1.1rem',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}
-                >
-                  🚀 Begin Your Journey
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Side - Galaxy Stats & Lore */}
-        <div style={{
-          width: '320px',
-          padding: '2rem',
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(10px)',
-          borderLeft: '1px solid rgba(16, 185, 129, 0.2)',
-          overflowY: 'auto'
-        }}>
-          <h3 style={{
-            color: '#8b5cf6',
-            marginBottom: '1.5rem',
-            fontSize: '1.5rem',
-            fontWeight: '700',
-            textAlign: 'center'
-          }}>
-            ⚡ Galaxy Intel
-          </h3>
-
-          {/* Universe Stats */}
-          <div style={{
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            borderRadius: '1rem',
-            marginBottom: '1.5rem'
-          }}>
-            <h4 style={{ color: '#8b5cf6', marginBottom: '1rem', fontSize: '1.1rem' }}>
-              🌟 Universe Status
-            </h4>
-            <div style={{ fontSize: '0.9rem', color: '#e2e8f0', lineHeight: 1.6 }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Active Celestial Bodies:</strong> {Object.values(tradesByMarket).flat().length}
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Occupied Planets:</strong> {Object.keys(tradesByMarket).filter(m => tradesByMarket[m]?.length > 0).length}/5
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Universal Day:</strong> {globalDay}
-              </div>
-              <div>
-                <strong>Singularity Threat:</strong> <span style={{ color: '#ef4444' }}>ACTIVE</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Galaxy Lore */}
-          <div style={{
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: '1rem',
-            marginBottom: '1.5rem'
-          }}>
-            <h4 style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '1.1rem' }}>
-              ⚫ The Liquidation Singularity
-            </h4>
-            <p style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.6 }}>
-              At the heart of the Slope Universe lies the dreaded <strong>Liquidation Singularity</strong> - 
-              a cosmic force that consumes any position that ventures too close. 
-              The closer your celestial body drifts toward this dark center, the greater the danger of total annihilation.
-            </p>
-          </div>
-
-          {/* Navigation Guide */}
-          <div style={{
-            padding: '1.5rem',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '1rem'
-          }}>
-            <h4 style={{ color: '#10b981', marginBottom: '1rem', fontSize: '1.1rem' }}>
-              🧭 Navigation Protocol
-            </h4>
-            <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.6 }}>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong style={{ color: '#10b981' }}>Safe Zones:</strong> Positions with 70+ bp from liquidation orbit in the outer cosmos
-              </div>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <strong style={{ color: '#f59e0b' }}>Danger Zones:</strong> High-risk positions circle closer to the singularity
-              </div>
-              <div>
-                <strong style={{ color: '#06b6d4' }}>Celestial Bodies:</strong> Click any sphere to access position controls
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        🌌 Portfolio Galaxy
+      </h1>
+      <p style={{ color: '#9ca3af', fontSize: '1.1rem' }}>
+        Your positions as celestial bodies in space
+      </p>
     </div>
 
-    {/* Add CSS Animation */}
-    <style jsx>{`
-      @keyframes twinkle {
-        0% { opacity: 0.3; }
-        100% { opacity: 1; }
-      }
-    `}</style>
+    {/* Simple Galaxy Container */}
+    <div style={{
+      width: '100%',
+      maxWidth: '1000px',
+      height: '600px',
+      margin: '0 auto',
+      position: 'relative',
+      background: 'radial-gradient(circle at center, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.8) 100%)',
+      border: '2px solid #374151',
+      borderRadius: '1rem',
+      overflow: 'hidden'
+    }}>
+      
+      {/* Central Black Hole */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, #000000 30%, #1a1a1a 70%, transparent)',
+        border: '3px solid white',
+        boxShadow: '0 0 30px rgba(0,0,0,0.8)',
+        zIndex: 5
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'white',
+          fontSize: '24px'
+        }}>
+          ⚫
+        </div>
+      </div>
+
+      {/* Render All Positions */}
+      {Object.keys(tradesByMarket).map(market => 
+        (tradesByMarket[market] || []).map((trade, i) => {
+          const totalPositions = Object.values(tradesByMarket).flat();
+          const globalIndex = totalPositions.findIndex(t => t === trade);
+          const liquidationRisk = calculateLiquidationRisk(trade);
+          
+          // Simple positioning logic
+          let x, y;
+          if (liquidationRisk >= 70) {
+            // Safe positions - outer ring
+            const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
+            const radius = 200;
+            x = 500 + Math.cos(angle) * radius;
+            y = 300 + Math.sin(angle) * radius;
+          } else {
+            // Risky positions - inner ring
+            const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
+            const radius = Math.max(80, liquidationRisk * 1.5);
+            x = 500 + Math.cos(angle) * radius;
+            y = 300 + Math.sin(angle) * radius;
+          }
+
+          // Size based on DV01
+          const size = Math.max(20, Math.min(40, trade.baseDV01 / 1000));
+          
+          // Color logic
+          let sphereColor;
+          if (liquidationRisk >= 70) {
+            sphereColor = '#06b6d4'; // Safe = cyan
+          } else if (trade.pnl >= 0) {
+            sphereColor = '#22c55e'; // Profit = green
+          } else {
+            sphereColor = '#ef4444'; // Loss = red
+          }
+
+          return (
+            <div
+              key={`${market}-${i}`}
+              style={{
+                position: 'absolute',
+                left: `${x}px`,
+                top: `${y}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                borderRadius: '50%',
+                background: `radial-gradient(circle at 30% 30%, ${sphereColor}, ${sphereColor}cc)`,
+                border: '2px solid rgba(255,255,255,0.4)',
+                boxShadow: `0 0 20px ${sphereColor}80`,
+                transform: 'translate(-50%, -50%)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                zIndex: 10,
+                transition: 'all 0.3s ease'
+              }}
+              onClick={() => {
+                alert(`${market}\nDirection: ${trade.type}\nDV01: $${trade.baseDV01.toLocaleString()}\nP&L: $${trade.pnl?.toLocaleString() || '0'}\nRisk: ${liquidationRisk.toFixed(0)}bp`);
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translate(-50%, -50%) scale(1.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translate(-50%, -50%) scale(1)';
+              }}
+            >
+              {market.charAt(0)}
+            </div>
+          );
+        })
+      )}
+
+      {/* No Positions Message */}
+      {Object.values(tradesByMarket).flat().length === 0 && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center',
+          color: '#9ca3af',
+          zIndex: 20
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🌌</div>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Empty Universe</h3>
+          <p style={{ fontSize: '1rem', marginBottom: '2rem' }}>Open some positions to see them here!</p>
+          <button
+            onClick={() => setActiveTab("Swap")}
+            style={{
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              padding: '1rem 2rem',
+              borderRadius: '1rem',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Start Trading
+          </button>
+        </div>
+      )}
+
+    </div>
+
+    {/* Debug Info */}
+    <div style={{
+      marginTop: '2rem',
+      textAlign: 'center',
+      color: '#6b7280',
+      fontSize: '0.9rem'
+    }}>
+      Active Positions: {Object.values(tradesByMarket).flat().length} | 
+      Markets: {Object.keys(tradesByMarket).filter(m => tradesByMarket[m]?.length > 0).join(', ') || 'None'}
+    </div>
   </div>
 )}
       {pendingDayAdvancement && (
