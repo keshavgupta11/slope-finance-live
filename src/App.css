@@ -348,7 +348,7 @@ body {
 
 /* Enhanced Left Panel - BETTER BALANCED */
 .left-panel {
-  width: 380px; 
+  width: 450px; 
   padding: 0.8rem 1.8rem 1.8rem 1.8rem; /* Changed: smaller top padding */
   border-right: 1px solid var(--border-primary);
   background: var(--gradient-card);
