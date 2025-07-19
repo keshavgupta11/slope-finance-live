@@ -2716,11 +2716,11 @@ const calculateVammBreakdown = () => {
                           textAlign: 'right',
                           fontSize: '0.95rem',
                           fontWeight: '700',
-                          color: '#10b981'
+                          color: 'var(--text-secondary)'
                         }}>
                           {trade.currentPrice.toFixed(3)}%
                         </td>
-                        
+
                         <td style={{ 
                           padding: '1rem 0.8rem', 
                           textAlign: 'right',
