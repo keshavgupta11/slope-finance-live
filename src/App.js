@@ -1947,7 +1947,7 @@ const calculateVammBreakdown = () => {
                 color: '#ffffff', 
                 fontWeight: '500'
               }}>
-                Crypto Rate Swaps (CRS)<span style={{ marginLeft: '1.5rem' }}></span>1 Jan-31 Dec'25
+                Crypto Rate Swaps (CRS)<span style={{ marginLeft: '2.5rem' }}></span>1 Jan-31 Dec'25
               </div>
               <div className="price-info" style={{ marginBottom: '0.3rem' }}>
                 <div className="price-row">
