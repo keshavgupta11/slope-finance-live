@@ -659,32 +659,49 @@ export default function App() {
           dv01Size = Math.min(32, 29 + ((dv01 - 50000) / 10000) *1.5); // 50k+ scales gradually (increased max)
         }
         
-        // Distance from center based on liquidation risk (closer to liquidation = closer to center)
-        const liquidationDistance = Math.max(5, position.liquidationRisk); // Minimum 5bp for safety
-        
-        // Calculate max safe radius based on canvas size (assume minimum 300px canvas)
-        const maxSafeRadius = 120; // Keep spheres well within bounds
-        const minRadius = 60;
-        // Use logarithmic scaling to prevent positions from going too far out
-        // This keeps very safe positions visible while still showing relative risk
-        let scaledDistance;
-        if (liquidationDistance <= 50) {
-          // Linear scaling for liquidation risk 0-50bp
-          scaledDistance = minRadius + (liquidationDistance * 0.8); // 0.8 scaling factor
-        } else {
-          // Logarithmic scaling for liquidation risk > 50bp to prevent going too far
-          const baseDistance = minRadius + (50 * 0.8); // Distance at 50bp
-          const excessDistance = liquidationDistance - 50;
-          const logScale = Math.log(1 + excessDistance / 50) * 20; // Logarithmic scaling
-          scaledDistance = baseDistance + logScale;
-        }
+        // Position based on liquidation risk
+        const liquidationDistance = Math.max(5, position.liquidationRisk);
 
-        const radiusFromCenter = Math.min(maxSafeRadius, Math.max(minRadius, scaledDistance));
-        
-        // Always position on circumference - spread them out more
-        const angle = (i / allPositions.length) * Math.PI * 2;
-        const x = Math.cos(angle) * radiusFromCenter;
-        const y = Math.sin(angle) * radiusFromCenter;
+        let x, y;
+
+        if (liquidationDistance >= 70) {
+          // SAFE ZONE: Move to left or right side of canvas
+          const canvasWidth = 400; // Approximate canvas width
+          const canvasHeight = 300; // Approximate canvas height
+          
+          // Alternate between left and right sides based on index
+          const isLeftSide = i % 2 === 0;
+          
+          if (isLeftSide) {
+            // Left safe zone
+            x = -canvasWidth/2 + 60; // 60px from left edge
+          } else {
+            // Right safe zone  
+            x = canvasWidth/2 - 60; // 60px from right edge
+          }
+          
+          // Spread them vertically in the safe zone
+          const safePositions = allPositions.filter(p => p.liquidationRisk >= 70);
+          const safeIndex = safePositions.findIndex(p => p.id === position.id);
+          const verticalSpacing = 80;
+          const startY = -(safePositions.length - 1) * verticalSpacing / 2;
+          y = startY + (safeIndex * verticalSpacing);
+          
+        } else {
+          // RISK ZONE: Keep in circular galaxy formation
+          const minRadius = 50;
+          const maxRadius = 120;
+          const cappedLiquidationDistance = Math.min(liquidationDistance, 70);
+          const radiusFromCenter = minRadius + (cappedLiquidationDistance / 70) * (maxRadius - minRadius);
+          
+          // Circular positioning for risky positions
+          const riskPositions = allPositions.filter(p => p.liquidationRisk < 70);
+          const riskIndex = riskPositions.findIndex(p => p.id === position.id);
+          const angle = (riskIndex / riskPositions.length) * Math.PI * 2;
+          
+          x = Math.cos(angle) * radiusFromCenter;
+          y = Math.sin(angle) * radiusFromCenter;
+        }
         
         console.log(`Sphere ${i} position:`, { x, y, size: dv01Size, radius: radiusFromCenter }); // Debug
         
@@ -781,14 +798,23 @@ export default function App() {
           const screenX = centerX + sphere.x;
           const screenY = centerY + sphere.y + floatOffset;
           
-          // Color based on P&L - simple red/green
+          // Color and effects based on P&L and safety
           let sphereColor, shadowColor;
-          if (sphere.pl >= 0) {
-            sphereColor = '#22c55e'; // Green for profit
-            shadowColor = 'rgba(34, 197, 94, 0.4)';
+          const isSafePosition = sphere.liquidationRisk >= 70;
+
+          if (isSafePosition) {
+            // Safe positions get special blue/cyan coloring regardless of P&L
+            sphereColor = sphere.pl >= 0 ? '#06b6d4' : '#0891b2'; // Cyan variants
+            shadowColor = 'rgba(6, 182, 212, 0.4)';
           } else {
-            sphereColor = '#ef4444'; // Red for loss
-            shadowColor = 'rgba(239, 68, 68, 0.4)';
+            // Risky positions use normal green/red P&L coloring
+            if (sphere.pl >= 0) {
+              sphereColor = '#22c55e'; // Green for profit
+              shadowColor = 'rgba(34, 197, 94, 0.4)';
+            } else {
+              sphereColor = '#ef4444'; // Red for loss
+              shadowColor = 'rgba(239, 68, 68, 0.4)';
+            }
           }
           
           // Draw shadow with better quality
@@ -1014,9 +1040,8 @@ export default function App() {
                 <span>At Risk</span>
               </div>
               <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
-                Size = DV01 Amount<br/>
-                Distance = Liquidation Risk<br/>
-                (Safe positions stay in view)<br/>
+                Center = High Risk (&lt;70bp)<br/>
+                Sides = Safe Zone (70bp+)<br/>
                 Click spheres for details
               </div>
             </div>
