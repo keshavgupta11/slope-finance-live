@@ -1046,82 +1046,96 @@ export default function App() {
         </div>
         
         {/* Selected position details */}
-        {selectedPosition && (
-          <div style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            bottom: '1rem',
-            background: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            fontSize: '0.875rem',
-            minWidth: '250px',
-            maxWidth: '300px',
-            backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            zIndex: 1000,
-            maxHeight: 'calc(100% - 2rem)',
-            overflow: 'auto',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+      {selectedPosition && (
+        <div style={{
+          position: 'absolute',
+          left: '10px',
+          bottom: '10px',
+          background: 'rgba(0, 0, 0, 0.95)',
+          color: 'white',
+          padding: '0.75rem',
+          borderRadius: '0.5rem',
+          fontSize: '0.75rem',
+          width: '180px',
+          backdropFilter: 'blur(8px)',
+          border: '2px solid #10b981',
+          zIndex: 1000,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)'
+        }}>
+          <div style={{ 
+            fontWeight: '700', 
+            marginBottom: '0.5rem', 
+            color: '#10b981',
+            fontSize: '0.8rem'
           }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#fbbf24' }}>
-              {selectedPosition.market} Position
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Direction:</strong> {selectedPosition.type === 'pay' ? 'Pay Fixed' : 'Receive Fixed'}
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>DV01:</strong> ${selectedPosition.dv01.toLocaleString()}
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Entry Price:</strong> {selectedPosition.entryPrice.toFixed(3)}%
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Current Price:</strong> {selectedPosition.currentPrice.toFixed(3)}%
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Margin:</strong> ${selectedPosition.collateral.toLocaleString()}
-            </div>
-            <div style={{ 
-              marginBottom: '0.5rem',
-              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444'
-            }}>
-              <strong>P&L:</strong> {selectedPosition.pl >= 0 ? '+' : ''}${selectedPosition.pl.toLocaleString()}
-            </div>
-            <div style={{ 
-              marginBottom: '0.75rem',
-              color: selectedPosition.liquidationRisk <= 20 ? '#fbbf24' : '#22c55e'
-            }}>
-              <strong>Liquidation Risk:</strong> {selectedPosition.liquidationRisk.toFixed(0)}bp away
-            </div>
-            <button
-              onClick={() => setSelectedPosition(null)}
-              style={{
-                background: '#374151',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1rem',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                width: '100%',
-                fontWeight: '600',
-                transition: 'all 0.2s ease',
-                marginTop: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#4b5563';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#374151';
-              }}
-            >
-              ✕ Close Details
-            </button>
+            {selectedPosition.market}
           </div>
-        )}
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+            <span style={{ color: '#9ca3af' }}>Direction:</span>
+            <span style={{ 
+              color: selectedPosition.type === 'pay' ? '#3b82f6' : '#f59e0b',
+              fontWeight: '600'
+            }}>
+              {selectedPosition.type === 'pay' ? 'Pay' : 'Receive'}
+            </span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+            <span style={{ color: '#9ca3af' }}>DV01:</span>
+            <span style={{ fontWeight: '600' }}>${(selectedPosition.dv01 / 1000).toFixed(0)}K</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+            <span style={{ color: '#9ca3af' }}>Entry:</span>
+            <span style={{ fontWeight: '600' }}>{selectedPosition.entryPrice.toFixed(2)}%</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ color: '#9ca3af' }}>P&L:</span>
+            <span style={{ 
+              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444',
+              fontWeight: '700'
+            }}>
+              {selectedPosition.pl >= 0 ? '+' : ''}${(selectedPosition.pl / 1000).toFixed(0)}K
+            </span>
+          </div>
+          
+          <div style={{ 
+            padding: '0.375rem',
+            background: selectedPosition.liquidationRisk <= 20 ? 
+              'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)',
+            borderRadius: '0.25rem',
+            marginBottom: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ 
+              color: selectedPosition.liquidationRisk <= 20 ? '#ef4444' : '#22c55e',
+              fontWeight: '700',
+              fontSize: '0.7rem'
+            }}>
+              {selectedPosition.liquidationRisk.toFixed(0)}bp away
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setSelectedPosition(null)}
+            style={{
+              background: '#374151',
+              color: 'white',
+              border: 'none',
+              padding: '0.25rem',
+              borderRadius: '0.25rem',
+              fontSize: '0.65rem',
+              cursor: 'pointer',
+              width: '100%',
+              fontWeight: '600'
+            }}
+          >
+            ✕ Close
+          </button>
+        </div>
+      )}
       </div>
     );
   };
