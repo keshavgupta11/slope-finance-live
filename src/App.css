@@ -2563,6 +2563,8 @@ select:focus-visible,
 /* COMPACT LAYOUT IMPROVEMENTS */
 .swap-header {
   margin-bottom: 1rem; /* Reduced */
+  margin-top: 0; /* Add this to remove top margin */
+  padding-top: 0; /* Add this to remove top padding */
 }
 
 .swap-header div {
