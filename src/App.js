@@ -1943,11 +1943,11 @@ const calculateVammBreakdown = () => {
             <div className="swap-header">
               <h2>Swap</h2>
               <div style={{ 
-                fontSize: '1.1rem', 
+                fontSize: '0.85rem', 
                 color: '#ffffff', 
                 fontWeight: '500'
               }}>
-                Crypto Rate Swaps (CRS)<span style={{ marginLeft: '1rem' }}></span>1 Jan-31 Dec'25
+                Crypto Rate Swaps (CRS)<span style={{ marginLeft: '0.8rem' }}></span>1 Jan-31 Dec'25
               </div>
               <div className="price-info" style={{ marginBottom: '0.3rem' }}>
                 <div className="price-row">
