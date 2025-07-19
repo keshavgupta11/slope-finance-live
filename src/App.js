@@ -1027,8 +1027,8 @@ export default function App() {
                 <span>Loss</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-                <div style={{ width: '8px', height: '8px', backgroundColor: '#f59e0b', borderRadius: '50%' }}></div>
-                <span>At Risk</span>
+                <div style={{ width: '8px', height: '8px', backgroundColor: '#06b6d4', borderRadius: '50%' }}></div>
+                <span>Safe (70bp)+</span>
               </div>
               <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '0.5rem' }}>
                  Size = DV01 Amount<br/>
