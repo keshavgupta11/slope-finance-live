@@ -2422,6 +2422,7 @@ const calculateVammBreakdown = () => {
           <div className="right-panel">
             <div className="chart-header">
               <span>Running 365d APY</span>
+              {/* Galaxy button - commented out for now
               <button
                 onClick={() => {
                   setShow3DView(!show3DView);
@@ -2442,6 +2443,7 @@ const calculateVammBreakdown = () => {
               >
                 {show3DView ? 'Show Chart' : 'Show Galaxy'}
               </button>
+              */}
             </div>
             <div className="chart-container" style={{ display: 'flex', gap: '1rem' }}>
               <div style={{ width: show3DView ? '50%' : '100%', transition: 'width 0.3s ease' }}>
