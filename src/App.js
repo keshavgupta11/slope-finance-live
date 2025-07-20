@@ -5013,7 +5013,6 @@ const calculateVammBreakdown = () => {
     height: 'calc(100vh - 60px)',
     background: 'linear-gradient(180deg, #000510 0%, #0f172a 30%, #1e293b 60%, #0f172a 80%, #000510 100%)',
     display: 'flex',
-    flexDirection: 'column',
     position: 'relative',
     overflow: 'hidden'
   }}>
@@ -5029,71 +5028,69 @@ const calculateVammBreakdown = () => {
         radial-gradient(2px 2px at 20% 30%, white, transparent),
         radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.8), transparent),
         radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(2px 2px at 70% 80%, rgba(16,185,129,0.5), transparent),
-        radial-gradient(1px 1px at 30% 20%, rgba(6,182,212,0.4), transparent)
+        radial-gradient(2px 2px at 70% 80%, rgba(16,185,129,0.5), transparent)
       `,
-      backgroundSize: '200px 100px, 150px 80px, 300px 200px, 250px 150px, 180px 120px',
-      animation: 'starTwinkle 15s ease-in-out infinite alternate, starMove 45s linear infinite'
+      backgroundSize: '200px 100px, 150px 80px, 300px 200px, 250px 150px',
+      animation: 'starTwinkle 15s ease-in-out infinite alternate'
     }} />
 
-    {/* Top Row - Enhanced Planets with Logos */}
-     <div style={{
-      display: 'flex',
-      gap: '1rem',
-      padding: '0.75rem 1.5rem',
-      background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.9) 50%, rgba(0,0,0,0.9) 100%)',
+    {/* LEFT PANEL - Planets */}
+    <div style={{
+      width: '280px',
+      background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.8) 100%)',
       backdropFilter: 'blur(20px)',
-      borderBottom: '2px solid rgba(16,185,129,0.3)',
-      overflowX: 'auto',
-      boxShadow: 'inset 0 -5px 20px rgba(16,185,129,0.1)',
-      flexShrink: 0
+      borderRight: '2px solid rgba(16,185,129,0.3)',
+      padding: '1.5rem',
+      overflowY: 'auto',
+      boxShadow: 'inset -5px 0 20px rgba(16,185,129,0.1)'
     }}>
+      <h2 style={{
+        fontSize: '1.5rem',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        margin: '0 0 1.5rem 0',
+        textAlign: 'center'
+      }}>
+        🪐 COSMIC WORLDS
+      </h2>
+      
       {Object.keys(marketSettings).map((mkt) => {
         const positions = tradesByMarket[mkt] || [];
         const hasPositions = positions.length > 0;
         const totalPL = positions.reduce((sum, pos) => sum + (pos.pnl || 0), 0);
         const positionCount = positions.length;
         
-        // Planet data with colors and lore
         const planetData = {
           "JitoSol": { 
             logo: "/jito.png",
             name: "Jito Prime", 
             color: "#f59e0b",
-            bgColor: "rgba(245, 158, 11, 0.15)",
-            borderColor: "rgba(245, 158, 11, 0.4)",
-            description: "Sol mining world"
+            description: "Sol mining colony"
           },
           "Lido stETH": { 
             logo: "/lido.png",
             name: "Lido Station", 
             color: "#3b82f6",
-            bgColor: "rgba(59, 130, 246, 0.15)",
-            borderColor: "rgba(59, 130, 246, 0.4)",
-            description: "Ethereum orbital hub"
+            description: "ETH orbital hub"
           },
           "Aave ETH Lending": { 
             logo: "/aave.png",
             name: "Aave Colony", 
             color: "#22c55e",
-            bgColor: "rgba(34, 197, 94, 0.15)",
-            borderColor: "rgba(34, 197, 94, 0.4)",
             description: "Lending nexus"
           },
           "Aave ETH Borrowing": { 
             logo: "/aave.png",
             name: "Aave Frontier", 
             color: "#f97316",
-            bgColor: "rgba(249, 115, 22, 0.15)",
-            borderColor: "rgba(249, 115, 22, 0.4)",
-            description: "Leverage operations"
+            description: "Leverage ops"
           },
           "Rocketpool rETH": { 
             logo: "/rocketpool.png",
             name: "Rocket Sector", 
             color: "#8b5cf6",
-            bgColor: "rgba(139, 92, 246, 0.15)",
-            borderColor: "rgba(139, 92, 246, 0.4)",
             description: "Validator fleet"
           }
         };
@@ -5102,8 +5099,6 @@ const calculateVammBreakdown = () => {
           logo: "/default-logo.png", 
           name: mkt, 
           color: "#6b7280",
-          bgColor: "rgba(107, 114, 128, 0.15)",
-          borderColor: "rgba(107, 114, 128, 0.4)",
           description: "Unknown world"
         };
         
@@ -5111,250 +5106,178 @@ const calculateVammBreakdown = () => {
           <div
             key={mkt}
             style={{
-              minWidth: '160px',
-              padding: '1rem',
+              marginBottom: '1rem',
+              padding: '1.5rem',
               background: hasPositions ? 
-                `linear-gradient(135deg, ${planet.bgColor} 0%, ${planet.color}08 100%)` :
-                'linear-gradient(135deg, rgba(55,65,81,0.2) 0%, rgba(31,41,55,0.3) 100%)',
+                `linear-gradient(135deg, ${planet.color}20 0%, ${planet.color}08 100%)` :
+                'linear-gradient(135deg, rgba(55,65,81,0.3) 0%, rgba(31,41,55,0.3) 100%)',
               border: hasPositions ? 
-                `2px solid ${planet.borderColor}` : 
+                `2px solid ${planet.color}60` : 
                 '1px solid rgba(75,85,99,0.4)',
               borderRadius: '1rem',
-              textAlign: 'center',
-              transition: 'all 0.4s ease',
+              transition: 'all 0.3s ease',
               cursor: 'pointer',
               position: 'relative',
               overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.transform = 'translateX(4px)';
               e.currentTarget.style.boxShadow = hasPositions ? 
-                `0 12px 40px ${planet.color}40` : 
-                '0 12px 40px rgba(75,85,99,0.3)';
+                `0 8px 25px ${planet.color}40` : 
+                '0 8px 25px rgba(75,85,99,0.3)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.transform = 'translateX(0)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            {/* Planet glow effect */}
-            {hasPositions && (
+            {/* Planet orbital rings for profits */}
+            {hasPositions && totalPL > 0 && (
               <div style={{
                 position: 'absolute',
-                top: '-50%',
-                right: '-50%',
-                width: '100%',
-                height: '100%',
-                background: `radial-gradient(circle, ${planet.color}20 0%, transparent 70%)`,
-                animation: 'planetGlow 4s ease-in-out infinite alternate'
+                top: '10px',
+                right: '10px',
+                width: '30px',
+                height: '30px',
+                border: `2px solid ${planet.color}`,
+                borderRadius: '50%',
+                animation: 'orbitSpin 8s linear infinite'
               }} />
             )}
             
-            {/* Orbital rings for profitable planets */}
-            {hasPositions && totalPL > 0 && (
-              <>
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '80px',
-                  height: '80px',
-                  border: `1px solid ${planet.color}60`,
-                  borderRadius: '50%',
-                  animation: 'orbitSpin 8s linear infinite'
-                }} />
-                {totalPL > 100000 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '100px',
-                    height: '100px',
-                    border: `1px dashed ${planet.color}40`,
-                    borderRadius: '50%',
-                    animation: 'orbitSpin 12s linear infinite reverse'
-                  }} />
-                )}
-              </>
+            {/* Golden moon for massive profits */}
+            {totalPL > 200000 && (
+              <div style={{
+                position: 'absolute',
+                top: '15px',
+                right: '50px',
+                width: '8px',
+                height: '8px',
+                background: '#fbbf24',
+                borderRadius: '50%',
+                boxShadow: '0 0 8px #fbbf24',
+                animation: 'moonOrbit 6s linear infinite'
+              }} />
             )}
             
-            {/* Main planet content */}
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ 
-                marginBottom: '0.75rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <img
-                  src={planet.logo}
-                  alt={`${mkt} logo`}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    border: hasPositions ? `2px solid ${planet.color}` : '2px solid rgba(107, 114, 128, 0.4)',
-                    filter: hasPositions ? `drop-shadow(0 0 8px ${planet.color}60)` : 'none',
-                    transition: 'all 0.3s ease'
-                  }}
-                />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <img
+                src={planet.logo}
+                alt={`${mkt} logo`}
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  border: hasPositions ? `3px solid ${planet.color}` : '2px solid rgba(107, 114, 128, 0.4)',
+                  filter: hasPositions ? `drop-shadow(0 0 12px ${planet.color}60)` : 'none'
+                }}
+              />
+              <div>
+                <div style={{ 
+                  color: hasPositions ? planet.color : '#9ca3af', 
+                  fontWeight: '700',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.25rem'
+                }}>
+                  {planet.name}
+                </div>
+                <div style={{ 
+                  color: '#6b7280', 
+                  fontSize: '0.8rem',
+                  fontStyle: 'italic'
+                }}>
+                  {planet.description}
+                </div>
               </div>
-              
+            </div>
+            
+            {hasPositions ? (
               <div style={{ 
-                color: hasPositions ? planet.color : '#9ca3af', 
-                fontWeight: '700',
-                fontSize: '0.9rem',
-                marginBottom: '0.25rem'
-              }}>
-                {planet.name}
-              </div>
-              
-              <div style={{ 
-                color: '#6b7280', 
-                fontSize: '0.75rem',
-                fontStyle: 'italic',
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr', 
+                gap: '0.75rem',
                 marginBottom: '0.75rem'
               }}>
-                {planet.description}
-              </div>
-              
-              {hasPositions ? (
-                <div>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    marginBottom: '0.5rem',
-                    fontSize: '0.75rem'
-                  }}>
-                    <span style={{ color: '#9ca3af' }}>Settlements:</span>
-                    <span style={{ color: planet.color, fontWeight: '600' }}>
-                      {positionCount}
-                    </span>
+                <div style={{
+                  padding: '0.5rem',
+                  background: 'rgba(0,0,0,0.3)',
+                  borderRadius: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Settlements</div>
+                  <div style={{ color: planet.color, fontWeight: '700', fontSize: '1.1rem' }}>
+                    {positionCount}
                   </div>
+                </div>
+                <div style={{
+                  padding: '0.5rem',
+                  background: 'rgba(0,0,0,0.3)',
+                  borderRadius: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>P&L</div>
                   <div style={{ 
                     color: totalPL >= 0 ? '#22c55e' : '#ef4444',
-                    fontSize: '0.85rem',
                     fontWeight: '700',
+                    fontSize: '1.1rem',
                     textShadow: totalPL >= 0 ? '0 0 8px #22c55e60' : '0 0 8px #ef444460'
                   }}>
                     {totalPL >= 0 ? '+' : ''}${Math.abs(totalPL/1000).toFixed(0)}K
                   </div>
-                  
-                  {/* Moons for big profits */}
-                  {totalPL > 200000 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '20%',
-                      right: '15%',
-                      width: '8px',
-                      height: '8px',
-                      background: '#fbbf24',
-                      borderRadius: '50%',
-                      boxShadow: '0 0 6px #fbbf24',
-                      animation: 'moonOrbit 6s linear infinite'
-                    }} />
-                  )}
                 </div>
-              ) : (
-                <div style={{
-                  padding: '0.5rem',
-                  background: 'rgba(0,0,0,0.2)',
-                  borderRadius: '0.5rem',
-                  border: '1px dashed rgba(75,85,99,0.5)'
-                }}>
-                  <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                    🛸 Unexplored
-                  </div>
+              </div>
+            ) : (
+              <div style={{
+                padding: '0.75rem',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: '0.5rem',
+                border: '1px dashed rgba(75,85,99,0.5)',
+                textAlign: 'center'
+              }}>
+                <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                  🛸 Unexplored Territory
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         );
       })}
     </div>
 
-    {/* Header */}
+    {/* MIDDLE PANEL - Galaxy */}
     <div style={{
-      padding: '0.75rem 2rem',
-      background: 'linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(15,23,42,0.9) 50%, rgba(0,0,0,0.8) 100%)',
-      backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(16,185,129,0.3)',
+      flex: 1,
+      position: 'relative',
+      background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.6) 0%, rgba(0,5,16,0.95) 70%)',
+      overflow: 'hidden',
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
+      flexDirection: 'column'
     }}>
-      <div>
+      
+      {/* Galaxy Header */}
+      <div style={{
+        padding: '1rem 2rem',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(15,23,42,0.9) 50%, rgba(0,0,0,0.8) 100%)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(16,185,129,0.3)',
+        textAlign: 'center'
+      }}>
         <h2 style={{
-          fontSize: '1.5rem',
+          fontSize: '2rem',
           fontWeight: '700',
           background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           margin: 0,
-          marginBottom: '0.25rem'
+          marginBottom: '0.5rem'
         }}>
-          🌌 SLOPE GALAXY COMMAND
+          🌌 SLOPE GALAXY
         </h2>
-        <p style={{ color: '#6b7280', fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
-          "Where every position is a star in your cosmic empire"
+        <p style={{ color: '#6b7280', fontSize: '1rem', fontStyle: 'italic', margin: 0 }}>
+          {Object.values(tradesByMarket).flat().length} active positions orbiting the liquidation singularity
         </p>
       </div>
-      
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-        <div style={{
-          padding: '0.5rem 1rem',
-          background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(6,182,212,0.2) 100%)',
-          border: '1px solid rgba(16,185,129,0.4)',
-          borderRadius: '1.5rem',
-          color: '#10b981',
-          fontSize: '0.8rem',
-          fontWeight: '700',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
-        }}>
-          🚀 {Object.values(tradesByMarket).flat().length} Active Bodies
-        </div>
-        
-        <button
-          onClick={() => setActiveTab("Swap")}
-          style={{
-            background: 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
-            color: 'white',
-            border: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '1.5rem',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 20px rgba(139,92,246,0.4)'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 8px 30px rgba(139,92,246,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 4px 20px rgba(139,92,246,0.4)';
-          }}
-        >
-          ⚡ TRADE CENTER
-        </button>
-      </div>
-    </div>
 
-    {/* Main Galaxy View - Full Width */}
-    <div style={{
-      height: '500px',
-      position: 'relative',
-      background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.6) 0%, rgba(0,5,16,0.95) 70%)',
-      overflow: 'hidden'
-    }}>
-      
       {/* Galaxy Grid */}
       <div style={{
         position: 'absolute',
@@ -5370,91 +5293,81 @@ const calculateVammBreakdown = () => {
         animation: 'gridPulse 8s ease-in-out infinite alternate'
       }} />
 
-      {/* Enhanced Central Black Hole */}
+      {/* Central Black Hole */}
       <div style={{
         position: 'absolute',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '100px',
-        height: '100px',
+        width: '120px',
+        height: '120px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, #000000 20%, #1a1a1a 50%, rgba(239,68,68,0.4) 80%, transparent 100%)',
-        border: '3px solid white',
+        background: 'radial-gradient(circle, #000000 30%, #1a1a1a 60%, rgba(239,68,68,0.6) 90%, transparent 100%)',
+        border: '4px solid white',
         boxShadow: `
-          0 0 50px rgba(0,0,0,0.9),
-          inset 0 0 50px rgba(0,0,0,0.9),
-          0 0 100px rgba(239,68,68,0.6)
+          0 0 60px rgba(0,0,0,0.9),
+          inset 0 0 60px rgba(0,0,0,0.9),
+          0 0 120px rgba(239,68,68,0.8)
         `,
         zIndex: 5,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white',
-        fontSize: '36px',
         animation: 'blackholePulse 4s ease-in-out infinite'
       }}>
-        ⚫
+        <div style={{ fontSize: '3rem' }}>⚫</div>
         
         {/* Accretion disk */}
         <div style={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '180px',
-          height: '180px',
-          border: '2px solid rgba(239,68,68,0.4)',
+          width: '200px',
+          height: '200px',
+          border: '2px dashed rgba(239,68,68,0.6)',
           borderRadius: '50%',
-          borderStyle: 'dashed',
-          animation: 'rotate 20s linear infinite reverse'
+          animation: 'rotate 15s linear infinite reverse'
         }} />
         
-        {/* Danger zone indicator */}
+        {/* Danger zone */}
         <div style={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '140px',
-          height: '140px',
-          border: '1px solid rgba(239,68,68,0.6)',
+          width: '160px',
+          height: '160px',
+          border: '1px solid rgba(239,68,68,0.8)',
           borderRadius: '50%',
           animation: 'dangerPulse 2s ease-in-out infinite'
         }} />
       </div>
 
-      {/* Render Enhanced Positions */}
+      {/* Render Positions as Planets */}
       {Object.keys(tradesByMarket).map(market => 
         (tradesByMarket[market] || []).map((trade, i) => {
           const totalPositions = Object.values(tradesByMarket).flat();
           const globalIndex = totalPositions.findIndex(t => t === trade);
           const liquidationRisk = calculateLiquidationRisk(trade);
           
-          // Enhanced positioning - centered for full width
-          let x, y;
-          const centerX = window.innerWidth / 2;
-          const centerY = 175; // Adjusted for smaller galaxy height
+          // Position calculation
+          const centerX = (document.querySelector('[style*="flex: 1"]')?.offsetWidth || 800) / 2;
+          const centerY = 300;
           
+          let x, y, radius;
           if (liquidationRisk >= 70) {
-            // Safe positions - outer constellation
+            // Safe positions - outer orbit
             const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
-            const radius = 180 + (liquidationRisk * 0.3);
+            radius = 200 + (liquidationRisk * 0.5);
             x = centerX + Math.cos(angle) * radius;
             y = centerY + Math.sin(angle) * radius * 0.7;
           } else {
-            // Dangerous positions - inner orbit with elliptical paths
+            // Risky positions - inner orbit
             const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
-            const radius = Math.max(80, liquidationRisk * 1.5);
+            radius = Math.max(100, liquidationRisk * 2);
             x = centerX + Math.cos(angle) * radius;
             y = centerY + Math.sin(angle) * radius * 0.8;
           }
 
-          // Enhanced size based on DV01
-          const baseSize = Math.max(28, Math.min(50, trade.baseDV01 / 600));
-          
-          // Enhanced color system
+          // Size and color
+          const baseSize = Math.max(30, Math.min(60, trade.baseDV01 / 500));
           let sphereColor, glowColor;
+          
           if (liquidationRisk >= 70) {
             sphereColor = '#06b6d4';
             glowColor = 'rgba(6,182,212,0.6)';
@@ -5477,14 +5390,14 @@ const calculateVammBreakdown = () => {
                 height: `${baseSize}px`,
                 borderRadius: '50%',
                 background: `
-                  radial-gradient(circle at 25% 25%, ${sphereColor}ff, ${sphereColor}dd 40%, ${sphereColor}88 70%, ${sphereColor}44),
-                  radial-gradient(circle at 75% 75%, rgba(255,255,255,0.4), transparent 50%)
+                  radial-gradient(circle at 30% 30%, ${sphereColor}ff, ${sphereColor}cc 50%, ${sphereColor}66),
+                  radial-gradient(circle at 70% 70%, rgba(255,255,255,0.3), transparent 60%)
                 `,
-                border: '3px solid rgba(255,255,255,0.8)',
+                border: '3px solid rgba(255,255,255,0.9)',
                 boxShadow: `
-                  0 0 ${baseSize}px ${glowColor},
-                  0 0 ${baseSize * 2}px ${glowColor.replace('0.6', '0.3')},
-                  inset 0 0 ${baseSize/3}px rgba(255,255,255,0.3)
+                  0 0 ${baseSize * 1.5}px ${glowColor},
+                  0 0 ${baseSize * 3}px ${glowColor.replace('0.6', '0.3')},
+                  inset 0 0 ${baseSize/2}px rgba(255,255,255,0.4)
                 `,
                 transform: 'translate(-50%, -50%)',
                 cursor: 'pointer',
@@ -5492,7 +5405,7 @@ const calculateVammBreakdown = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                fontSize: `${Math.max(12, baseSize/3)}px`,
+                fontSize: `${Math.max(14, baseSize/3)}px`,
                 fontWeight: 'bold',
                 textShadow: '0 0 10px rgba(0,0,0,0.8)',
                 zIndex: 10,
@@ -5509,22 +5422,12 @@ const calculateVammBreakdown = () => {
                 });
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                e.target.style.transform = 'translate(-50%, -50%) scale(1.4)';
                 e.target.style.zIndex = '50';
-                e.target.style.boxShadow = `
-                  0 0 ${baseSize * 2}px ${glowColor},
-                  0 0 ${baseSize * 4}px ${glowColor.replace('0.6', '0.4')},
-                  inset 0 0 ${baseSize/2}px rgba(255,255,255,0.5)
-                `;
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = 'translate(-50%, -50%) scale(1)';
                 e.target.style.zIndex = '10';
-                e.target.style.boxShadow = `
-                  0 0 ${baseSize}px ${glowColor},
-                  0 0 ${baseSize * 2}px ${glowColor.replace('0.6', '0.3')},
-                  inset 0 0 ${baseSize/3}px rgba(255,255,255,0.3)
-                `;
               }}
             >
               {market.charAt(0)}
@@ -5533,121 +5436,24 @@ const calculateVammBreakdown = () => {
         })
       )}
 
-      {/* Orbital Paths for Risky Positions */}
-      {Object.values(tradesByMarket).flat().map((trade, i) => {
-        const liquidationRisk = calculateLiquidationRisk(trade);
-        if (liquidationRisk >= 70) return null; // Only show for risky positions
-        
-        const centerX = window.innerWidth / 2;
-        const centerY = 175;
-        const radius = Math.max(80, liquidationRisk * 1.5);
-        
-        return (
-          <div
-            key={`orbit-${i}`}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: `${centerX}px`,
-              transform: 'translate(-50%, -50%)',
-              width: `${radius * 2}px`,
-              height: `${radius * 2 * 0.8}px`,
-              border: '1px dashed rgba(239,68,68,0.4)',
-              borderRadius: '50%',
-              animation: `orbitRotate ${20 + i * 3}s linear infinite`,
-              zIndex: 1
-            }}
-          />
-        );
-      })}
-
-      {/* Constellation Lines for Safe Positions */}
-      <svg style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 2
-      }}>
-        {Object.values(tradesByMarket).flat().map((trade, i) => {
-          const totalPositions = Object.values(tradesByMarket).flat();
-          if (i === totalPositions.length - 1) return null;
-          
-          const nextTrade = totalPositions[i + 1];
-          const liquidationRisk1 = calculateLiquidationRisk(trade);
-          const liquidationRisk2 = calculateLiquidationRisk(nextTrade);
-          
-          // Only connect safe positions
-          if (liquidationRisk1 < 70 || liquidationRisk2 < 70) return null;
-          
-          const centerX = window.innerWidth / 2;
-          const centerY = 175;
-          
-          const angle1 = (i / totalPositions.length) * Math.PI * 2;
-          const radius1 = 180 + (liquidationRisk1 * 0.3);
-          const x1 = centerX + Math.cos(angle1) * radius1;
-          const y1 = centerY + Math.sin(angle1) * radius1 * 0.7;
-          
-          const angle2 = ((i + 1) / totalPositions.length) * Math.PI * 2;
-          const radius2 = 180 + (liquidationRisk2 * 0.3);
-          const x2 = centerX + Math.cos(angle2) * radius2;
-          const y2 = centerY + Math.sin(angle2) * radius2 * 0.7;
-          
-          return (
-            <line
-              key={`constellation-${i}`}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="rgba(6,182,212,0.4)"
-              strokeWidth="2"
-              strokeDasharray="5,5"
-              style={{
-                animation: 'constellationGlow 10s ease-in-out infinite alternate'
-              }}
-            />
-          );
-        })}
-      </svg>
-
-      {/* Empty Universe State */}
+      {/* Empty State */}
       {Object.values(tradesByMarket).flat().length === 0 && (
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '60%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           textAlign: 'center',
           color: '#9ca3af',
-          zIndex: 20,
-          marginTop: '80px'
+          zIndex: 20
         }}>
-          <div style={{ 
-            fontSize: '4rem', 
-            marginBottom: '1rem',
-            animation: 'float 6s ease-in-out infinite'
-          }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem', animation: 'float 6s ease-in-out infinite' }}>
             🌌
           </div>
-          <h3 style={{ 
-            fontSize: '1.8rem', 
-            marginBottom: '0.75rem', 
-            color: '#e2e8f0',
-            fontWeight: '700'
-          }}>
+          <h3 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#e2e8f0', fontWeight: '700' }}>
             THE INFINITE VOID
           </h3>
-          <p style={{ 
-            fontSize: '1rem', 
-            color: '#9ca3af',
-            lineHeight: 1.6,
-            marginBottom: '1.5rem',
-            fontStyle: 'italic',
-            maxWidth: '300px'
-          }}>
+          <p style={{ fontSize: '1.2rem', marginBottom: '2rem', fontStyle: 'italic', maxWidth: '400px' }}>
             "In the beginning, there was only the Singularity..."
           </p>
           <button
@@ -5656,23 +5462,14 @@ const calculateVammBreakdown = () => {
               background: 'linear-gradient(45deg, #10b981, #059669)',
               color: 'white',
               border: 'none',
-              padding: '0.75rem 1.5rem',
+              padding: '1rem 2rem',
               borderRadius: '1rem',
-              fontSize: '0.9rem',
+              fontSize: '1rem',
               cursor: 'pointer',
               fontWeight: '700',
               textTransform: 'uppercase',
-              letterSpacing: '0.1em',
               boxShadow: '0 8px 30px rgba(16,185,129,0.4)',
               transition: 'all 0.4s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-4px) scale(1.05)';
-              e.target.style.boxShadow = '0 12px 40px rgba(16,185,129,0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0) scale(1)';
-              e.target.style.boxShadow = '0 8px 30px rgba(16,185,129,0.4)';
             }}
           >
             🚀 BEGIN COSMIC JOURNEY
@@ -5681,134 +5478,94 @@ const calculateVammBreakdown = () => {
       )}
     </div>
 
-    {/* Bottom Lore Section - Horizontal Layout */}
+    {/* RIGHT PANEL - Lore */}
     <div style={{
-      padding: '1rem 1.5rem',
-      background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.95) 50%, rgba(0,0,0,0.9) 100%)',
+      width: '300px',
+      background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.8) 100%)',
       backdropFilter: 'blur(20px)',
-      borderTop: '2px solid rgba(16,185,129,0.3)',
-      boxShadow: 'inset 0 5px 20px rgba(16,185,129,0.1)'
+      borderLeft: '2px solid rgba(16,185,129,0.3)',
+      padding: '1.5rem',
+      overflowY: 'auto',
+      boxShadow: 'inset 5px 0 20px rgba(16,185,129,0.1)'
     }}>
       
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem',
-        maxWidth: '1400px',
-        margin: '0 auto'
+      <h2 style={{
+        fontSize: '1.5rem',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #f59e0b 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        margin: '0 0 1.5rem 0',
+        textAlign: 'center'
       }}>
-        
-        {/* Navigation Protocols */}
-        <div style={{
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(6,182,212,0.15) 100%)',
-          border: '1px solid rgba(16,185,129,0.4)',
-          borderRadius: '1rem'
-        }}>
-          <h3 style={{
-            color: '#10b981',
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            🧭 NAVIGATION PROTOCOLS
-          </h3>
-          
-          <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <span style={{ color: '#06b6d4', fontWeight: '600' }}>🌟 Safe Constellation:</span> Positions 70+ bp from liquidation orbit in outer reaches
-            </div>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <span style={{ color: '#22c55e', fontWeight: '600' }}>💚 Profit Worlds:</span> Green spheres show profitable positions
-            </div>
-            <div>
-              <span style={{ color: '#ef4444', fontWeight: '600' }}>🔴 Danger Orbits:</span> Red bodies in unstable paths near Singularity
-            </div>
+        📡 GALAXY INTEL
+      </h2>
+
+      {/* Navigation Legend */}
+      <div style={{
+        marginBottom: '1.5rem',
+        padding: '1rem',
+        background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(6,182,212,0.15) 100%)',
+        border: '1px solid rgba(16,185,129,0.4)',
+        borderRadius: '1rem'
+      }}>
+        <h4 style={{ color: '#10b981', marginBottom: '1rem', fontSize: '1rem', fontWeight: '700' }}>
+          🧭 Navigation
+        </h4>
+        <div style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.6 }}>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#06b6d4', fontWeight: '600' }}>🌟 Safe Zone:</span> 70+ bp from liquidation
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#22c55e', fontWeight: '600' }}>💚 Profit:</span> Green = gains
+          </div>
+          <div>
+            <span style={{ color: '#ef4444', fontWeight: '600' }}>🔴 Danger:</span> Red = losses
           </div>
         </div>
+      </div>
 
-        {/* The Liquidation Singularity */}
-        <div style={{
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(220,38,38,0.1) 100%)',
-          border: '1px solid rgba(239,68,68,0.4)',
-          borderRadius: '1rem',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            position: 'absolute',
-            top: '-50%',
-            right: '-50%',
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%)',
-            animation: 'dangerGlow 6s ease-in-out infinite alternate'
-          }} />
-          
-          <h3 style={{
-            color: '#ef4444',
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            position: 'relative',
-            zIndex: 1
-          }}>
-            ⚫ THE LIQUIDATION SINGULARITY
-          </h3>
-          
-          <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5, position: 'relative', zIndex: 1 }}>
-            <p style={{ marginBottom: '0.75rem', fontStyle: 'italic' }}>
-              At the galaxy's heart lies an ancient force that consumes overleveraged positions.
-            </p>
-            <p style={{ margin: 0 }}>
-              Its gravitational pull grows stronger as your margin weakens. Only careful navigation keeps your assets in the outer safe zones.
-            </p>
+      {/* Singularity Lore */}
+      <div style={{
+        marginBottom: '1.5rem',
+        padding: '1rem',
+        background: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(220,38,38,0.1) 100%)',
+        border: '1px solid rgba(239,68,68,0.4)',
+        borderRadius: '1rem'
+      }}>
+        <h4 style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '1rem', fontWeight: '700' }}>
+          ⚫ The Singularity
+        </h4>
+        <div style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic' }}>
+          At the galaxy's heart lies an ancient force that devours overleveraged positions. Its pull grows stronger as margin weakens.
+        </div>
+      </div>
+
+      {/* Trading Intel */}
+      <div style={{
+        padding: '1rem',
+        background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(124,58,237,0.1) 100%)',
+        border: '1px solid rgba(139,92,246,0.4)',
+        borderRadius: '1rem'
+      }}>
+        <h4 style={{ color: '#8b5cf6', marginBottom: '1rem', fontSize: '1rem', fontWeight: '700' }}>
+          🪐 Planet Features
+        </h4>
+        <div style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.6 }}>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#8b5cf6', fontWeight: '600' }}>🪐 Rings:</span> Profitable worlds
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#fbbf24', fontWeight: '600' }}>🌙 Moons:</span> 200K+ profit
+          </div>
+          <div>
+            <span style={{ color: '#06b6d4', fontWeight: '600' }}>⭐ Size:</span> DV01 amount
           </div>
         </div>
-
-        {/* Trading Intel */}
-        <div style={{
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(124,58,237,0.1) 100%)',
-          border: '1px solid rgba(139,92,246,0.4)',
-          borderRadius: '1rem'
-        }}>
-          <h3 style={{
-            color: '#8b5cf6',
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            📡 TRADING INTEL
-          </h3>
-          
-          <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <span style={{ color: '#8b5cf6', fontWeight: '600' }}>🪐 Orbital rings:</span> Indicate profitable worlds with active gains
-            </div>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <span style={{ color: '#fbbf24', fontWeight: '600' }}>🌙 Golden moons:</span> Mark massive profits above 200K threshold
-            </div>
-            <div>
-              <span style={{ color: '#06b6d4', fontWeight: '600' }}>✨ Constellation lines:</span> Connect your safest assets across the void
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    {/* Enhanced Position Modal */}
+    {/* Position Modal */}
     {selectedPosition && (
       <div style={{
         position: 'fixed',
@@ -5821,236 +5578,96 @@ const calculateVammBreakdown = () => {
         borderRadius: '1.5rem',
         padding: '2rem',
         minWidth: '400px',
-        maxWidth: '500px',
         zIndex: 1000,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(16,185,129,0.3)',
-        animation: 'modalAppear 0.4s ease-out'
+        boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(16,185,129,0.3)'
       }}>
-        {/* Modal Header */}
-        <div style={{
-          borderBottom: '1px solid rgba(16,185,129,0.3)',
-          paddingBottom: '1rem',
-          marginBottom: '1.5rem',
-          textAlign: 'center'
-        }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <h3 style={{ 
             color: '#10b981', 
-            fontSize: '1.8rem',
-            fontWeight: '800',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em'
+            fontSize: '1.5rem',
+            fontWeight: '700',
+            marginBottom: '0.5rem'
           }}>
-            🛸 POSITION CONTROL MATRIX
+            🛸 POSITION CONTROL
           </h3>
-          <p style={{ color: '#6b7280', fontSize: '1rem', fontStyle: 'italic' }}>
-            {selectedPosition.market} • Celestial Body Analysis
+          <p style={{ color: '#6b7280', fontSize: '1rem' }}>
+            {selectedPosition.market}
           </p>
         </div>
 
-        {/* Position Stats Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1.5rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            padding: '1rem',
-            background: 'rgba(16,185,129,0.1)',
-            border: '1px solid rgba(16,185,129,0.3)',
-            borderRadius: '0.75rem'
-          }}>
-            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              TRAJECTORY
-            </div>
-            <div style={{ 
-              fontSize: '1.2rem', 
-              fontWeight: '700',
-              color: selectedPosition.type === 'pay' ? '#3b82f6' : '#f59e0b'
-            }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '0.5rem' }}>
+            <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Direction</div>
+            <div style={{ color: selectedPosition.type === 'pay' ? '#3b82f6' : '#f59e0b', fontWeight: '700' }}>
               {selectedPosition.type === 'pay' ? 'PAY FIXED' : 'RECEIVE FIXED'}
             </div>
           </div>
-          
-          <div style={{
-            padding: '1rem',
-            background: 'rgba(16,185,129,0.1)',
-            border: '1px solid rgba(16,185,129,0.3)',
-            borderRadius: '0.75rem'
-          }}>
-            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              MASS (DV01)
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#e2e8f0' }}>
+          <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '0.5rem' }}>
+            <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>DV01</div>
+            <div style={{ color: '#e2e8f0', fontWeight: '700' }}>
               ${selectedPosition.dv01?.toLocaleString()}
             </div>
           </div>
-
-          <div style={{
-            padding: '1rem',
-            background: selectedPosition.pl >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-            border: selectedPosition.pl >= 0 ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)',
-            borderRadius: '0.75rem'
-          }}>
-            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              ENERGY SIGNATURE
-            </div>
+          <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '0.5rem' }}>
+            <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>P&L</div>
             <div style={{ 
-              fontSize: '1.4rem', 
-              fontWeight: '800',
-              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444'
+              color: selectedPosition.pl >= 0 ? '#22c55e' : '#ef4444',
+              fontWeight: '700',
+              fontSize: '1.2rem'
             }}>
               {selectedPosition.pl >= 0 ? '+' : ''}${selectedPosition.pl?.toLocaleString()}
             </div>
           </div>
-
-          <div style={{
-            padding: '1rem',
-            background: selectedPosition.liquidationRisk <= 20 ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
-            border: selectedPosition.liquidationRisk <= 20 ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(34,197,94,0.3)',
-            borderRadius: '0.75rem'
-          }}>
-            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              SINGULARITY DISTANCE
-            </div>
+          <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '0.5rem' }}>
+            <div style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Risk</div>
             <div style={{ 
-              fontSize: '1.2rem', 
-              fontWeight: '700',
-              color: selectedPosition.liquidationRisk <= 20 ? '#ef4444' : '#22c55e'
+              color: selectedPosition.liquidationRisk <= 20 ? '#ef4444' : '#22c55e',
+              fontWeight: '700'
             }}>
               {selectedPosition.liquidationRisk?.toFixed(0)}bp
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '1rem'
-        }}>
-          <button
-            onClick={() => {
-              // Find the correct index for this position
-              let foundIndex = -1;
-              Object.keys(tradesByMarket).forEach(market => {
-                const trades = tradesByMarket[market] || [];
-                trades.forEach((trade, i) => {
-                  if (trade === selectedPosition || 
-                      (trade.market === selectedPosition.market && 
-                       trade.baseDV01 === selectedPosition.dv01 && 
-                       trade.type === selectedPosition.type)) {
-                    foundIndex = i;
-                  }
-                });
-              });
-              
-              if (foundIndex !== -1) {
-                requestAddMargin(foundIndex);
-              }
-              setSelectedPosition(null);
-            }}
-            style={{
-              background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem',
-              borderRadius: '0.75rem',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            🛡️ BOOST SHIELDS
-          </button>
-          
-          <button
-            onClick={() => {
-              // Find the correct index for this position
-              let foundIndex = -1;
-              Object.keys(tradesByMarket).forEach(market => {
-                const trades = tradesByMarket[market] || [];
-                trades.forEach((trade, i) => {
-                  if (trade === selectedPosition || 
-                      (trade.market === selectedPosition.market && 
-                       trade.baseDV01 === selectedPosition.dv01 && 
-                       trade.type === selectedPosition.type)) {
-                    foundIndex = i;
-                  }
-                });
-              });
-              
-              if (foundIndex !== -1) {
-                requestUnwind(foundIndex);
-              }
-              setSelectedPosition(null);
-            }}
-            style={{
-              background: 'linear-gradient(45deg, #ef4444, #dc2626)',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem',
-              borderRadius: '0.75rem',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            💥 ABANDON SHIP
-          </button>
-          
-          <button
-            onClick={() => setSelectedPosition(null)}
-            style={{
-              background: 'linear-gradient(45deg, #6b7280, #4b5563)',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem',
-              borderRadius: '0.75rem',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            📡 CLOSE COMM
-          </button>
-        </div>
+        <button
+          onClick={() => setSelectedPosition(null)}
+          style={{
+            background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            fontWeight: '600',
+            width: '100%'
+          }}
+        >
+          Close
+        </button>
       </div>
     )}
 
-    {/* Epic CSS Animations */}
+    {/* CSS Animations */}
     <style jsx>{`
       @keyframes starTwinkle {
-        0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.1); }
-      }
-      
-      @keyframes starMove {
-        0% { transform: translateX(0) translateY(0); }
-        100% { transform: translateX(-30px) translateY(-20px); }
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
       }
       
       @keyframes blackholePulse {
         0%, 100% { 
           transform: translate(-50%, -50%) scale(1);
-          box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9), 0 0 100px rgba(239,68,68,0.6);
+          box-shadow: 0 0 60px rgba(0,0,0,0.9), inset 0 0 60px rgba(0,0,0,0.9), 0 0 120px rgba(239,68,68,0.8);
         }
         50% { 
           transform: translate(-50%, -50%) scale(1.05);
-          box-shadow: 0 0 70px rgba(0,0,0,0.9), inset 0 0 70px rgba(0,0,0,0.9), 0 0 140px rgba(239,68,68,0.8);
+          box-shadow: 0 0 80px rgba(0,0,0,0.9), inset 0 0 80px rgba(0,0,0,0.9), 0 0 160px rgba(239,68,68,1);
         }
       }
       
       @keyframes rotate {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
       
       @keyframes celestialFloat {
@@ -6059,66 +5676,31 @@ const calculateVammBreakdown = () => {
       }
       
       @keyframes dangerPulse {
-        0%, 100% { 
-          box-shadow: 0 0 28px rgba(239,68,68,0.6), 0 0 56px rgba(239,68,68,0.3), inset 0 0 14px rgba(255,255,255,0.3);
-        }
-        50% { 
-          box-shadow: 0 0 48px rgba(239,68,68,0.9), 0 0 96px rgba(239,68,68,0.6), inset 0 0 24px rgba(255,255,255,0.5);
-        }
-      }
-      
-      @keyframes orbitRotate {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
+        0%, 100% { border-color: rgba(239,68,68,0.8); }
+        50% { border-color: rgba(239,68,68,1); }
       }
       
       @keyframes orbitSpin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-      
-      @keyframes constellationGlow {
-        0%, 100% { stroke: rgba(6,182,212,0.4); stroke-width: 2; }
-        50% { stroke: rgba(6,182,212,0.7); stroke-width: 3; }
-      }
-      
-      @keyframes gridPulse {
-        0%, 100% { opacity: 0.1; }
-        50% { opacity: 0.3; }
-      }
-      
-      @keyframes planetGlow {
-        0%, 100% { opacity: 0.2; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(1.1); }
-      }
-      
-      @keyframes dangerGlow {
-        0%, 100% { opacity: 0.1; }
-        50% { opacity: 0.3; }
-      }
-      
-      @keyframes modalAppear {
-        0% { 
-          opacity: 0; 
-          transform: translate(-50%, -50%) scale(0.8);
-        }
-        100% { 
-          opacity: 1; 
-          transform: translate(-50%, -50%) scale(1);
-        }
-      }
-      
-      @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-      }
-      
-      @keyframes moonOrbit {
-        0% { transform: rotate(0deg) translateX(25px) rotate(0deg); }
-        100% { transform: rotate(360deg) translateX(25px) rotate(-360deg); }
-      }
-    `}</style>
-  </div>
+       0% { transform: rotate(0deg); }
+       100% { transform: rotate(360deg); }
+     }
+     
+     @keyframes moonOrbit {
+       0% { transform: rotate(0deg) translateX(25px) rotate(0deg); }
+       100% { transform: rotate(360deg) translateX(25px) rotate(-360deg); }
+     }
+     
+     @keyframes gridPulse {
+       0%, 100% { opacity: 0.1; }
+       50% { opacity: 0.3; }
+     }
+     
+     @keyframes float {
+       0%, 100% { transform: translateY(0px); }
+       50% { transform: translateY(-10px); }
+     }
+   `}</style>
+ </div>
 )}
             
       {pendingDayAdvancement && (
