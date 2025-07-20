@@ -5351,7 +5351,7 @@ const calculateVammBreakdown = () => {
       flex: 1,
       position: 'relative',
       background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.6) 0%, rgba(0,5,16,0.95) 70%)',
-      maxHeight: '350px',
+      maxHeight: '500px',
       overflow: 'hidden'
     }}>
       
@@ -5773,15 +5773,15 @@ const calculateVammBreakdown = () => {
           </div>
         </div>
 
-        {/* Ancient Trader Wisdom */}
+        {/* Trading Intel */}
         <div style={{
           padding: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(217,119,6,0.1) 100%)',
-          border: '1px solid rgba(245,158,11,0.4)',
+          background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(124,58,237,0.1) 100%)',
+          border: '1px solid rgba(139,92,246,0.4)',
           borderRadius: '1rem'
         }}>
           <h3 style={{
-            color: '#f59e0b',
+            color: '#8b5cf6',
             fontSize: '1.1rem',
             fontWeight: '700',
             marginBottom: '1rem',
@@ -5789,13 +5789,19 @@ const calculateVammBreakdown = () => {
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            📜 ANCIENT WISDOM
+            📡 TRADING INTEL
           </h3>
           
-          <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5, fontStyle: 'italic' }}>
-            <p style={{ margin: 0 }}>
-              <strong style={{ color: '#f59e0b' }}>"The wise trader keeps their positions in the outer realms, where the cosmic winds are gentle and profits illuminate the void."</strong>
-            </p>
+          <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span style={{ color: '#8b5cf6', fontWeight: '600' }}>🪐 Orbital rings:</span> Indicate profitable worlds with active gains
+            </div>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span style={{ color: '#fbbf24', fontWeight: '600' }}>🌙 Golden moons:</span> Mark massive profits above 200K threshold
+            </div>
+            <div>
+              <span style={{ color: '#06b6d4', fontWeight: '600' }}>✨ Constellation lines:</span> Connect your safest assets across the void
+            </div>
           </div>
         </div>
 
