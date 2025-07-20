@@ -5055,6 +5055,7 @@ const calculateVammBreakdown = () => {
     {/* LEFT PANEL - Enhanced Planets */}
     <div style={{
       width: '280px',
+      height: '100%',
       background: 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(15,23,42,0.9) 100%)',
       backdropFilter: 'blur(25px)',
       borderRight: '2px solid rgba(16,185,129,0.4)',
@@ -5149,8 +5150,8 @@ const calculateVammBreakdown = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
-              marginBottom: '1.5rem',
-              padding: '1rem',
+              marginBottom: '1rem',
+              padding: '0.75rem',
               background: hasPositions ? 
                 `linear-gradient(135deg, ${planet.color}20 0%, ${planet.color}10 50%, ${planet.color}20 100%)` :
                 'linear-gradient(135deg, rgba(55,65,81,0.3) 0%, rgba(31,41,55,0.2) 50%, rgba(55,65,81,0.3) 100%)',
@@ -5337,6 +5338,7 @@ const calculateVammBreakdown = () => {
     {/* MIDDLE PANEL - Epic Galaxy */}
     <div style={{
       flex: 1,
+      height: '100%',
       position: 'relative',
       background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.8) 0%, rgba(0,5,16,0.98) 70%)',
       overflow: 'hidden',
@@ -5485,12 +5487,12 @@ const calculateVammBreakdown = () => {
           
           let radius;
           if (pnl >= 0) {
-            // Profitable = FAR from black hole (safe outer orbits)
-            radius = 250 + Math.min(pnl / 1000, 100); // Max +100px for profits
-          } else {
-            // Loss = CLOSE to black hole (dangerous inner orbits)
-            radius = Math.max(160, 240 - Math.min(Math.abs(pnl) / 1000, 80)); // Max -80px for losses
-          }
+          // PROFIT = FAR from black hole
+          radius = 280 + (pnl / 1000); // START FAR OUT, go further for more profit
+        } else {
+          // LOSS = CLOSE to black hole  
+          radius = Math.max(170, 250 - (Math.abs(pnl) / 1000)); // START CLOSER, get closer for more loss
+        }
           
           // Orbital positioning
           const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
@@ -5679,6 +5681,7 @@ const calculateVammBreakdown = () => {
     {/* RIGHT PANEL - Enhanced Lore */}
     <div style={{
       width: '300px',
+      height: '100%',
      background: 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(15,23,42,0.9) 100%)',
      backdropFilter: 'blur(25px)',
      borderLeft: '2px solid rgba(16,185,129,0.4)',
