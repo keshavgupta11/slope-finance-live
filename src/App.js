@@ -5313,12 +5313,17 @@ const calculateVammBreakdown = () => {
           const centerY = 300; // Fixed center
           
           let radius;
+          const minRadius = 140; // Just outside black hole danger zone
+          const maxRadius = 280; // Well within galaxy bounds
+
           if (trade.pnl >= 0) {
-            // Profitable = outer orbit (safe)
-            radius = 200 + (Math.abs(trade.pnl) / 10000);
+            // Profitable = outer orbit - scale between middle and max
+            const profitScale = Math.min(trade.pnl / 100000, 1); // Cap at 100K for max distance
+            radius = 200 + (profitScale * 80); // 200 to 280 range
           } else {
-            // Loss = inner orbit (danger)
-            radius = Math.max(120, 180 - (Math.abs(trade.pnl) / 10000));
+            // Loss = inner orbit - scale between min and middle  
+            const lossScale = Math.min(Math.abs(trade.pnl) / 50000, 1); // Cap at 50K for min distance
+            radius = 200 - (lossScale * 60); // 200 to 140 range
           }
           
           // Consistent positioning by index
@@ -5393,13 +5398,25 @@ const calculateVammBreakdown = () => {
                 e.target.style.zIndex = '10';
               }}
             >
-              {/* Direction indicator in center */}
+              {/* Market letter instead of just arrow */}
               <div style={{
                 fontSize: `${Math.max(16, baseSize/2.5)}px`,
-                color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                color: 'white',
                 fontWeight: '900',
                 textShadow: '0 0 8px rgba(0,0,0,0.9)',
                 filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.8))'
+              }}>
+                {market.charAt(0)} {/* J for Jito, L for Lido, etc */}
+              </div>
+
+              {/* Keep direction arrow as small corner indicator */}
+              <div style={{
+                position: 'absolute',
+                top: '3px',
+                right: '3px',
+                fontSize: '10px',
+                color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                fontWeight: '900'
               }}>
                 {trade.type === 'pay' ? '↑' : '↓'}
               </div>
