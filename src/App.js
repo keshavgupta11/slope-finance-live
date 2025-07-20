@@ -5348,10 +5348,9 @@ const calculateVammBreakdown = () => {
 
     {/* Main Galaxy View - Full Width */}
     <div style={{
-      flex: 1,
+      height: '450px',
       position: 'relative',
       background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.6) 0%, rgba(0,5,16,0.95) 70%)',
-      minHeight: '600px',
       overflow: 'hidden'
     }}>
       
