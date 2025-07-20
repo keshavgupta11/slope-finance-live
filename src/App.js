@@ -5312,18 +5312,15 @@ const calculateVammBreakdown = () => {
           const centerX = 400; // Fixed center
           const centerY = 300; // Fixed center
           
-          let radius;
-          const minRadius = 140; // Just outside black hole danger zone
-          const maxRadius = 280; // Well within galaxy bounds
+          const pnl = trade.pnl || parseFloat(trade.pl) || 0;
 
-          if (trade.pnl >= 0) {
-            // Profitable = outer orbit - scale between middle and max
-            const profitScale = Math.min(trade.pnl / 100000, 1); // Cap at 100K for max distance
-            radius = 200 + (profitScale * 80); // 200 to 280 range
+          let radius;
+          if (pnl >= 0) {
+            // Profitable = outer orbit (safe)  
+            radius = 200 + (Math.abs(pnl) / 1000); // Made scaling more dramatic
           } else {
-            // Loss = inner orbit - scale between min and middle  
-            const lossScale = Math.min(Math.abs(trade.pnl) / 50000, 1); // Cap at 50K for min distance
-            radius = 200 - (lossScale * 60); // 200 to 140 range
+            // Loss = inner orbit (danger)
+            radius = Math.max(140, 200 - (Math.abs(pnl) / 1000)); // Made scaling more dramatic
           }
           
           // Consistent positioning by index
@@ -5636,21 +5633,105 @@ const calculateVammBreakdown = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setSelectedPosition(null)}
-          style={{
-            background: 'linear-gradient(45deg, #6b7280, #4b5563)',
-            color: 'white',
-            border: 'none',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontWeight: '600',
-            width: '100%'
-          }}
-        >
-          Close
-        </button>
+        {/* Action Buttons */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '1rem',
+          marginBottom: '1rem'
+        }}>
+          <button
+            onClick={() => {
+              // Find the correct index for this position
+              let foundIndex = -1;
+              Object.keys(tradesByMarket).forEach(market => {
+                const trades = tradesByMarket[market] || [];
+                trades.forEach((trade, i) => {
+                  if (trade === selectedPosition || 
+                      (trade.market === selectedPosition.market && 
+                      trade.baseDV01 === selectedPosition.dv01 && 
+                      trade.type === selectedPosition.type)) {
+                    foundIndex = i;
+                  }
+                });
+              });
+              
+              if (foundIndex !== -1) {
+                requestAddMargin(foundIndex);
+              }
+              setSelectedPosition(null);
+            }}
+            style={{
+              background: 'linear-gradient(45deg, #3b82f6, #2563eb)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem',
+              borderRadius: '0.75rem',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            🛡️ BOOST SHIELDS
+          </button>
+          
+          <button
+            onClick={() => {
+              // Find the correct index for this position
+              let foundIndex = -1;
+              Object.keys(tradesByMarket).forEach(market => {
+                const trades = tradesByMarket[market] || [];
+                trades.forEach((trade, i) => {
+                  if (trade === selectedPosition || 
+                      (trade.market === selectedPosition.market && 
+                      trade.baseDV01 === selectedPosition.dv01 && 
+                      trade.type === selectedPosition.type)) {
+                    foundIndex = i;
+                  }
+                });
+              });
+              
+              if (foundIndex !== -1) {
+                requestUnwind(foundIndex);
+              }
+              setSelectedPosition(null);
+            }}
+            style={{
+              background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem',
+              borderRadius: '0.75rem',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            💥 ABANDON SHIP
+          </button>
+          
+          <button
+            onClick={() => setSelectedPosition(null)}
+            style={{
+              background: 'linear-gradient(45deg, #6b7280, #4b5563)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem',
+              borderRadius: '0.75rem',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            📡 CLOSE COMM
+          </button>
+        </div>
       </div>
     )}
 
