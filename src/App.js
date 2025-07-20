@@ -5034,15 +5034,16 @@ const calculateVammBreakdown = () => {
       animation: 'starTwinkle 15s ease-in-out infinite alternate'
     }} />
 
-    {/* LEFT PANEL - Planets */}
+    {/* LEFT PANEL - Planets (No Scroll) */}
     <div style={{
       width: '280px',
       background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.8) 100%)',
       backdropFilter: 'blur(20px)',
       borderRight: '2px solid rgba(16,185,129,0.3)',
       padding: '1.5rem',
-      overflowY: 'auto',
-      boxShadow: 'inset -5px 0 20px rgba(16,185,129,0.1)'
+      boxShadow: 'inset -5px 0 20px rgba(16,185,129,0.1)',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <h2 style={{
         fontSize: '1.5rem',
@@ -5050,13 +5051,13 @@ const calculateVammBreakdown = () => {
         background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
-        margin: '0 0 1.5rem 0',
+        margin: '0 0 2rem 0',
         textAlign: 'center'
       }}>
         🪐 COSMIC WORLDS
       </h2>
       
-      {Object.keys(marketSettings).map((mkt) => {
+      {Object.keys(marketSettings).map((mkt, index) => {
         const positions = tradesByMarket[mkt] || [];
         const hasPositions = positions.length > 0;
         const totalPL = positions.reduce((sum, pos) => sum + (pos.pnl || 0), 0);
@@ -5106,40 +5107,35 @@ const calculateVammBreakdown = () => {
           <div
             key={mkt}
             style={{
-              marginBottom: '1rem',
-              padding: '1.5rem',
-              background: hasPositions ? 
-                `linear-gradient(135deg, ${planet.color}20 0%, ${planet.color}08 100%)` :
-                'linear-gradient(135deg, rgba(55,65,81,0.3) 0%, rgba(31,41,55,0.3) 100%)',
-              border: hasPositions ? 
-                `2px solid ${planet.color}60` : 
-                '1px solid rgba(75,85,99,0.4)',
-              borderRadius: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+              padding: '0.75rem',
+              background: hasPositions ? `${planet.color}15` : 'rgba(55,65,81,0.2)',
+              borderRadius: '0.75rem',
               transition: 'all 0.3s ease',
               cursor: 'pointer',
-              position: 'relative',
-              overflow: 'hidden'
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateX(4px)';
-              e.currentTarget.style.boxShadow = hasPositions ? 
-                `0 8px 25px ${planet.color}40` : 
-                '0 8px 25px rgba(75,85,99,0.3)';
+              e.currentTarget.style.background = hasPositions ? `${planet.color}25` : 'rgba(55,65,81,0.3)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.background = hasPositions ? `${planet.color}15` : 'rgba(55,65,81,0.2)';
             }}
           >
-            {/* Planet orbital rings for profits */}
+            {/* Orbital ring for profits */}
             {hasPositions && totalPL > 0 && (
               <div style={{
                 position: 'absolute',
-                top: '10px',
-                right: '10px',
-                width: '30px',
-                height: '30px',
-                border: `2px solid ${planet.color}`,
+                top: '5px',
+                right: '5px',
+                width: '20px',
+                height: '20px',
+                border: `1px solid ${planet.color}`,
                 borderRadius: '50%',
                 animation: 'orbitSpin 8s linear infinite'
               }} />
@@ -5149,96 +5145,63 @@ const calculateVammBreakdown = () => {
             {totalPL > 200000 && (
               <div style={{
                 position: 'absolute',
-                top: '15px',
-                right: '50px',
-                width: '8px',
-                height: '8px',
+                top: '8px',
+                right: '30px',
+                width: '6px',
+                height: '6px',
                 background: '#fbbf24',
                 borderRadius: '50%',
-                boxShadow: '0 0 8px #fbbf24',
+                boxShadow: '0 0 6px #fbbf24',
                 animation: 'moonOrbit 6s linear infinite'
               }} />
             )}
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <img
-                src={planet.logo}
-                alt={`${mkt} logo`}
-                style={{
-                  width: '50px',
-                  height: '50px',
-                  borderRadius: '50%',
-                  border: hasPositions ? `3px solid ${planet.color}` : '2px solid rgba(107, 114, 128, 0.4)',
-                  filter: hasPositions ? `drop-shadow(0 0 12px ${planet.color}60)` : 'none'
-                }}
-              />
-              <div>
-                <div style={{ 
-                  color: hasPositions ? planet.color : '#9ca3af', 
-                  fontWeight: '700',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.25rem'
-                }}>
-                  {planet.name}
-                </div>
-                <div style={{ 
-                  color: '#6b7280', 
-                  fontSize: '0.8rem',
-                  fontStyle: 'italic'
-                }}>
-                  {planet.description}
-                </div>
-              </div>
-            </div>
+            <img
+              src={planet.logo}
+              alt={`${mkt} logo`}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                border: hasPositions ? `2px solid ${planet.color}` : '2px solid rgba(107, 114, 128, 0.4)',
+                filter: hasPositions ? `drop-shadow(0 0 8px ${planet.color}60)` : 'none'
+              }}
+            />
             
-            {hasPositions ? (
+            <div style={{ flex: 1 }}>
               <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr', 
-                gap: '0.75rem',
-                marginBottom: '0.75rem'
+                color: hasPositions ? planet.color : '#9ca3af', 
+                fontWeight: '700',
+                fontSize: '1rem',
+                marginBottom: '0.25rem'
               }}>
-                <div style={{
-                  padding: '0.5rem',
-                  background: 'rgba(0,0,0,0.3)',
-                  borderRadius: '0.5rem',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Settlements</div>
-                  <div style={{ color: planet.color, fontWeight: '700', fontSize: '1.1rem' }}>
-                    {positionCount}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '0.5rem',
-                  background: 'rgba(0,0,0,0.3)',
-                  borderRadius: '0.5rem',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ color: '#9ca3af', fontSize: '0.7rem' }}>P&L</div>
-                  <div style={{ 
+                {planet.name}
+              </div>
+              <div style={{ 
+                color: '#6b7280', 
+                fontSize: '0.75rem',
+                fontStyle: 'italic',
+                marginBottom: '0.5rem'
+              }}>
+                {planet.description}
+              </div>
+              
+              {hasPositions ? (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                  <span style={{ color: '#9ca3af' }}>{positionCount} settlements</span>
+                  <span style={{ 
                     color: totalPL >= 0 ? '#22c55e' : '#ef4444',
-                    fontWeight: '700',
-                    fontSize: '1.1rem',
-                    textShadow: totalPL >= 0 ? '0 0 8px #22c55e60' : '0 0 8px #ef444460'
+                    fontWeight: '700'
                   }}>
                     {totalPL >= 0 ? '+' : ''}${Math.abs(totalPL/1000).toFixed(0)}K
-                  </div>
+                  </span>
                 </div>
-              </div>
-            ) : (
-              <div style={{
-                padding: '0.75rem',
-                background: 'rgba(0,0,0,0.2)',
-                borderRadius: '0.5rem',
-                border: '1px dashed rgba(75,85,99,0.5)',
-                textAlign: 'center'
-              }}>
-                <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                  🛸 Unexplored Territory
+              ) : (
+                <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                  🛸 Unexplored
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         );
       })}
@@ -5338,44 +5301,40 @@ const calculateVammBreakdown = () => {
         }} />
       </div>
 
-      {/* Render Positions as Planets */}
+      {/* Render Positions as Planets - FIXED LOGIC + PAY/RECEIVE DISTINCTION */}
       {Object.keys(tradesByMarket).map(market => 
         (tradesByMarket[market] || []).map((trade, i) => {
           const totalPositions = Object.values(tradesByMarket).flat();
           const globalIndex = totalPositions.findIndex(t => t === trade);
           const liquidationRisk = calculateLiquidationRisk(trade);
           
-          // Position calculation
-          const centerX = (document.querySelector('[style*="flex: 1"]')?.offsetWidth || 800) / 2;
-          const centerY = 300;
+          // FIXED: Position based on P&L, not liquidation risk
+          const centerX = 400; // Fixed center
+          const centerY = 300; // Fixed center
           
-          let x, y, radius;
-          if (liquidationRisk >= 70) {
-            // Safe positions - outer orbit
-            const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
-            radius = 200 + (liquidationRisk * 0.5);
-            x = centerX + Math.cos(angle) * radius;
-            y = centerY + Math.sin(angle) * radius * 0.7;
+          let radius;
+          if (trade.pnl >= 0) {
+            // Profitable = outer orbit (safe)
+            radius = 200 + (Math.abs(trade.pnl) / 10000);
           } else {
-            // Risky positions - inner orbit
-            const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
-            radius = Math.max(100, liquidationRisk * 2);
-            x = centerX + Math.cos(angle) * radius;
-            y = centerY + Math.sin(angle) * radius * 0.8;
+            // Loss = inner orbit (danger)
+            radius = Math.max(120, 180 - (Math.abs(trade.pnl) / 10000));
           }
+          
+          // Consistent positioning by index
+          const angle = (globalIndex / totalPositions.length) * Math.PI * 2;
+          const x = centerX + Math.cos(angle) * radius;
+          const y = centerY + Math.sin(angle) * radius * 0.7;
 
           // Size and color
           const baseSize = Math.max(30, Math.min(60, trade.baseDV01 / 500));
           let sphereColor, glowColor;
           
-          if (liquidationRisk >= 70) {
-            sphereColor = '#06b6d4';
-            glowColor = 'rgba(6,182,212,0.6)';
-          } else if (trade.pnl >= 0) {
-            sphereColor = '#22c55e';
+          if (trade.pnl >= 0) {
+            sphereColor = '#22c55e'; // Green for profit
             glowColor = 'rgba(34,197,94,0.6)';
           } else {
-            sphereColor = '#ef4444';
+            sphereColor = '#ef4444'; // Red for loss
             glowColor = 'rgba(239,68,68,0.6)';
           }
 
@@ -5393,11 +5352,14 @@ const calculateVammBreakdown = () => {
                   radial-gradient(circle at 30% 30%, ${sphereColor}ff, ${sphereColor}cc 50%, ${sphereColor}66),
                   radial-gradient(circle at 70% 70%, rgba(255,255,255,0.3), transparent 60%)
                 `,
-                border: '3px solid rgba(255,255,255,0.9)',
+                border: trade.type === 'pay' ? 
+                  '3px solid rgba(59, 130, 246, 0.9)' : // Blue border for Pay Fixed
+                  '3px solid rgba(245, 158, 11, 0.9)', // Orange border for Receive Fixed
                 boxShadow: `
                   0 0 ${baseSize * 1.5}px ${glowColor},
                   0 0 ${baseSize * 3}px ${glowColor.replace('0.6', '0.3')},
-                  inset 0 0 ${baseSize/2}px rgba(255,255,255,0.4)
+                  inset 0 0 ${baseSize/2}px rgba(255,255,255,0.4),
+                  0 0 0 6px ${trade.type === 'pay' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(245, 158, 11, 0.3)'}
                 `,
                 transform: 'translate(-50%, -50%)',
                 cursor: 'pointer',
@@ -5410,7 +5372,8 @@ const calculateVammBreakdown = () => {
                 textShadow: '0 0 10px rgba(0,0,0,0.8)',
                 zIndex: 10,
                 transition: 'all 0.4s ease',
-                animation: `celestialFloat ${4 + globalIndex * 0.3}s ease-in-out infinite, ${liquidationRisk < 20 ? 'dangerPulse 1.5s ease-in-out infinite' : ''}`
+                animation: `celestialFloat ${4 + globalIndex * 0.3}s ease-in-out infinite`,
+                position: 'relative'
               }}
               onClick={() => {
                 setSelectedPosition({
@@ -5430,7 +5393,29 @@ const calculateVammBreakdown = () => {
                 e.target.style.zIndex = '10';
               }}
             >
-              {market.charAt(0)}
+              {/* Direction indicator in center */}
+              <div style={{
+                fontSize: `${Math.max(16, baseSize/2.5)}px`,
+                color: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                fontWeight: '900',
+                textShadow: '0 0 8px rgba(0,0,0,0.9)',
+                filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.8))'
+              }}>
+                {trade.type === 'pay' ? '↑' : '↓'}
+              </div>
+              
+              {/* Small corner indicator */}
+              <div style={{
+                position: 'absolute',
+                top: '5px',
+                right: '5px',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: trade.type === 'pay' ? '#3b82f6' : '#f59e0b',
+                boxShadow: `0 0 6px ${trade.type === 'pay' ? '#3b82f6' : '#f59e0b'}`,
+                border: '1px solid white'
+              }} />
             </div>
           );
         })
@@ -5485,7 +5470,6 @@ const calculateVammBreakdown = () => {
       backdropFilter: 'blur(20px)',
       borderLeft: '2px solid rgba(16,185,129,0.3)',
       padding: '1.5rem',
-      overflowY: 'auto',
       boxShadow: 'inset 5px 0 20px rgba(16,185,129,0.1)'
     }}>
       
@@ -5514,13 +5498,19 @@ const calculateVammBreakdown = () => {
         </h4>
         <div style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: 1.6 }}>
           <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{ color: '#06b6d4', fontWeight: '600' }}>🌟 Safe Zone:</span> 70+ bp from liquidation
+            <span style={{ color: '#22c55e', fontWeight: '600' }}>💚 Profit:</span> Far from singularity
           </div>
           <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{ color: '#22c55e', fontWeight: '600' }}>💚 Profit:</span> Green = gains
+            <span style={{ color: '#ef4444', fontWeight: '600' }}>🔴 Loss:</span> Close to singularity
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#3b82f6', fontWeight: '600' }}>↑ Blue border:</span> Pay Fixed
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <span style={{ color: '#f59e0b', fontWeight: '600' }}>↓ Orange border:</span> Receive Fixed
           </div>
           <div>
-            <span style={{ color: '#ef4444', fontWeight: '600' }}>🔴 Danger:</span> Red = losses
+            <span style={{ color: '#06b6d4', fontWeight: '600' }}>⭐ Size:</span> DV01 amount
           </div>
         </div>
       </div>
@@ -5559,13 +5549,13 @@ const calculateVammBreakdown = () => {
             <span style={{ color: '#fbbf24', fontWeight: '600' }}>🌙 Moons:</span> 200K+ profit
           </div>
           <div>
-            <span style={{ color: '#06b6d4', fontWeight: '600' }}>⭐ Size:</span> DV01 amount
+            <span style={{ color: '#06b6d4', fontWeight: '600' }}>💫 Distance:</span> P&L determines orbit
           </div>
         </div>
       </div>
     </div>
 
-    {/* Position Modal */}
+    {/* Position Modal - same as before */}
     {selectedPosition && (
       <div style={{
         position: 'fixed',
@@ -5647,7 +5637,7 @@ const calculateVammBreakdown = () => {
       </div>
     )}
 
-    {/* CSS Animations */}
+    {/* CSS Animations - same as before */}
     <style jsx>{`
       @keyframes starTwinkle {
         0%, 100% { opacity: 0.3; }
@@ -5681,26 +5671,26 @@ const calculateVammBreakdown = () => {
       }
       
       @keyframes orbitSpin {
-       0% { transform: rotate(0deg); }
-       100% { transform: rotate(360deg); }
-     }
-     
-     @keyframes moonOrbit {
-       0% { transform: rotate(0deg) translateX(25px) rotate(0deg); }
-       100% { transform: rotate(360deg) translateX(25px) rotate(-360deg); }
-     }
-     
-     @keyframes gridPulse {
-       0%, 100% { opacity: 0.1; }
-       50% { opacity: 0.3; }
-     }
-     
-     @keyframes float {
-       0%, 100% { transform: translateY(0px); }
-       50% { transform: translateY(-10px); }
-     }
-   `}</style>
- </div>
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes moonOrbit {
+        0% { transform: rotate(0deg) translateX(25px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(25px) rotate(-360deg); }
+      }
+      
+      @keyframes gridPulse {
+        0%, 100% { opacity: 0.1; }
+        50% { opacity: 0.3; }
+      }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+    `}</style>
+  </div>
 )}
             
       {pendingDayAdvancement && (
