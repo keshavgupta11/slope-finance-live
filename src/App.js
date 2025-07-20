@@ -5037,15 +5037,16 @@ const calculateVammBreakdown = () => {
     }} />
 
     {/* Top Row - Enhanced Planets with Logos */}
-    <div style={{
+     <div style={{
       display: 'flex',
       gap: '1rem',
-      padding: '1rem 2rem',
+      padding: '0.75rem 1.5rem',
       background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.9) 50%, rgba(0,0,0,0.9) 100%)',
       backdropFilter: 'blur(20px)',
       borderBottom: '2px solid rgba(16,185,129,0.3)',
       overflowX: 'auto',
-      boxShadow: 'inset 0 -5px 20px rgba(16,185,129,0.1)'
+      boxShadow: 'inset 0 -5px 20px rgba(16,185,129,0.1)',
+      flexShrink: 0
     }}>
       {Object.keys(marketSettings).map((mkt) => {
         const positions = tradesByMarket[mkt] || [];
@@ -5348,7 +5349,7 @@ const calculateVammBreakdown = () => {
 
     {/* Main Galaxy View - Full Width */}
     <div style={{
-      height: '450px',
+      height: '500px',
       position: 'relative',
       background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.6) 0%, rgba(0,5,16,0.95) 70%)',
       overflow: 'hidden'
@@ -5682,7 +5683,7 @@ const calculateVammBreakdown = () => {
 
     {/* Bottom Lore Section - Horizontal Layout */}
     <div style={{
-      padding: '1.5rem 2rem',
+      padding: '1rem 1.5rem',
       background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,23,42,0.95) 50%, rgba(0,0,0,0.9) 100%)',
       backdropFilter: 'blur(20px)',
       borderTop: '2px solid rgba(16,185,129,0.3)',
