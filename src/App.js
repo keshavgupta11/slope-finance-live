@@ -4854,6 +4854,46 @@ const calculateVammBreakdown = () => {
               </button>
             </div>
           </div>
+          <style jsx>{`
+            .modal-overlay {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(0, 0, 0, 0.8);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 1000;
+            }
+            
+            .modal {
+              background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(15,23,42,0.95) 100%);
+              backdropFilter: blur(20px);
+              border: 2px solid #10b981;
+              border-radius: 1.5rem;
+              padding: 2rem;
+              min-width: 400px;
+              max-width: 500px;
+            }
+            
+            /* Mobile-only fixes */
+            @media (max-width: 768px) {
+              .modal-overlay {
+                padding: 1rem;
+                align-items: flex-start;
+                padding-top: 2rem;
+              }
+              
+              .modal {
+                min-width: auto;
+                width: 100%;
+                max-height: 85vh;
+                overflow-y: auto;
+              }
+            }
+          `}</style>
         </div>
       )}
 
