@@ -4636,32 +4636,8 @@ const calculateVammBreakdown = () => {
       
 
       {pendingTrade && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center', // Center vertically
-          justifyContent: 'center', // Center horizontally
-          padding: '1rem', // Add padding for mobile
-          zIndex: 1000,
-          overflowY: 'auto' // Allow scrolling if needed
-        }}>
-          <div className="modal" style={{
-            background: 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(15,23,42,0.95) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '2px solid #10b981',
-            borderRadius: '1.5rem',
-            padding: '2rem',
-            width: '100%',
-            maxWidth: '500px', // Limit width on desktop
-            maxHeight: '90vh', // Prevent overflow on mobile
-            overflowY: 'auto', // Scroll if content is too tall
-            margin: 'auto'
-          }}>
+        <div className="modal-overlay">
+          <div className="modal">
             <h3>Confirm CRS Trade</h3>
             
             {/* Hero section - most important info */}
