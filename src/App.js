@@ -3,8 +3,8 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
 // Solana imports
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
-import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+//import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+//import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // Enhanced Toast Notification Component
 const Toast = ({ message, type, onClose }) => {
@@ -162,12 +162,12 @@ const EmptyState = ({ icon, title, description, action }) => (
 );
 
 // Phantom wallet detection
-const getProvider = () => {
-  if ('phantom' in window) {
-    return window.phantom?.solana;
-  }
-  return null;
-};
+//const getProvider = () => {
+ // if ('phantom' in window) {
+  //  return window.phantom?.solana;
+ // }
+  //return null;
+//};
 
 export default function App() {
   const initialMarketSettings = {
@@ -219,9 +219,9 @@ export default function App() {
   const [customNotional, setCustomNotional] = useState(10000000); // Default $10M
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   // Solana wallet state
-  const [wallet, setWallet] = useState(null);
-  const [connecting, setConnecting] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState(0);
+  //const [wallet, setWallet] = useState(null);
+  //const [connecting, setConnecting] = useState(false);
+  const [usdcBalance, setUsdcBalance] = useState(10000000);
 
   const tradingTips = [
     { icon: "💡", text: "Pay Fixed profits when rates go higher", category: "Strategy" },
@@ -235,10 +235,10 @@ export default function App() {
   ];
 
   // Solana connection
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+//  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
   
   // USDC token mint on devnet
-  const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // Devnet USDC
+  //const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // Devnet USDC
 
   // Calculate current DV01 based on time to maturity- deleted
   
@@ -387,86 +387,86 @@ export default function App() {
   };
 
   // Phantom wallet functions
-  const connectWallet = async () => {
-    setConnecting(true);
-    try {
-      const provider = getProvider();
-      if (!provider) {
-        showToast('Phantom wallet not found! Please install Phantom wallet.', 'error');
-        setConnecting(false);
-        return;
-      }
+  //const connectWallet = async () => {
+   // setConnecting(true);
+   // try {
+    //  const provider = getProvider();
+    //  if (!provider) {
+     //   showToast('Phantom wallet not found! Please install Phantom wallet.', 'error');
+       // setConnecting(false);
+       // return;
+      //}
 
-      const response = await provider.connect();
-      setWallet(response.publicKey);
-      console.log('Connected to wallet:', response.publicKey.toString());
+      //const response = await provider.connect();
+      //setWallet(response.publicKey);
+      //console.log('Connected to wallet:', response.publicKey.toString());
       
       // Fetch USDC balance after connecting
-      await fetchUSDCBalance(response.publicKey);
-    } catch (error) {
-      console.error('Error connecting to wallet:', error);
-      showToast('Failed to connect wallet. Please try again.', 'error');
-    }
-    setConnecting(false);
-  };
+      //await fetchUSDCBalance(response.publicKey);
+    //} catch (error) {
+     // console.error('Error connecting to wallet:', error);
+     // showToast('Failed to connect wallet. Please try again.', 'error');
+   // }
+    //setConnecting(false);
+  //};
 
-  const disconnectWallet = async () => {
-    try {
-      const provider = getProvider();
-      if (provider) {
-        await provider.disconnect();
-      }
-      setWallet(null);
-      setUsdcBalance(0);
-    } catch (error) {
-      console.error('Error disconnecting wallet:', error);
-    }
-  };
+  // const disconnectWallet = async () => {
+//   try {
+//     const provider = getProvider();
+//     if (provider) {
+//       await provider.disconnect();
+//     }
+//     setWallet(null);
+//     setUsdcBalance(0);
+//   } catch (error) {
+//     console.error('Error disconnecting wallet:', error);
+//   }
+// };
 
-  // Fetch USDC balance
-  const fetchUSDCBalance = async (walletPublicKey) => {
-    try {
-      const tokenAccount = await getAssociatedTokenAddress(
-        USDC_MINT,
-        walletPublicKey
-      );
-
-      const account = await getAccount(connection, tokenAccount);
-      const balance = Number(account.amount) / 1e6; // USDC has 6 decimals
-      setUsdcBalance(balance);
-    } catch (error) {
-      console.log('No USDC account found or balance is 0');
-      setUsdcBalance(0);
-    }
-  };
+// // Fetch USDC balance
+// const fetchUSDCBalance = async (walletPublicKey) => {
+//   try {
+//     const tokenAccount = await getAssociatedTokenAddress(
+//       USDC_MINT,
+//       walletPublicKey
+//     );
+//
+//     const account = await getAccount(connection, tokenAccount);
+//     const balance = Number(account.amount) / 1e6; // USDC has 6 decimals
+//     setUsdcBalance(balance);
+//   } catch (error) {
+//     console.log('No USDC account found or balance is 0');
+//     setUsdcBalance(0);
+//   }
+// };
 
   // Check if wallet is connected on component mount
-  useEffect(() => {
-    const provider = getProvider();
-    if (provider) {
-      provider.on('connect', (publicKey) => {
-        setWallet(publicKey);
-        fetchUSDCBalance(publicKey);
-      });
-      
-      provider.on('disconnect', () => {
-        setWallet(null);
-        setUsdcBalance(0);
-      });
-
-      // Check if already connected
-      if (provider.isConnected) {
-        setWallet(provider.publicKey);
-        fetchUSDCBalance(provider.publicKey);
-      }
-    }
-
-    return () => {
-      if (provider) {
-        provider.removeAllListeners();
-      }
-    };
-  }, []);
+ // useEffect(() => {
+//   const provider = getProvider();
+//   if (provider) {
+//     provider.on('connect', (publicKey) => {
+//       setWallet(publicKey);
+//       fetchUSDCBalance(publicKey);
+//     });
+//     
+//     provider.on('disconnect', () => {
+//       setWallet(null);
+//       setUsdcBalance(0);
+//     });
+//
+//     // Check if already connected
+//     if (provider.isConnected) {
+//       setWallet(provider.publicKey);
+//       fetchUSDCBalance(provider.publicKey);
+//     }
+//   }
+//
+//   return () => {
+//     if (provider) {
+//       provider.removeAllListeners();
+//     }
+//   };
+// }, []);
 
   // Calculate liquidation risk
   const calculateLiquidationRisk = (trade) => {
@@ -1665,14 +1665,15 @@ const calculateVammBreakdown = () => {
     
 
     // Check if wallet is connected
-    if (!wallet) {
-      showToast('Please connect your Phantom wallet first!', 'error');
-      return;
-    }
+   // Check if wallet is connected - COMMENTED OUT FOR DEMO
+  // if (!wallet) {
+  //   showToast('Please connect your Phantom wallet first!', 'error');
+  //   return;
+  // }
 
     // Check simulated USDC balance
-    const simulatedUSDC = usdcBalance + 10000000;
-    if (simulatedUSDC < margin) {
+   // const simulatedUSDC = usdcBalance + 10000000;
+    if (usdcBalance < margin) {
       showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
       return;
     }
@@ -1788,18 +1789,12 @@ const calculateVammBreakdown = () => {
     }
 
     try {
-      const provider = getProvider();
-      if (provider && wallet) {
-        console.log('Simulating transaction for wallet:', wallet.toString());
-        
-        const confirmBtn = document.querySelector('.confirm-btn');
-        if (confirmBtn) {
-          confirmBtn.textContent = 'Processing...';
-          confirmBtn.disabled = true;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      const confirmBtn = document.querySelector('.confirm-btn');
+      if (confirmBtn) {
+        confirmBtn.textContent = 'Processing...';
+        confirmBtn.disabled = true;
       }
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const marginBuffer = (margin / currentDv01) / 100;
       const liq = type === 'pay' 
@@ -1827,7 +1822,7 @@ const calculateVammBreakdown = () => {
         currentDay: globalDay,
         feeAmountBps: pendingTrade.feeRate * 100,
         rawPrice: parseFloat(pendingTrade.rawPrice),
-        txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
+        //txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
       //console to check entry of user
       console.log('STORED ENTRY PRICE:', trade.entryPrice);
@@ -1860,11 +1855,11 @@ const calculateVammBreakdown = () => {
     }
   };
 
-  const formatAddress = (address) => {
-    if (!address) return '';
-    const str = address.toString();
-    return `${str.slice(0, 4)}...${str.slice(-4)}`;
-   };
+  // const formatAddress = (address) => {
+//   if (!address) return '';
+//   const str = address.toString();
+//   return `${str.slice(0, 4)}...${str.slice(-4)}`;
+// };
    //riskk
    const handleMarketChange = (newMarket) => {
     setMarket(newMarket);
@@ -1918,33 +1913,14 @@ const calculateVammBreakdown = () => {
             </nav>
           </div>
         
-        {wallet ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
-              <div style={{ color: '#9ca3af' }}>USDC Balance</div>
-              <div style={{ color: '#10b981', fontWeight: '600' }}>
-                ${(usdcBalance + 10000000).toLocaleString()}
-              </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
+            <div style={{ color: '#9ca3af' }}>Demo Balance</div>
+            <div style={{ color: '#10b981', fontWeight: '600' }}>
+              ${usdcBalance.toLocaleString()}
             </div>
-            <button className="wallet-btn" onClick={disconnectWallet}>
-              {formatAddress(wallet)}
-            </button>
           </div>
-        ) : (
-          <button 
-            className="wallet-btn" 
-            onClick={connectWallet} 
-            disabled={connecting}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            {connecting && <LoadingSpinner size="sm" />}
-            {connecting ? 'Connecting...' : 'Connect Phantom'}
-          </button>
-        )}
+        </div>
       </header>
       
       {activeTab === "Swap" && (
@@ -2376,10 +2352,10 @@ const calculateVammBreakdown = () => {
 
               <button 
                 onClick={() => !isSettlementMode && requestTrade(tradeType)}
-                disabled={!wallet || margin < baseDv01 * 50 || isSettlementMode}
-                className={`enter-btn ${!wallet || margin < baseDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
+                disabled={margin < baseDv01 * 50 || isSettlementMode}
+                className={`enter-btn ${margin < baseDv01 * 50 || isSettlementMode ? 'disabled' : ''}`}
               >
-                {!wallet ? 'Connect Wallet' : margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Swap'}
+                {margin < baseDv01 * 50 ? 'Margin too low' : isSettlementMode ? 'Settlement Mode - No New Trades' : 'Swap'}
               </button>
 
               <div style={{ 
@@ -4858,7 +4834,7 @@ const calculateVammBreakdown = () => {
             .modal-overlay {
               position: fixed;
               top: 0;
-              left: 0;
+              left: 0;import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
               right: 0;
               bottom: 0;
               background: rgba(0, 0, 0, 0.8);
