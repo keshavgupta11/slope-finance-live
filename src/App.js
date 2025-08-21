@@ -1674,7 +1674,7 @@ const calculateVammBreakdown = () => {
     // Check simulated USDC balance
    // const simulatedUSDC = usdcBalance + 10000000;
     if (usdcBalance < margin) {
-      showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
+      showToast(`Insufficient balance. Required: $${margin.toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
       return;
     }
 
