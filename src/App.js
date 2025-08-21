@@ -1481,18 +1481,18 @@ export default function App() {
     const { tradeIndex, trade } = pendingMarginAdd;
   
   // Check wallet balance
-    const simulatedUSDC = usdcBalance + 10000000;
-    if (simulatedUSDC < additionalMargin) {
+   // const simulatedUSDC = usdcBalance + 10000000;
+    if (usdcBalance < additionalMargin) {
       showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
       return;
     }
 
     try {
     // Simulate wallet transaction
-      if (wallet) {
-        console.log('Processing margin addition...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+     // if (wallet) {
+       // console.log('Processing margin addition...');
+       // await new Promise(resolve => setTimeout(resolve, 2000));
+      //}
 
     // Calculate new liquidation price
       const marginBuffer = additionalMargin / trade.currentDV01 / 100;
@@ -1847,7 +1847,7 @@ const calculateVammBreakdown = () => {
 
       setPendingTrade(null);
       
-      showToast(`Trade executed successfully! ${wallet ? `Tx: ${trade.txSignature}` : ''}`, 'success');
+      showToast('Trade executed successfully!', 'success');
     } catch (error) {
       console.error('Transaction failed:', error);
       showToast('Transaction failed. Please try again.', 'error');
