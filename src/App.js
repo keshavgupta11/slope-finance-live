@@ -1483,7 +1483,7 @@ export default function App() {
   // Check wallet balance
    // const simulatedUSDC = usdcBalance + 10000000;
     if (usdcBalance < additionalMargin) {
-      showToast(`Insufficient USDC balance. Required: $${margin.toLocaleString()}, Available: $${simulatedUSDC.toLocaleString()}`, 'error');
+      showToast(`Insufficient balance. Required: $${additionalMargin.toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
       return;
     }
 
