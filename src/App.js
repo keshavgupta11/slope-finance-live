@@ -1459,7 +1459,7 @@ export default function App() {
 
   const confirmAddMargin = async () => {
     const { tradeIndex, trade } = pendingMarginAdd;
-  
+    const openFee = baseDv01 * FEE_BPS;
   // Check wallet balance
    // const simulatedUSDC = usdcBalance + 10000000;
     if (usdcBalance < additionalMargin) {
