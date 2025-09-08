@@ -4684,8 +4684,8 @@ setPendingTrade(null);
                   <span>{globalDay}</span>
                 </div>
                 <div className="detail-row">
-                  <span>Fee:</span>
-                  <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp</span>
+                 <span>Fee:</span>
+                  <span className="fee">{(pendingTrade.feeRate * 100).toFixed(0)}bp (${(baseDv01 * (pendingTrade.feeRate * 100)).toLocaleString()})</span>
                 </div>
                 <div className="detail-row">
                   <span>Margin:</span>
