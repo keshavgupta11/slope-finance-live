@@ -1334,8 +1334,9 @@ export default function App() {
   };
 
   // Unwind function
-  const requestUnwind = (tradeIndex) => {
-    const trade = marketTrades[tradeIndex];
+  const requestUnwind = (marketName, tradeIndex) => {
+    const trades = tradesByMarket[marketName] || [];
+    const trade = trades[tradeIndex];
     if (!trade) return;
 
     const protocolOI = calculateProtocolOI();
@@ -2749,7 +2750,7 @@ setPendingTrade(null);
                               Margin
                             </button>
                             <button 
-                              onClick={() => requestUnwind(i)}
+                              onClick={() => requestUnwind(market, i)}
                               style={{
                                 background: 'linear-gradient(45deg, #ef4444, #dc2626)',
                                 color: 'white',
