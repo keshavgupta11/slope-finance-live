@@ -3,6 +3,8 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import './App.css';
 
 // Solana imports
+
+const FEE_BPS = 3; // flat 3bp fee, charged separately
 //import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 //import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -226,7 +228,7 @@ export default function App() {
   const tradingTips = [
     { icon: "💡", text: "Pay Fixed profits when rates go higher", category: "Strategy" },
     { icon: "📊", text: "DV01 shows your P&L sensitivity per 1bp rate move", category: "Education" },
-    { icon: "⚡", text: "Risk-reducing trades get 2bp fees vs 5bp", category: "Pro Tip" },
+    { icon: "⚡", text: "Flat 3bp fee, charged upfront", category: "Pro Tip" },
     { icon: "🎯", text: "Watch liquidation risk - add margin when close", category: "Risk" },
     { icon: "📈", text: "Correlation trades: Lido steth/rETH often move together", category: "Advanced" },
     { icon: "🔄", text: "Settlement P&L uses realized rates vs entry price", category: "Settlement" },
@@ -1363,30 +1365,8 @@ export default function App() {
     const adjustedDynamicK = dynamicK * correlationMultiplier;
 
     
-    if (postRisk > preRisk) {
-      // Risk increasing: use post OI directly + 5bp fee
-      unwindPrice = baseAPY + adjustedDynamicK * postOI;
-      feeBps = 5;
-      const feeInPrice = feeBps / 100;
-      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
-      executionPrice = unwindPrice + (feeInPrice * directionFactor);
-    } else if (postRisk < preRisk) {
-      // Risk reducing: use midpoint
-      const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + adjustedDynamicK * midpointOI;
-      feeBps = 2;
-      const feeInPrice = feeBps / 100;
-      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
-      executionPrice = unwindPrice + (feeInPrice * directionFactor);
-    } else {
-      // Risk staying same (absolute value): use midpoint with 5bp fees
-      const midpointOI = (preOI + postOI) / 2;
-      unwindPrice = baseAPY + adjustedDynamicK * midpointOI;
-      feeBps = 5;
-      const feeInPrice = feeBps / 100;
-      const directionFactor = trade.type === 'pay' ? -1 : 1; // Opposite for unwind
-      executionPrice = unwindPrice + (feeInPrice * directionFactor);
-    }
+    executionPrice = unwindPrice;
+    feeBps = isSettlementMode ? 0 : FEE_BPS;
     
     // Round execution price for display with directional rounding
     // For unwind, the trade direction is opposite: pay traders are selling (receive), receive traders are buying (pay)
@@ -1394,12 +1374,12 @@ export default function App() {
     const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
     
     // Calculate fees using current DV01 and no fee if settlement
-    const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * feeBps;
+    const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * FEE_BPS;
 
     
     // Calculate P&L using settlement or total P&L calculation
     const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
-    const netReturn = trade.collateral + totalPL;
+    const netReturn = trade.collateral + totalPL - feeAmount;
     
     setPendingUnwind({
       tradeIndex,
@@ -1410,8 +1390,8 @@ export default function App() {
       pl: totalPL.toFixed(2),
       feeAmount: feeAmount.toFixed(2),
       netReturn: netReturn.toFixed(2),
-      feeRate: isSettlementMode ? "0" : feeBps.toString(),
-      feeBps: isSettlementMode ? 0 : feeBps
+      feeRate: isSettlementMode ? "0" : (FEE_BPS / 100).toString(),
+      feeBps: isSettlementMode ? 0 : FEE_BPS
       });
   };
 
@@ -1430,7 +1410,7 @@ export default function App() {
     
     // Add unwind fee to total
     const currentTradeDv01 = trade.baseDV01;
-    const feeAmount = currentTradeDv01 * pendingUnwind.feeBps;
+    const feeAmount = currentTradeDv01 * FEE_BPS;
     setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
@@ -1483,7 +1463,7 @@ export default function App() {
   // Check wallet balance
    // const simulatedUSDC = usdcBalance + 10000000;
     if (usdcBalance < additionalMargin) {
-      showToast(`Insufficient balance. Required: $${additionalMargin.toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
+      showToast(`Insufficient balance. Required: $${(margin + openFee).toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
       return;
     }
 
@@ -1673,8 +1653,9 @@ const calculateVammBreakdown = () => {
 
     // Check simulated USDC balance
    // const simulatedUSDC = usdcBalance + 10000000;
-    if (usdcBalance < margin) {
-      showToast(`Insufficient balance. Required: $${margin.toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
+    const openFee = baseDv01 * FEE_BPS;
+    if (usdcBalance < margin + openFee) {
+      showToast(`Insufficient balance. Required: $${(margin + openFee).toLocaleString()}, Available: $${usdcBalance.toLocaleString()}`, 'error');
       return;
     }
 
@@ -1717,32 +1698,26 @@ const calculateVammBreakdown = () => {
       const priceImpact = parseFloat((adjustedDynamicK * postOI).toFixed(5));
       console.log('CLEANED priceImpact:', priceImpact);
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
-      feeBps = 5;
+      feeBps = FEE_BPS;
       const directionFactor = type === 'pay' ? 1 : -1;
-      const feeInPercentage = feeBps / 100;
-      const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
-    } else if (postRisk < preRisk) {
+      finalPrice = rawPrice; // fee removed from price; separate flat fee applies
+} else if (postRisk < preRisk) {
       // Risk reducing: use midpoint
       const midpointOI = (preOI + postOI) / 2;
       const priceImpact = parseFloat((adjustedDynamicK * midpointOI).toFixed(5));
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
-      feeBps = 2;
+      feeBps = FEE_BPS;
       const directionFactor = type === 'pay' ? 1 : -1;
-      const feeInPercentage = feeBps / 100;
-      const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
-    } else {
+      finalPrice = rawPrice; // fee removed from price; separate flat fee applies
+} else {
       // Risk staying same: use midpoint with 5bp fees
       const midpointOI = (preOI + postOI) / 2;
       const priceImpact = parseFloat((adjustedDynamicK * midpointOI).toFixed(5));
       rawPrice = parseFloat((baseAPY + priceImpact).toFixed(4));
-      feeBps = 5;
+      feeBps = FEE_BPS;
       const directionFactor = type === 'pay' ? 1 : -1;
-      const feeInPercentage = feeBps / 100;
-      const fee = feeInPercentage * directionFactor;
-      finalPrice = parseFloat((rawPrice + fee).toFixed(3));
-    }
+      finalPrice = rawPrice; // fee removed from price; separate flat fee applies
+}
 
     // Round final price for display with directional rounding
     const roundedFinalPrice = roundPriceForDisplay(finalPrice, type);
@@ -1761,7 +1736,7 @@ const calculateVammBreakdown = () => {
     setPendingTrade({
       type,
       finalPrice: finalPrice.toFixed(3), // Show 3 decimal places
-      feeRate: feeBps / 100,
+      feeRate: FEE_BPS / 100,
       rawPrice: rawPrice.toFixed(3), // Keep raw price precise for calculations
       directionFactor: type === 'pay' ? 1 : -1,
       preOI,
@@ -1780,6 +1755,8 @@ const calculateVammBreakdown = () => {
 
   const confirmTrade = async () => {
     const { type, finalPrice, rawPrice, preOI, postOI } = pendingTrade;
+
+    const openFee = baseDv01 * FEE_BPS;
 
     const minMargin = currentDv01 * 50;
     if (margin < minMargin) {
@@ -1820,18 +1797,14 @@ const calculateVammBreakdown = () => {
         collateral: margin,
         entryDay: globalDay, // Use global day for real positions
         currentDay: globalDay,
-        feeAmountBps: pendingTrade.feeRate * 100,
+        feeAmountBps: FEE_BPS,
         rawPrice: parseFloat(pendingTrade.rawPrice),
         //txSignature: wallet ? `${Math.random().toString(36).substr(2, 9)}...` : null
       };
       //console to check entry of user
       console.log('STORED ENTRY PRICE:', trade.entryPrice);
       console.log('MODAL DISPLAYED PRICE:', pendingTrade.finalPrice);
-      // Add trade fee to total - use the actual calculated fee basis points
-      const feeAmountBps = pendingTrade.feeRate * 100; // Convert back to basis points 
-      const actualDv01 = baseDv01; // Use global day
-      const feeAmount = actualDv01 * feeAmountBps;
-      setTotalFeesCollected(prev => prev + feeAmount);
+      // Fee already collected via openFee; removing duplicate collection.
 
       setTradesByMarket(prev => ({
         ...prev,
@@ -1843,9 +1816,11 @@ const calculateVammBreakdown = () => {
         [market]: parseFloat(rawPrice)
       }));
 
-      setUsdcBalance(prev => prev - margin);
+      setUsdcBalance(prev => prev - margin - openFee);
 
-      setPendingTrade(null);
+      
+      setTotalFeesCollected(prev => prev + openFee);
+setPendingTrade(null);
       
       showToast('Trade executed successfully!', 'success');
     } catch (error) {
@@ -4903,6 +4878,10 @@ const calculateVammBreakdown = () => {
               <div className="detail-row">
                 <span>Unwind Fee:</span>
                 <span className="fee">{pendingUnwind.feeRate}bp (${pendingUnwind.feeAmount})</span>
+              </div>
+              <div className="detail-row">
+                <span>Total to Pay:</span>
+                <span>${(margin + baseDv01 * FEE_BPS).toLocaleString()}</span>
               </div>
               <div className="detail-row">
                 <span>Net Return:</span>
