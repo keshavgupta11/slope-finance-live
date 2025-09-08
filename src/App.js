@@ -1334,67 +1334,78 @@ export default function App() {
   };
 
   // Unwind function
-  const requestUnwind = (marketName, tradeIndex) => {
-    const trades = tradesByMarket[marketName] || [];
-    const trade = trades[tradeIndex];
-    if (!trade) return;
+  // Unwind function
+const requestUnwind = (tradeIndex) => {
+  const trade = marketTrades[tradeIndex];
+  if (!trade) return;
 
-    const protocolOI = calculateProtocolOI();
-    const currentOI = protocolOI[trade.market] || 0;
-    
-    // Calculate unwind execution price using current DV01
-    const preOI = currentOI;
-    const currentTradeDv01 = trade.baseDV01;
-    const postOI = trade.type === 'pay' ? currentOI - currentTradeDv01 : currentOI + currentTradeDv01;
-    
-    // Calculate pricing based on risk change
-    const preRisk = Math.abs(preOI);
-    const postRisk = Math.abs(postOI);
-    
-    let unwindPrice;
-    let feeBps;
-    let executionPrice;
-    
-    const { apy: baseAPY, k } = marketSettings[trade.market];
-    
-    // Calculate dynamic k based on current global day
-    const daysToMaturity = Math.max(0, 365 - globalDay);
-    const dynamicK = calculateDynamicK(k, daysToMaturity);
+  const protocolOI = calculateProtocolOI();
+  const currentOI = protocolOI[trade.market] || 0;
 
-    // Apply correlation adjustment for Lido/Aave ETH Lending
-    const correlationMultiplier = getCorrelationMultiplier(trade.market, trade.type === 'pay' ? 'receive' : 'pay', currentTradeDv01);
-    const adjustedDynamicK = dynamicK * correlationMultiplier;
+  const preOI = currentOI;
+  const currentTradeDv01 = trade.baseDV01;
+  const postOI = trade.type === 'pay' ? currentOI - currentTradeDv01 : currentOI + currentTradeDv01;
 
-    
-    executionPrice = unwindPrice;
-    feeBps = isSettlementMode ? 0 : FEE_BPS;
-    
-    // Round execution price for display with directional rounding
-    // For unwind, the trade direction is opposite: pay traders are selling (receive), receive traders are buying (pay)
-    const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
-    const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
-    
-    // Calculate fees using current DV01 and no fee if settlement
-    const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * FEE_BPS;
+  const preRisk = Math.abs(preOI);
+  const postRisk = Math.abs(postOI);
 
-    
-    // Calculate P&L using settlement or total P&L calculation
-    const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
-    const netReturn = trade.collateral + totalPL - feeAmount;
-    
-    setPendingUnwind({
-      tradeIndex,
-      trade,
-      executionPrice: isSettlementMode ? settlementPrices[trade.market].toFixed(3) : roundedExecutionPrice.toFixed(3),
-      rawUnwindPrice: isSettlementMode ? settlementPrices[trade.market].toFixed(3) : unwindPrice.toFixed(3),
-      entryPrice: trade.entryPrice.toFixed(3),
-      pl: totalPL.toFixed(2),
-      feeAmount: feeAmount.toFixed(2),
-      netReturn: netReturn.toFixed(2),
-      feeRate: isSettlementMode ? "0" : (FEE_BPS / 100).toString(),
-      feeBps: isSettlementMode ? 0 : FEE_BPS
-      });
-  };
+  let unwindPrice;
+  let executionPrice;
+
+  const { apy: baseAPY, k } = marketSettings[trade.market];
+
+  // dynamic k
+  const daysToMaturity = Math.max(0, 365 - globalDay);
+  const dynamicK = calculateDynamicK(k, daysToMaturity);
+
+  // correlation
+  const correlationMultiplier = getCorrelationMultiplier(
+    trade.market,
+    trade.type === 'pay' ? 'receive' : 'pay',
+    currentTradeDv01
+  );
+  const adjustedDynamicK = dynamicK * correlationMultiplier;
+
+  // --- compute unwindPrice (no fee in price) ---
+  if (postRisk > preRisk) {
+    // risk increasing: use post OI
+    unwindPrice = baseAPY + adjustedDynamicK * postOI;
+  } else {
+    // risk reducing or same: use midpoint
+    const midpointOI = (preOI + postOI) / 2;
+    unwindPrice = baseAPY + adjustedDynamicK * midpointOI;
+  }
+  executionPrice = unwindPrice; // fee is separate now
+
+  // directional rounding for display (note: unwind direction is opposite)
+  const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
+  const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
+
+  // flat fee = 3bp * current dv01 (no fee in price)
+  const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * FEE_BPS; // FEE_BPS = 0.03 for 3bp
+
+  // P&L with executionPrice; settlement path still works
+  const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
+  const netReturn = trade.collateral + totalPL - feeAmount;
+
+  setPendingUnwind({
+    tradeIndex,
+    trade,
+    executionPrice: isSettlementMode
+      ? settlementPrices[trade.market].toFixed(3)
+      : roundedExecutionPrice.toFixed(3),
+    rawUnwindPrice: isSettlementMode
+      ? settlementPrices[trade.market].toFixed(3)
+      : unwindPrice.toFixed(3),
+    entryPrice: trade.entryPrice.toFixed(3),
+    pl: totalPL.toFixed(2),
+    feeAmount: feeAmount.toFixed(2),
+    netReturn: netReturn.toFixed(2),
+    feeRate: isSettlementMode ? '0' : (FEE_BPS * 100).toString(), // '3' bp for UI
+    feeBps: isSettlementMode ? 0 : FEE_BPS
+  });
+};
+
 
   const confirmUnwind = () => {
     const { tradeIndex, trade, executionPrice, rawUnwindPrice, pl, netReturn } = pendingUnwind;
@@ -2750,7 +2761,7 @@ setPendingTrade(null);
                               Margin
                             </button>
                             <button 
-                              onClick={() => requestUnwind(market, i)}
+                              onClick={() => requestUnwind(i)}
                               style={{
                                 background: 'linear-gradient(45deg, #ef4444, #dc2626)',
                                 color: 'white',
