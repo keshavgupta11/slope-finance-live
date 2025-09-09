@@ -1420,9 +1420,9 @@ const requestUnwind = (tradeIndex) => {
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
-   // const currentTradeDv01 = trade.baseDV01;
-    //const feeAmount = currentTradeDv01 * FEE_BPS;
-    //setTotalFeesCollected(prev => prev + feeAmount);
+    const currentTradeDv01 = trade.baseDV01;
+    const feeAmount = 0;
+    setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
     setTradeHistory(prev => [...prev, {
