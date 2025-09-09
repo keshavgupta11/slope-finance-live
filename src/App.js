@@ -1379,13 +1379,12 @@ const requestUnwind = (tradeIndex) => {
 
   // directional rounding for display (note: unwind direction is opposite)
   const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
-  const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
 
   // flat fee = 0bp * current dv01 (no fee in price) on unwind
   const feeAmount = 0;
 
   // P&L with executionPrice; settlement path still works
-  const totalPL = isSettlementMode ? calculateSettlementPL(trade)  : calculateTotalPL(trade, roundedExecutionPrice);
+  const totalPL = isSettlementMode ? calculateSettlementPL(trade)  : calculateTotalPL(trade, unwindPrice);
   const netReturn = trade.collateral + totalPL; // ← do NOT subtract a fee
 
   setPendingUnwind({
