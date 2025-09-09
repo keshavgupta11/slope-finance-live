@@ -4872,7 +4872,7 @@ setPendingTrade(null);
                 <span>{pendingUnwind.entryPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Unwind Price (with fees):</span>
+                <span>Unwind Price (no fees):</span>
                 <span className="execution-price">{pendingUnwind.executionPrice}%</span>
               </div>
               <div className="detail-row">
