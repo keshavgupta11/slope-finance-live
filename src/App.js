@@ -1420,9 +1420,9 @@ const requestUnwind = (tradeIndex) => {
     setTotalVammPL(prev => prev + finalVammPL);
     
     // Add unwind fee to total
-    const currentTradeDv01 = trade.baseDV01;
-    const feeAmount = currentTradeDv01 * FEE_BPS;
-    setTotalFeesCollected(prev => prev + feeAmount);
+   // const currentTradeDv01 = trade.baseDV01;
+    //const feeAmount = currentTradeDv01 * FEE_BPS;
+    //setTotalFeesCollected(prev => prev + feeAmount);
     
     // Add to trade history
     setTradeHistory(prev => [...prev, {
@@ -4889,10 +4889,6 @@ setPendingTrade(null);
               <div className="detail-row">
                 <span>Unwind Fee:</span>
                 <span className="fee">{pendingUnwind.feeRate}bp (${pendingUnwind.feeAmount})</span>
-              </div>
-              <div className="detail-row">
-                <span>Total to Pay:</span>
-                <span>${(margin + baseDv01 * FEE_BPS).toLocaleString()}</span>
               </div>
               <div className="detail-row">
                 <span>Net Return:</span>
