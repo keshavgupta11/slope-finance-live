@@ -4,7 +4,7 @@ import './App.css';
 
 // Solana imports
 
-const FEE_BPS = 3; // flat 3bp fee, charged separately
+const FEE_BPS = 4; // flat 4bp fee, charged separately
 //import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 //import { getAccount, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -228,7 +228,7 @@ export default function App() {
   const tradingTips = [
     { icon: "💡", text: "Pay Fixed profits when rates go higher", category: "Strategy" },
     { icon: "📊", text: "DV01 shows your P&L sensitivity per 1bp rate move", category: "Education" },
-    { icon: "⚡", text: "Flat 3bp fee, charged upfront", category: "Pro Tip" },
+    { icon: "⚡", text: "Flat 4bp fee, charged upfront", category: "Pro Tip" },
     { icon: "🎯", text: "Watch liquidation risk - add margin when close", category: "Risk" },
     { icon: "📈", text: "Correlation trades: Lido steth/rETH often move together", category: "Advanced" },
     { icon: "🔄", text: "Settlement P&L uses realized rates vs entry price", category: "Settlement" },
