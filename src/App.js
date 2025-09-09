@@ -1393,7 +1393,7 @@ const requestUnwind = (tradeIndex) => {
     trade,
     executionPrice: isSettlementMode
       ? settlementPrices[trade.market].toFixed(3)
-      : roundedExecutionPrice.toFixed(3),
+      : unwindPrice.toFixed(3),
     rawUnwindPrice: isSettlementMode
       ? settlementPrices[trade.market].toFixed(3)
       : unwindPrice.toFixed(3),
