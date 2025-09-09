@@ -4876,10 +4876,6 @@ setPendingTrade(null);
                 <span className="execution-price">{pendingUnwind.executionPrice}%</span>
               </div>
               <div className="detail-row">
-                <span>Raw Unwind Price:</span>
-                <span className="execution-price">{pendingUnwind.rawUnwindPrice}%</span>
-              </div>
-              <div className="detail-row">
                 <span>Total P&L:</span>
                 <span className={parseFloat(pendingUnwind.pl) >= 0 ? 'profit' : 'loss'}>
                   {parseFloat(pendingUnwind.pl) >= 0 ? '+' : '-'}${Math.abs(parseFloat(pendingUnwind.pl)).toLocaleString()}
