@@ -1381,12 +1381,12 @@ const requestUnwind = (tradeIndex) => {
   const unwindTradeType = trade.type === 'pay' ? 'receive' : 'pay';
   const roundedExecutionPrice = roundPriceForDisplay(executionPrice, unwindTradeType);
 
-  // flat fee = 3bp * current dv01 (no fee in price)
-  const feeAmount = isSettlementMode ? 0 : currentTradeDv01 * FEE_BPS; // FEE_BPS = 0.03 for 3bp
+  // flat fee = 0bp * current dv01 (no fee in price) on unwind
+  const feeAmount = 0;
 
   // P&L with executionPrice; settlement path still works
-  const totalPL = isSettlementMode ? calculateSettlementPL(trade) : calculateTotalPL(trade, roundedExecutionPrice);
-  const netReturn = trade.collateral + totalPL - feeAmount;
+  const totalPL = isSettlementMode ? calculateSettlementPL(trade)  : calculateTotalPL(trade, roundedExecutionPrice);
+  const netReturn = trade.collateral + totalPL; // ← do NOT subtract a fee
 
   setPendingUnwind({
     tradeIndex,
@@ -1401,8 +1401,7 @@ const requestUnwind = (tradeIndex) => {
     pl: totalPL.toFixed(2),
     feeAmount: feeAmount.toFixed(2),
     netReturn: netReturn.toFixed(2),
-    feeRate: isSettlementMode ? '0' : (FEE_BPS * 100).toString(), // '3' bp for UI
-    feeBps: isSettlementMode ? 0 : FEE_BPS
+    feeRate: "0",
   });
 };
 
