@@ -1184,7 +1184,7 @@ export default function App() {
                         onChange={(e) => {
                           const updated = { ...pendingSettlement?.prices || {} };
                           updated[market] = parseFloat(e.target.value) || marketSettings[market].apy;
-                          setPendingSettlement(prev => ({ ...prev, prices: updated }));
+                          setPendingSettlement({ prices: updated });
                         }}
                         onFocus={(e) => {
                           e.target.style.borderColor = '#10b981';
