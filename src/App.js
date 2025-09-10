@@ -1181,11 +1181,11 @@ export default function App() {
                           backdropFilter: 'blur(8px)',
                           fontSize: '0.85rem'
                         }}
-                       onChange={(e) => {
-                        const updated = { ...settlementInputs || {} };
-                        updated[market] = e.target.value;
-                        setSettlementInputs(updated);
-                      }}
+                        onChange={(e) => {
+                          const updated = { ...pendingSettlement?.prices || {} };
+                          updated[market] = parseFloat(e.target.value) || marketSettings[market].apy;
+                          setPendingSettlement({ prices: updated });
+                        }}
                         onFocus={(e) => {
                           e.target.style.borderColor = '#10b981';
                           e.target.style.background = 'rgba(31, 41, 55, 0.95)';
