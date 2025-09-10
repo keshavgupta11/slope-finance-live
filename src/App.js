@@ -522,11 +522,13 @@ export default function App() {
     if (!trade) return;
 
     const currentLivePrice = livePricesByMarket[trade.market] || marketSettings[trade.market].referenceApy;
+    const { k } = marketSettings[trade.market];
     
-    // Simple unwind price = current live price (no fees in price)
-    const unwindPrice = currentLivePrice;
-    const executionPrice = unwindPrice;
-
+    // Calculate unwind price with impact (opposite direction of original trade)
+    const unwindDirection = trade.type === 'pay' ? -1 : 1; // Opposite of original
+    const priceImpact = k * trade.baseDV01 * unwindDirection;
+    const unwindPrice = currentLivePrice + priceImpact;
+    
     // No fee on unwind
     const feeAmount = 0;
 
@@ -573,6 +575,12 @@ export default function App() {
       updated[trade.market] = updated[trade.market].filter((_, i) => i !== tradeIndex);
       return updated;
     });
+    
+    // Update live price to reflect the unwind impact
+    setLivePricesByMarket(prev => ({
+      ...prev,
+      [trade.market]: parseFloat(rawUnwindPrice)
+    }));
     
     // Return funds to user
     setUsdcBalance(prev => prev + parseFloat(netReturn));
