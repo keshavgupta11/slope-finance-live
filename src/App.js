@@ -61,7 +61,7 @@ export default function App() {
   const [marketSettings, setMarketSettings] = useState(initialMarkets);
   const [selectedMarket, setSelectedMarket] = useState("JitoSol");
   const [betAmount, setBetAmount] = useState(1000);
-  const [userBalance, setUserBalance] = useState(10000);
+  const [userBalance, setUserBalance] = useState(20000);
   const [protocolTreasury, setProtocolTreasury] = useState(50000);
   const [activeBets, setActiveBets] = useState([]);
   const [activeTab, setActiveTab] = useState("Betting");
